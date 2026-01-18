@@ -7,8 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, ArrowRight } from 'lucide-react';
+import { useAuth } from '@/components/auth-provider';
 
 export default function CreateGroupForm() {
+    const { user } = useAuth();
     const [groupName, setGroupName] = useState('');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
@@ -36,7 +38,11 @@ export default function CreateGroupForm() {
 
             const { error: dbError } = await supabase
                 .from('groups')
-                .insert({ name: groupName, slug: uniqueSlug });
+                .insert({
+                    name: groupName,
+                    slug: uniqueSlug,
+                    created_by: user?.id
+                });
 
             if (dbError) throw dbError;
 

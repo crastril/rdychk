@@ -82,7 +82,10 @@ export default function MemberList({ groupId, currentMemberId }: MemberListProps
                 return (
                     <div
                         key={member.id}
-                        className="flex items-center gap-4 p-4 rounded-xl border bg-card/50 backdrop-blur-sm hover:bg-accent/50 transition-all duration-300 animate-slide-up"
+                        className={cn(
+                            "flex items-center gap-4 p-4 rounded-xl border bg-card/50 backdrop-blur-sm hover:bg-accent/50 transition-all duration-300 animate-slide-up",
+                            member.role === 'admin' && "border-primary/50 shadow-[0_0_15px_-5px_hsl(var(--primary)/0.3)]"
+                        )}
                         role="listitem"
                     >
                         {/* Avatar */}
@@ -91,7 +94,8 @@ export default function MemberList({ groupId, currentMemberId }: MemberListProps
                                 "w-12 h-12 rounded-full flex items-center justify-center text-base font-bold shadow-sm transition-colors",
                                 member.is_ready
                                     ? 'bg-primary text-primary-foreground shadow-[0_0_15px_-3px_hsl(var(--primary)/0.4)]'
-                                    : 'bg-secondary text-secondary-foreground'
+                                    : 'bg-secondary text-secondary-foreground',
+                                member.role === 'admin' && !member.is_ready && "ring-2 ring-primary/30"
                             )}
                         >
                             {getInitials(member.name)}

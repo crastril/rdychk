@@ -54,6 +54,14 @@ begin
     if not exists (select from information_schema.columns where table_name = 'members' and column_name = 'proposed_time') then
         alter table members add column proposed_time text;
     end if;
+
+    if not exists (select from information_schema.columns where table_name = 'members' and column_name = 'role') then
+        alter table members add column role text default 'member';
+    end if;
+
+    if not exists (select from information_schema.columns where table_name = 'groups' and column_name = 'created_by') then
+        alter table groups add column created_by uuid references auth.users(id);
+    end if;
 end $$;
 
 -- Clean up existing duplicates before adding constraint

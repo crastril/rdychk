@@ -178,12 +178,32 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                 }
             }
         }
+        let role = 'member';
+
+        // Check if group has no members yet (first joiner becomes admin if created_by matches or just first)
+        // OR if current user is the creator
+        if (group) {
+            if (user?.id && group.created_by === user.id) {
+                role = 'admin';
+            } else {
+                const { count } = await supabase
+                    .from('members')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('group_id', group.id);
+
+                if (count === 0) {
+                    role = 'admin';
+                }
+            }
+        }
+
         const { data, error } = await supabase
             .from('members')
             .insert({
                 group_id: group.id,
                 name,
-                user_id: user?.id || null // Link the member to the user if logged in
+                user_id: user?.id || null, // Link the member to the user if logged in
+                role
             })
             .select()
             .single();
