@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Sparkles } from 'lucide-react';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { useAuth } from '@/components/auth-provider';
 import { useEffect } from 'react';
 
@@ -39,6 +40,9 @@ export default function JoinModal({ onJoin, groupName }: JoinModalProps) {
         return (
             <Dialog open={true}>
                 <DialogContent>
+                    <VisuallyHidden>
+                        <DialogTitle>Rejoindre le groupe</DialogTitle>
+                    </VisuallyHidden>
                     <div className="flex flex-col items-center justify-center p-6 space-y-4">
                         <Sparkles className="w-8 h-8 animate-spin text-primary" />
                         <p className="text-muted-foreground">Rejoindre en tant que {profile?.display_name}...</p>
