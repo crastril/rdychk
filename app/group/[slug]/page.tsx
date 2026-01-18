@@ -1,7 +1,7 @@
 'use client';
 
 import { use, useEffect, useState } from 'react';
-import { notFound } from 'next/navigation';
+import { notFound, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/auth-provider';
@@ -18,6 +18,7 @@ import type { Group, Member } from '@/types/database';
 
 export default function GroupPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = use(params);
+    const router = useRouter();
     const [group, setGroup] = useState<Group | null>(null);
     const [memberId, setMemberId] = useState<string | null>(null);
     const [memberName, setMemberName] = useState<string | null>(null);
@@ -221,8 +222,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
 
         try {
             await supabase.from('members').delete().eq('id', idToRemove);
-            // Optional: Redirect to home or just show join state
-            // router.push('/'); 
+            router.push('/');
         } catch (error) {
             console.error("Error leaving group:", error);
             // Revert state if needed? For now we assume success or user can reload.
