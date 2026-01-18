@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 import CreateGroupForm from '@/components/CreateGroupForm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,11 +34,15 @@ export default function Home() {
         .single();
 
       if (data && data.groups) {
-        setLastGroup({
-          name: data.groups.name,
-          slug: data.groups.slug,
-          joined_at: data.joined_at
-        });
+        // Handle potential array or object return from Supabase
+        const groupData = Array.isArray(data.groups) ? data.groups[0] : data.groups;
+        if (groupData) {
+          setLastGroup({
+            name: groupData.name,
+            slug: groupData.slug,
+            joined_at: data.joined_at
+          });
+        }
       }
     }
 
