@@ -165,10 +165,9 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
             .single();
 
         if (error) {
-            console.error('Error joining group:', error);
-            // Handle unique constraint violation gracefully if it happens despite check (race condition)
-            if (error.code === '23505') { // Unique violation code
-                // Retry fetch
+            // Handle unique constraint violation gracefully (race condition)
+            if (error.code === '23505') {
+                // Retry fetch without logging error
                 if (user) {
                     const { data: existingMember } = await supabase
                         .from('members')
@@ -181,10 +180,13 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                         setMemberId(existingMember.id);
                         setMemberName(existingMember.name);
                         setIsReady(existingMember.is_ready);
+                        localStorage.setItem(`member_${slug}`, existingMember.id);
+                        localStorage.setItem(`member_name_${slug}`, existingMember.name);
                         return;
                     }
                 }
             }
+            console.error('Error joining group:', error);
             return;
         }
 
