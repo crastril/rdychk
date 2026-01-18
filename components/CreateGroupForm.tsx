@@ -42,7 +42,11 @@ export default function CreateGroupForm() {
         } catch (error: any) {
             caughtError = error;
             // Ignore benign Next.js redirect/navigation errors
-            if (error?.message?.includes('NEXT_REDIRECT') || error?.name === 'AbortError') {
+            if (
+                error?.message?.includes('NEXT_REDIRECT') ||
+                error?.name === 'AbortError' ||
+                error?.message?.includes('The operation was aborted')
+            ) {
                 return;
             }
             console.error('Error creating group:', error?.message || error);
