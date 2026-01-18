@@ -3,7 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Icons } from './Icons';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Loader2, ArrowRight } from 'lucide-react';
 
 export default function CreateGroupForm() {
     const [groupName, setGroupName] = useState('');
@@ -44,50 +47,39 @@ export default function CreateGroupForm() {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="w-full space-y-4">
-            <label htmlFor="group-name-input" className="sr-only">
-                Nom du groupe
-            </label>
-            <input
-                id="group-name-input"
-                type="text"
-                value={groupName}
-                onChange={(e) => setGroupName(e.target.value)}
-                placeholder="Nom du groupe (ex: Soirée vendredi)"
-                className="w-full px-6 py-4 text-lg bg-slate-700 border-2 border-slate-600 rounded-2xl
-                 text-slate-50 placeholder-slate-400
-                 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50
-                 transition-all"
-                disabled={loading}
-                maxLength={50}
-                required
-            />
+        <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+                <Label htmlFor="group-name">Group Name</Label>
+                <Input
+                    id="group-name"
+                    type="text"
+                    value={groupName}
+                    onChange={(e) => setGroupName(e.target.value)}
+                    placeholder="Friday Night Out"
+                    disabled={loading}
+                    maxLength={50}
+                    required
+                />
+            </div>
 
-            <button
+            <Button
                 type="submit"
                 disabled={loading || !groupName.trim()}
-                className="w-full px-6 py-4 text-xl font-bold text-white
-                 bg-gradient-to-r from-violet-500 to-blue-500
-                 rounded-2xl
-                 hover:from-violet-600 hover:to-blue-600
-                 disabled:opacity-50 disabled:cursor-not-allowed
-                 transition-all duration-300 transform active:scale-95
-                 shadow-lg hover:shadow-xl hover:shadow-violet-500/30
-                 flex items-center justify-center gap-2"
-                aria-label="Créer le groupe"
+                className="w-full"
+                size="lg"
             >
                 {loading ? (
                     <>
-                        <Icons.Loader className="w-5 h-5" />
-                        Création...
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        Creating...
                     </>
                 ) : (
                     <>
-                        Créer le groupe
-                        <Icons.Sparkles className="w-5 h-5" />
+                        Create Group
+                        <ArrowRight className="w-4 h-4 ml-2" />
                     </>
                 )}
-            </button>
+            </Button>
         </form>
     );
 }

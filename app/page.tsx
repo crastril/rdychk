@@ -1,35 +1,36 @@
 import CreateGroupForm from '@/components/CreateGroupForm';
-import { Icons } from '@/components/Icons';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Sparkles } from 'lucide-react';
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <main className="flex flex-col items-center text-center space-y-8 max-w-md w-full animate-scale-in">
-        {/* Logo/Icon */}
-        <div className="w-24 h-24 bg-gradient-to-br from-violet-500 to-blue-500 rounded-3xl flex items-center justify-center shadow-2xl shadow-violet-500/30 mb-4 animate-bounce-in">
-          <Icons.Rocket className="w-14 h-14 text-white" />
-        </div>
-
-        {/* Title */}
-        <div className="space-y-3">
-          <h1 className="text-6xl md:text-7xl font-extrabold text-slate-50 tracking-tight">
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <main className="w-full max-w-md space-y-8">
+        {/* Header */}
+        <div className="text-center space-y-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl mb-4">
+            <Sparkles className="w-8 h-8 text-primary-foreground" />
+          </div>
+          <h1 className="text-5xl font-bold">
             rdychk
           </h1>
-          <p className="text-xl md:text-2xl text-slate-300 font-medium px-4">
-            Qui est prêt ? <br />
-            Vérifiez en <span className="text-emerald-400 font-bold">temps réel</span> !
+          <p className="text-lg text-muted-foreground">
+            Sync Status, Instantly
           </p>
         </div>
 
         {/* Form Card */}
-        <div className="w-full glass-strong rounded-3xl p-8 shadow-2xl border-2 border-slate-600/50">
-          <CreateGroupForm />
-        </div>
-
-        {/* Footer Info */}
-        <p className="text-slate-400 text-sm px-4">
-          Créez un groupe, partagez le lien, et synchronisez-vous instantanément
-        </p>
+        <Card>
+          <CardHeader>
+            <CardTitle>Create a Group</CardTitle>
+            <CardDescription>
+              Start a new group and share the link with your friends
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <CreateGroupForm />
+          </CardContent>
+        </Card>
       </main>
     </div>
   );
