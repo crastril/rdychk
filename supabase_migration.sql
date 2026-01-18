@@ -38,6 +38,17 @@ begin
   if not exists (select from pg_policies where policyname = 'Users can view own memberships.') then
     create policy "Users can view own memberships." on members for select using (auth.uid() = user_id);
   end if;
+
+  if not exists (select from pg_policies where policyname = 'Admins can delete members.') then
+    create policy "Admins can delete members." on members for delete using (
+      exists (
+        select 1 from members as m 
+        where m.group_id = members.group_id 
+        and m.user_id = auth.uid() 
+        and m.role = 'admin'
+      )
+    );
+  end if;
 end $$;
 
 -- Update members table

@@ -12,6 +12,7 @@ import ProgressCounter from '@/components/ProgressCounter';
 import { TimerPicker } from '@/components/TimerPicker';
 import { ShareMenu } from '@/components/ShareMenu';
 import { NotificationManager } from '@/components/NotificationManager';
+import { ManageGroupModal } from '@/components/ManageGroupModal';
 import { TimeProposalModal } from '@/components/TimeProposalModal';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,6 +31,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
     const [timerEndTime, setTimerEndTime] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [members, setMembers] = useState<Member[]>([]);
+    const [isManageModalOpen, setIsManageModalOpen] = useState(false);
 
     useEffect(() => {
         const fetchGroup = async () => {
@@ -96,6 +98,34 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
             supabase.removeChannel(channel);
         };
     }, [group]);
+
+    useEffect(() => {
+        const ensureAdmin = async () => {
+            if (members.length > 0) {
+                const hasAdmin = members.some(m => m.role === 'admin');
+
+                if (!hasAdmin) {
+                    // Promote the first member (effectively the creator/oldest)
+                    const candidate = members[0];
+                    if (candidate) {
+
+                        // Persist to DB
+                        const { error } = await supabase
+                            .from('members')
+                            .update({ role: 'admin' })
+                            .eq('id', candidate.id);
+
+                        if (!error) {
+                            // Force local update to reflect change immediately
+                            setMembers(prev => prev.map(m => m.id === candidate.id ? { ...m, role: 'admin' } : m));
+                        }
+                    }
+                }
+            }
+        };
+
+        ensureAdmin();
+    }, [members]);
 
     useEffect(() => {
         if (!memberId) return;
@@ -283,6 +313,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
     const readyCount = members.filter((m) => m.is_ready).length;
     const totalCount = members.length;
     const currentMember = members.find(m => m.id === memberId);
+    const isAdmin = currentMember?.role === 'admin';
 
     return (
         <div className="min-h-screen">
@@ -379,15 +410,34 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                             {/* Members Card */}
                             <Card>
                                 <CardHeader>
-                                    <div className="flex items-center gap-2">
-                                        <Users className="w-5 h-5 text-muted-foreground" />
-                                        <CardTitle className="text-lg">Membres</CardTitle>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <Users className="w-5 h-5 text-muted-foreground" />
+                                            <CardTitle className="text-lg">Membres</CardTitle>
+                                        </div>
+                                        {isAdmin && (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-8"
+                                                onClick={() => setIsManageModalOpen(true)}
+                                            >
+                                                Gérer
+                                            </Button>
+                                        )}
                                     </div>
                                 </CardHeader>
                                 <CardContent>
                                     <MemberList groupId={group.id} currentMemberId={memberId} />
                                 </CardContent>
                             </Card>
+
+                            <ManageGroupModal
+                                isOpen={isManageModalOpen}
+                                onOpenChange={setIsManageModalOpen}
+                                groupId={group.id}
+                                currentMemberId={memberId}
+                            />
                         </>
                     )
                 }
