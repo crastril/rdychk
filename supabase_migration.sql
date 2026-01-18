@@ -26,8 +26,6 @@ begin
   if not exists (select from pg_policies where policyname = 'Users can update own profile.') then
     create policy "Users can update own profile." on profiles for update using (auth.uid() = id);
   end if;
-    create policy "Users can update own profile." on profiles for update using (auth.uid() = id);
-  end if;
 end $$;
 
 -- Enable RLS on members if not already
@@ -35,10 +33,22 @@ alter table members enable row level security;
 
 do $$
 begin
-  if not exists (select from pg_policies where policyname = 'Users can view own memberships.') then
-    create policy "Users can view own memberships." on members for select using (auth.uid() = user_id);
+  -- Allow public read (anyone can see group members)
+  if not exists (select from pg_policies where policyname = 'Public read members') then
+    create policy "Public read members" on members for select using (true);
   end if;
 
+  -- Allow public insert (anyone can join)
+  if not exists (select from pg_policies where policyname = 'Public insert members') then
+    create policy "Public insert members" on members for insert with check (true);
+  end if;
+
+  -- Allow public update (anyone can update status - needed for anon users)
+  if not exists (select from pg_policies where policyname = 'Public update members') then
+    create policy "Public update members" on members for update using (true);
+  end if;
+
+  -- Admin delete policy (already added, keeping strict)
   if not exists (select from pg_policies where policyname = 'Admins can delete members.') then
     create policy "Admins can delete members." on members for delete using (
       exists (

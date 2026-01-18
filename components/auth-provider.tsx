@@ -30,51 +30,70 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         const fetchSession = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            setSession(session);
-            setUser(session?.user ?? null);
-            if (session?.user) {
-                await fetchProfile(session.user.id);
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                setSession(session);
+                setUser(session?.user ?? null);
+                if (session?.user) {
+                    await fetchProfile(session.user.id);
+                }
+            } catch (error) {
+                console.error("Auth initialization error:", error);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         };
 
         fetchSession();
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            setSession(session);
-            setUser(session?.user ?? null);
-            if (session?.user) {
-                await fetchProfile(session.user.id);
-            } else {
-                setProfile(null);
+            try {
+                setSession(session);
+                setUser(session?.user ?? null);
+                if (session?.user) {
+                    await fetchProfile(session.user.id);
+                } else {
+                    setProfile(null);
+                }
+            } catch (error) {
+                console.error("Auth change error:", error);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         });
 
         return () => subscription.unsubscribe();
     }, []);
 
     const fetchProfile = async (userId: string) => {
-        const { data } = await supabase
-            .from('profiles')
-            .select('display_name, avatar_url')
-            .eq('id', userId)
-            .single();
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('display_name, avatar_url')
+                .eq('id', userId)
+                .single();
 
-        // Fallback to user metadata if profile is missing (e.g. first login before trigger)
-        if (!data || !data.display_name) {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user?.user_metadata) {
-                setProfile({
-                    display_name: data?.display_name || user.user_metadata.full_name || user.user_metadata.name || user.email?.split('@')[0] || "Utilisateur",
-                    avatar_url: data?.avatar_url || user.user_metadata.avatar_url,
-                });
-                return;
+            if (error && error.code !== 'PGRST116') { // Ignore "no rows found" error
+                console.error("Error fetching profile:", error);
             }
-        }
 
-        setProfile(data);
+            // Fallback to user metadata if profile is missing
+            if (!data || !data.display_name) {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user?.user_metadata) {
+                    setProfile({
+                        display_name: data?.display_name || user.user_metadata.full_name || user.user_metadata.name || user.email?.split('@')[0] || "Utilisateur",
+                        avatar_url: data?.avatar_url || user.user_metadata.avatar_url,
+                    });
+                    return;
+                }
+            }
+            setProfile(data);
+        } catch (err) {
+            console.error("Unexpected error in fetchProfile:", err);
+            // Non-blocking fallback
+            setProfile({ display_name: "Utilisateur", avatar_url: null });
+        }
     };
 
     const refreshProfile = async () => {
