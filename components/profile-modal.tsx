@@ -18,11 +18,15 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
     const { user, profile, refreshProfile } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [name, setName] = useState("");
+    const [error, setError] = useState<string | null>(null);
 
     // Pre-fill name from profile
     useEffect(() => {
-        if (open && profile?.display_name) {
-            setName(profile.display_name);
+        if (open) {
+            if (profile?.display_name) {
+                setName(profile.display_name);
+            }
+            setError(null);
         }
     }, [open, profile]);
 
@@ -31,8 +35,9 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
         if (!user || !name.trim()) return;
 
         setIsLoading(true);
+        setError(null);
         try {
-            const { error } = await supabase
+            const { error: upsertError } = await supabase
                 .from('profiles')
                 .upsert({
                     id: user.id,
@@ -41,17 +46,13 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
                     updated_at: new Date().toISOString(),
                 });
 
-            if (error) throw error;
+            if (upsertError) throw upsertError;
 
             await refreshProfile();
             onOpenChange?.(false);
-            // Verify toast is available or remove if sonner not installed. 
-            // Assuming no toast library is currently used based on file list.
-            // I'll skip toast for now to avoid errors, or use simple alert if critical.
-            // Given premium requirement, silently failing is bad. But I don't see sonner installed.
-            // I will stick to basic behavior.
-        } catch (error) {
-            console.error('Error updating profile:', error);
+        } catch (err: any) {
+            console.error('Error updating profile:', err);
+            setError(err.message || "Une erreur est survenue lors de l'enregistrement.");
         } finally {
             setIsLoading(false);
         }
@@ -84,6 +85,12 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
                             maxLength={30}
                         />
                     </div>
+
+                    {error && (
+                        <p className="text-sm text-red-500 font-medium animate-pulse">
+                            {error}
+                        </p>
+                    )}
 
                     <div className="flex justify-end gap-3 pt-2">
                         <Button
