@@ -312,21 +312,17 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                                     <CardDescription>{memberName}</CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="flex gap-3">
-                                        <div className="flex-1">
-                                            <ReadyButton
-                                                memberId={memberId}
-                                                isReady={isReady}
-                                                timerEndTime={timerEndTime}
-                                            />
-                                        </div>
-                                        <div>
-                                            <TimerPicker
-                                                memberId={memberId}
-                                                currentTimerEnd={timerEndTime}
-                                                isReady={isReady}
-                                            />
-                                        </div>
+                                    <div className="flex flex-col gap-3">
+                                        <ReadyButton
+                                            memberId={memberId}
+                                            isReady={isReady}
+                                            timerEndTime={timerEndTime}
+                                        />
+                                        <TimerPicker
+                                            memberId={memberId}
+                                            currentTimerEnd={timerEndTime}
+                                            isReady={isReady}
+                                        />
                                     </div>
                                 </CardContent>
                             </Card>
