@@ -24,11 +24,29 @@ export default function JoinModal({ onJoin, groupName }: JoinModalProps) {
     const [name, setName] = useState('');
     const { profile, user } = useAuth();
 
+    const [isAutoJoining, setIsAutoJoining] = useState(false);
+
     useEffect(() => {
-        if (profile?.display_name) {
+        if (profile?.display_name && !isAutoJoining) {
             setName(profile.display_name);
+            // Auto-join if we have a name from the profile
+            setIsAutoJoining(true);
+            onJoin(profile.display_name);
         }
-    }, [profile]);
+    }, [profile, onJoin, isAutoJoining]);
+
+    if (isAutoJoining) {
+        return (
+            <Dialog open={true}>
+                <DialogContent>
+                    <div className="flex flex-col items-center justify-center p-6 space-y-4">
+                        <Sparkles className="w-8 h-8 animate-spin text-primary" />
+                        <p className="text-muted-foreground">Rejoindre en tant que {profile?.display_name}...</p>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        );
+    }
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

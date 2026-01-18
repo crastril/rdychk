@@ -59,6 +59,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .select('display_name, avatar_url')
             .eq('id', userId)
             .single();
+
+        // Fallback to user metadata if profile is missing (e.g. first login before trigger)
+        if (!data || !data.display_name) {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user?.user_metadata) {
+                setProfile({
+                    display_name: data?.display_name || user.user_metadata.full_name || user.user_metadata.name || user.email?.split('@')[0] || "Utilisateur",
+                    avatar_url: data?.avatar_url || user.user_metadata.avatar_url,
+                });
+                return;
+            }
+        }
+
         setProfile(data);
     };
 
