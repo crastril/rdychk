@@ -26,6 +26,18 @@ begin
   if not exists (select from pg_policies where policyname = 'Users can update own profile.') then
     create policy "Users can update own profile." on profiles for update using (auth.uid() = id);
   end if;
+    create policy "Users can update own profile." on profiles for update using (auth.uid() = id);
+  end if;
+end $$;
+
+-- Enable RLS on members if not already
+alter table members enable row level security;
+
+do $$
+begin
+  if not exists (select from pg_policies where policyname = 'Users can view own memberships.') then
+    create policy "Users can view own memberships." on members for select using (auth.uid() = user_id);
+  end if;
 end $$;
 
 -- Update members table
