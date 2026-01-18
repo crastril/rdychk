@@ -43,21 +43,39 @@ export default function CreateGroupForm() {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="w-full max-w-md space-y-4">
+        <form onSubmit={handleSubmit} className="w-full space-y-4">
             <input
                 type="text"
                 value={groupName}
                 onChange={(e) => setGroupName(e.target.value)}
                 placeholder="Nom du groupe (ex: Soirée vendredi)"
-                className="w-full px-6 py-4 text-lg border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
+                className="w-full px-6 py-4 text-lg bg-white/20 border-2 border-white/30 rounded-2xl
+                 text-white placeholder-white/50
+                 focus:border-white/60 focus:outline-none focus:ring-2 focus:ring-white/20
+                 transition-all backdrop-blur-sm"
                 disabled={loading}
+                maxLength={50}
             />
+
             <button
                 type="submit"
                 disabled={loading || !groupName.trim()}
-                className="w-full px-6 py-4 text-lg font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                className="w-full px-6 py-4 text-xl font-bold text-white
+                 bg-gradient-to-r from-purple-500 to-blue-500
+                 rounded-2xl
+                 hover:from-purple-600 hover:to-blue-600
+                 disabled:opacity-50 disabled:cursor-not-allowed
+                 transition-all duration-300 transform active:scale-95
+                 shadow-lg hover:shadow-xl"
             >
-                {loading ? 'Création...' : 'Créer le groupe'}
+                {loading ? (
+                    <span className="flex items-center justify-center gap-2">
+                        <span className="animate-spin">⏳</span>
+                        Création...
+                    </span>
+                ) : (
+                    'Créer le groupe ✨'
+                )}
             </button>
         </form>
     );
