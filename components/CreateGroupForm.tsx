@@ -27,6 +27,7 @@ export default function CreateGroupForm() {
         if (!groupName.trim()) return;
 
         setLoading(true);
+        let caughtError: any = null;
         try {
             const slug = createSlug(groupName);
             const uniqueSlug = `${slug}-${Math.random().toString(36).substring(2, 8)}`;
@@ -38,11 +39,20 @@ export default function CreateGroupForm() {
             if (error) throw error;
 
             router.push(`/group/${uniqueSlug}`);
-        } catch (error) {
-            console.error('Error creating group:', error);
-            alert('Erreur lors de la création du groupe');
+        } catch (error: any) {
+            caughtError = error;
+            // Ignore benign Next.js redirect/navigation errors
+            if (error?.message?.includes('NEXT_REDIRECT') || error?.name === 'AbortError') {
+                return;
+            }
+            console.error('Error creating group:', error?.message || error);
+            alert("Erreur lors de la création du groupe: " + (error?.message || "Erreur inconnue"));
         } finally {
-            setLoading(false);
+            // If AbortError happened, we might be navigating away or cancelled.
+            // If it's a real error, we want to stop loading.
+            if (caughtError?.name !== 'AbortError') {
+                setLoading(false);
+            }
         }
     };
 
