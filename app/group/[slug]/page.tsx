@@ -4,6 +4,7 @@ import { use, useEffect, useState } from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/components/auth-provider';
 import JoinModal from '@/components/JoinModal';
 import MemberList from '@/components/MemberList';
 import ReadyButton from '@/components/ReadyButton';
@@ -129,17 +130,61 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
         };
     }, [memberId]);
 
+    const { user } = useAuth();
+
     const handleJoin = async (name: string) => {
         if (!group) return;
 
+        // If user is logged in, check if they are already a member
+        if (user) {
+            const { data: existingMember } = await supabase
+                .from('members')
+                .select('*')
+                .eq('group_id', group.id)
+                .eq('user_id', user.id)
+                .single();
+
+            if (existingMember) {
+                setMemberId(existingMember.id);
+                setMemberName(existingMember.name);
+                setIsReady(existingMember.is_ready);
+                localStorage.setItem(`member_${slug}`, existingMember.id);
+                localStorage.setItem(`member_name_${slug}`, existingMember.name);
+                return;
+            }
+        }
+
         const { data, error } = await supabase
             .from('members')
-            .insert({ group_id: group.id, name })
+            .insert({
+                group_id: group.id,
+                name,
+                user_id: user?.id || null // Link the member to the user if logged in
+            })
             .select()
             .single();
 
         if (error) {
             console.error('Error joining group:', error);
+            // Handle unique constraint violation gracefully if it happens despite check (race condition)
+            if (error.code === '23505') { // Unique violation code
+                // Retry fetch
+                if (user) {
+                    const { data: existingMember } = await supabase
+                        .from('members')
+                        .select('*')
+                        .eq('group_id', group.id)
+                        .eq('user_id', user.id)
+                        .single();
+
+                    if (existingMember) {
+                        setMemberId(existingMember.id);
+                        setMemberName(existingMember.name);
+                        setIsReady(existingMember.is_ready);
+                        return;
+                    }
+                }
+            }
             return;
         }
 
