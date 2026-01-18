@@ -1,4 +1,4 @@
--- Create a table for public profiles
+-- Create a table for public profiles if it doesn't exist
 create table if not exists profiles (
   id uuid references auth.users on delete cascade not null primary key,
   updated_at timestamp with time zone,
@@ -9,34 +9,24 @@ create table if not exists profiles (
 -- Set up Row Level Security (RLS)
 alter table profiles enable row level security;
 
--- Policy: Public profiles are viewable by everyone
+-- Policies: Use DROP IF EXISTS to ensure clean creation or check existence
 do $$
 begin
+  -- Public view
   if not exists (select from pg_policies where policyname = 'Public profiles are viewable by everyone.') then
     create policy "Public profiles are viewable by everyone." on profiles for select using (true);
   end if;
-end $$;
 
--- Policy: Users can insert their own profile
-do $$
-begin
+  -- User insert
   if not exists (select from pg_policies where policyname = 'Users can insert their own profile.') then
     create policy "Users can insert their own profile." on profiles for insert with check (auth.uid() = id);
   end if;
-end $$;
 
--- Policy: Users can update own profile
-do $$
-begin
+  -- User update
   if not exists (select from pg_policies where policyname = 'Users can update own profile.') then
     create policy "Users can update own profile." on profiles for update using (auth.uid() = id);
   end if;
 end $$;
-
--- Trigger removed to prevent auth blocking. 
--- Profile creation is now handled client-side by ProfileModal.
--- drop trigger if exists on_auth_user_created on auth.users;
--- drop function if exists public.handle_new_user();
 
 -- Update members table
 do $$

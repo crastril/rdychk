@@ -11,7 +11,7 @@ import ReadyButton from '@/components/ReadyButton';
 import ProgressCounter from '@/components/ProgressCounter';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Copy, Check, Target, Users, Loader2 } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Target, Users, Loader2, LogOut } from 'lucide-react';
 import { ModeToggle } from '@/components/mode-toggle';
 import { AuthButton } from '@/components/auth-button';
 import type { Group, Member } from '@/types/database';
@@ -209,6 +209,26 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
         }
     };
 
+    const handleLeaveGroup = async () => {
+        if (!memberId) return;
+
+        // Optimistic UI update
+        const idToRemove = memberId;
+        setMemberId(null);
+        setMemberName(null);
+        localStorage.removeItem(`member_${slug}`);
+        localStorage.removeItem(`member_name_${slug}`);
+
+        try {
+            await supabase.from('members').delete().eq('id', idToRemove);
+            // Optional: Redirect to home or just show join state
+            // router.push('/'); 
+        } catch (error) {
+            console.error("Error leaving group:", error);
+            // Revert state if needed? For now we assume success or user can reload.
+        }
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -279,7 +299,22 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                             {/* Your Status Card */}
                             <Card>
                                 <CardHeader>
-                                    <CardTitle className="text-lg">Votre statut</CardTitle>
+                                    <div className="flex justify-between items-center">
+                                        <CardTitle className="text-lg">Votre statut</CardTitle>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 -mr-2"
+                                            onClick={() => {
+                                                if (confirm("Voulez-vous vraiment quitter ce groupe ?")) {
+                                                    handleLeaveGroup();
+                                                }
+                                            }}
+                                        >
+                                            <LogOut className="w-4 h-4 mr-2" />
+                                            Quitter
+                                        </Button>
+                                    </div>
                                     <CardDescription>{memberName}</CardDescription>
                                 </CardHeader>
                                 <CardContent>

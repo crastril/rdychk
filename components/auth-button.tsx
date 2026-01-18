@@ -9,11 +9,12 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, Loader2, User as UserIcon, UserPen } from "lucide-react";
+import { LogOut, Loader2, User as UserIcon, UserPen, History } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import { AuthModal } from "./auth-modal";
 import { ProfileModal } from "./profile-modal";
+import { GroupHistoryModal } from "./GroupHistoryModal";
 import { useEffect, useState } from "react";
 
 interface AuthButtonProps {
@@ -26,6 +27,7 @@ export function AuthButton({ view = 'default', className }: AuthButtonProps) {
     const router = useRouter();
     const [open, setOpen] = useState(false);
     const [showProfileModal, setShowProfileModal] = useState(false);
+    const [showHistory, setShowHistory] = useState(false);
 
     // Auto-open profile modal if profile is inferred (not saved in DB)
     useEffect(() => {
@@ -61,6 +63,7 @@ export function AuthButton({ view = 'default', className }: AuthButtonProps) {
     return (
         <>
             <ProfileModal open={showProfileModal} onOpenChange={setShowProfileModal} />
+            <GroupHistoryModal open={showHistory} onOpenChange={setShowHistory} />
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className={`relative h-9 w-9 rounded-full ${className}`}>
@@ -83,6 +86,10 @@ export function AuthButton({ view = 'default', className }: AuthButtonProps) {
                     <DropdownMenuItem onClick={() => setShowProfileModal(true)} className="cursor-pointer">
                         <UserPen className="mr-2 h-4 w-4" />
                         <span>Modifier mon profil</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setShowHistory(true)} className="cursor-pointer">
+                        <History className="mr-2 h-4 w-4" />
+                        <span>Historique</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut} className="text-red-500 focus:text-red-500 cursor-pointer">
