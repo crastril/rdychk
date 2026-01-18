@@ -74,14 +74,14 @@ export default function MemberList({ groupId, currentMemberId }: MemberListProps
                 return (
                     <div
                         key={member.id}
-                        className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                        className="flex items-center gap-4 p-4 rounded-xl border bg-card/50 backdrop-blur-sm hover:bg-accent/50 transition-all duration-300 animate-slide-up"
                         role="listitem"
                     >
                         {/* Avatar */}
                         <div
-                            className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold ${member.is_ready
-                                    ? 'bg-emerald-600 text-white'
-                                    : 'bg-muted text-muted-foreground'
+                            className={`w-12 h-12 rounded-full flex items-center justify-center text-base font-bold shadow-sm transition-colors ${member.is_ready
+                                ? 'bg-primary text-primary-foreground shadow-[0_0_15px_-3px_hsl(var(--primary)/0.4)]'
+                                : 'bg-secondary text-secondary-foreground'
                                 }`}
                         >
                             {getInitials(member.name)}
@@ -90,11 +90,11 @@ export default function MemberList({ groupId, currentMemberId }: MemberListProps
                         {/* Name */}
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                                <p className="font-semibold truncate">
+                                <p className="font-semibold text-lg truncate">
                                     {member.name}
                                 </p>
                                 {isCurrentUser && (
-                                    <Badge variant="outline" className="text-xs">
+                                    <Badge variant="secondary" className="text-xs font-normal">
                                         You
                                     </Badge>
                                 )}
@@ -104,18 +104,21 @@ export default function MemberList({ groupId, currentMemberId }: MemberListProps
                         {/* Status Badge */}
                         <Badge
                             variant={member.is_ready ? "default" : "outline"}
-                            className={member.is_ready ? "bg-emerald-600 hover:bg-emerald-700" : ""}
+                            className={`px-3 py-1 text-sm font-medium transition-colors ${member.is_ready
+                                ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                : "text-muted-foreground"
+                                }`}
                         >
                             {member.is_ready ? (
-                                <>
-                                    <Check className="w-3 h-3 mr-1" />
-                                    Ready
-                                </>
+                                <div className="flex items-center gap-1.5">
+                                    <Check className="w-4 h-4" />
+                                    <span>Ready</span>
+                                </div>
                             ) : (
-                                <>
-                                    <Clock className="w-3 h-3 mr-1" />
-                                    Waiting
-                                </>
+                                <div className="flex items-center gap-1.5">
+                                    <Clock className="w-3.5 h-3.5" />
+                                    <span>Waiting</span>
+                                </div>
                             )}
                         </Badge>
                     </div>

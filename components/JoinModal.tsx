@@ -40,9 +40,9 @@ export default function JoinModal({ onJoin, groupName }: JoinModalProps) {
                     )}
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+                <form onSubmit={handleSubmit} className="space-y-6 mt-6">
                     <div className="space-y-2">
-                        <Label htmlFor="name">Your Name</Label>
+                        <Label htmlFor="name" className="text-muted-foreground font-medium">Your Name</Label>
                         <Input
                             id="name"
                             type="text"
@@ -52,17 +52,18 @@ export default function JoinModal({ onJoin, groupName }: JoinModalProps) {
                             autoFocus
                             maxLength={20}
                             required
+                            className="h-12 text-lg bg-secondary/50 border-input focus-visible:ring-primary"
                         />
                     </div>
 
                     <Button
                         type="submit"
                         disabled={!name.trim()}
-                        className="w-full"
+                        className="w-full h-12 text-lg font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.02]"
                         size="lg"
                     >
                         Continue
-                        <Sparkles className="w-4 h-4 ml-2" />
+                        <Sparkles className="w-5 h-5 ml-2" />
                     </Button>
                 </form>
             </DialogContent>

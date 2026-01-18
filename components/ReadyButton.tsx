@@ -35,26 +35,33 @@ export default function ReadyButton({ memberId, isReady }: ReadyButtonProps) {
             disabled={loading}
             variant={isReady ? "default" : "outline"}
             size="lg"
-            className={`w-full h-24 text-lg font-semibold ${isReady ? 'bg-emerald-600 hover:bg-emerald-700' : ''
-                }`}
-            aria-label={isReady ? "Marquer comme pas prêt" : "Marquer comme prêt"}
+            className={`
+                w-full h-24 text-xl font-bold tracking-wide transition-all duration-500
+                ${isReady
+                    ? 'bg-primary hover:bg-primary/90 shadow-[0_0_30px_-5px_hsl(var(--primary)/0.6)] scale-[1.02] border-primary'
+                    : 'bg-background hover:bg-accent hover:text-accent-foreground border-2'
+                }
+            `}
+            aria-label={isReady ? "Mark as not ready" : "Mark as ready"}
             aria-pressed={isReady}
         >
             {loading ? (
-                <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Updating...
-                </>
+                <div className="flex items-center gap-3">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                    <span className="text-muted-foreground">Updating...</span>
+                </div>
             ) : isReady ? (
-                <>
-                    <Check className="w-5 h-5 mr-2" />
-                    I'm Ready
-                </>
+                <div className="flex items-center gap-3 animate-slide-up">
+                    <div className="p-1 rounded-full bg-primary-foreground/20">
+                        <Check className="w-6 h-6" />
+                    </div>
+                    READY
+                </div>
             ) : (
-                <>
-                    <Clock className="w-5 h-5 mr-2" />
-                    Not Ready Yet
-                </>
+                <div className="flex items-center gap-3 text-muted-foreground group">
+                    <Clock className="w-6 h-6 group-hover:text-foreground transition-colors" />
+                    <span>NOT READY</span>
+                </div>
             )}
         </Button>
     );

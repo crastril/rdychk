@@ -41,6 +41,9 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
 
         fetchGroup();
 
+    }, [slug]);
+
+    useEffect(() => {
         const storedMemberId = localStorage.getItem(`member_${slug}`);
         const storedMemberName = localStorage.getItem(`member_name_${slug}`);
 

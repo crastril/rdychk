@@ -16,15 +16,15 @@ export default function ProgressCounter({ readyCount, totalCount }: ProgressCoun
         <div className="space-y-6">
             {/* Counter */}
             <div className="text-center">
-                <div className="text-6xl font-bold" aria-label={`${readyCount} sur ${totalCount} membres prêts`}>
-                    <span className="text-foreground">{readyCount}</span>
-                    <span className="text-muted-foreground">/{totalCount}</span>
+                <div className="text-7xl font-bold tracking-tight" aria-label={`${readyCount} sur ${totalCount} membres prêts`}>
+                    <span className="text-primary drop-shadow-[0_0_15px_hsl(var(--primary)/0.3)]">{readyCount}</span>
+                    <span className="text-muted-foreground/50">/{totalCount}</span>
                 </div>
                 {allReady && (
-                    <div className="mt-3 flex items-center justify-center gap-2 text-emerald-600">
-                        <PartyPopper className="w-5 h-5" />
-                        <span className="text-sm font-medium">Everyone is ready!</span>
-                        <PartyPopper className="w-5 h-5" />
+                    <div className="mt-4 flex items-center justify-center gap-2 text-primary font-bold animate-pulse">
+                        <PartyPopper className="w-6 h-6" />
+                        <span className="text-lg">Everyone is ready!</span>
+                        <PartyPopper className="w-6 h-6" />
                     </div>
                 )}
             </div>
