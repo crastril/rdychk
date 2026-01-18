@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { Icons } from './Icons';
 
 export default function CreateGroupForm() {
     const [groupName, setGroupName] = useState('');
@@ -44,37 +45,47 @@ export default function CreateGroupForm() {
 
     return (
         <form onSubmit={handleSubmit} className="w-full space-y-4">
+            <label htmlFor="group-name-input" className="sr-only">
+                Nom du groupe
+            </label>
             <input
+                id="group-name-input"
                 type="text"
                 value={groupName}
                 onChange={(e) => setGroupName(e.target.value)}
                 placeholder="Nom du groupe (ex: Soirée vendredi)"
-                className="w-full px-6 py-4 text-lg bg-white/20 border-2 border-white/30 rounded-2xl
-                 text-white placeholder-white/50
-                 focus:border-white/60 focus:outline-none focus:ring-2 focus:ring-white/20
-                 transition-all backdrop-blur-sm"
+                className="w-full px-6 py-4 text-lg bg-slate-700 border-2 border-slate-600 rounded-2xl
+                 text-slate-50 placeholder-slate-400
+                 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50
+                 transition-all"
                 disabled={loading}
                 maxLength={50}
+                required
             />
 
             <button
                 type="submit"
                 disabled={loading || !groupName.trim()}
                 className="w-full px-6 py-4 text-xl font-bold text-white
-                 bg-gradient-to-r from-purple-500 to-blue-500
+                 bg-gradient-to-r from-violet-500 to-blue-500
                  rounded-2xl
-                 hover:from-purple-600 hover:to-blue-600
+                 hover:from-violet-600 hover:to-blue-600
                  disabled:opacity-50 disabled:cursor-not-allowed
                  transition-all duration-300 transform active:scale-95
-                 shadow-lg hover:shadow-xl"
+                 shadow-lg hover:shadow-xl hover:shadow-violet-500/30
+                 flex items-center justify-center gap-2"
+                aria-label="Créer le groupe"
             >
                 {loading ? (
-                    <span className="flex items-center justify-center gap-2">
-                        <span className="animate-spin">⏳</span>
+                    <>
+                        <Icons.Loader className="w-5 h-5" />
                         Création...
-                    </span>
+                    </>
                 ) : (
-                    'Créer le groupe ✨'
+                    <>
+                        Créer le groupe
+                        <Icons.Sparkles className="w-5 h-5" />
+                    </>
                 )}
             </button>
         </form>

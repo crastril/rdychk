@@ -7,6 +7,7 @@ import JoinModal from '@/components/JoinModal';
 import MemberList from '@/components/MemberList';
 import ReadyButton from '@/components/ReadyButton';
 import ProgressCounter from '@/components/ProgressCounter';
+import { Icons } from '@/components/Icons';
 import type { Group, Member } from '@/types/database';
 
 export default function GroupPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -17,6 +18,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
     const [isReady, setIsReady] = useState(false);
     const [loading, setLoading] = useState(true);
     const [members, setMembers] = useState<Member[]>([]);
+    const [copied, setCopied] = useState(false);
 
     useEffect(() => {
         const fetchGroup = async () => {
@@ -146,12 +148,22 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
         }
     };
 
+    const handleCopyLink = async () => {
+        try {
+            await navigator.clipboard.writeText(window.location.href);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch (err) {
+            alert('Erreur lors de la copie du lien');
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex min-h-screen items-center justify-center">
                 <div className="text-center">
-                    <div className="text-6xl mb-4 animate-bounce">⏳</div>
-                    <p className="text-xl text-white/80">Chargement...</p>
+                    <Icons.Loader className="w-16 h-16 text-violet-500 mx-auto mb-4" />
+                    <p className="text-xl text-slate-300">Chargement...</p>
                 </div>
             </div>
         );
@@ -170,47 +182,54 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
 
             <div className="max-w-2xl mx-auto space-y-6">
                 {/* Header - Sticky */}
-                <div className="sticky top-4 z-10 glass-strong rounded-2xl px-6 py-4 shadow-lg animate-slide-up">
-                    <h1 className="text-2xl md:text-3xl font-extrabold text-white text-center truncate">
+                <header className="sticky top-4 z-10 glass-strong rounded-2xl px-6 py-4 shadow-lg animate-slide-up border-2 border-slate-600/50">
+                    <h1 className="text-2xl md:text-3xl font-extrabold text-slate-50 text-center truncate">
                         {group.name}
                     </h1>
-                </div>
+                </header>
 
                 {memberId && (
                     <>
                         {/* SECTION 1: Zone Utilisateur */}
-                        <div className="glass-strong rounded-3xl p-6 md:p-8 shadow-2xl space-y-6 animate-scale-in">
+                        <section
+                            className="glass-strong rounded-3xl p-6 md:p-8 shadow-2xl space-y-6 animate-scale-in border-2 border-slate-600/50"
+                            aria-labelledby="user-section-title"
+                        >
                             <div className="flex items-center gap-3 mb-4">
-                                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-2xl">
-                                    👤
+                                <div className="w-12 h-12 rounded-full bg-slate-700 border-2 border-slate-600 flex items-center justify-center">
+                                    <Icons.User className="w-6 h-6 text-slate-300" />
                                 </div>
                                 <div>
-                                    <p className="text-sm text-white/70">Connecté en tant que</p>
-                                    <p className="text-xl font-bold text-white">{memberName}</p>
+                                    <p className="text-sm text-slate-400">Connecté en tant que</p>
+                                    <p className="text-xl font-bold text-slate-50">{memberName}</p>
                                 </div>
                             </div>
 
                             <div className="space-y-3">
-                                <p className="text-center text-white/80 font-medium">
+                                <h2 id="user-section-title" className="text-center text-slate-300 font-medium">
                                     Mon statut
-                                </p>
+                                </h2>
                                 <ReadyButton memberId={memberId} isReady={isReady} />
                             </div>
-                        </div>
+                        </section>
 
                         {/* Séparateur Visuel */}
                         <div className="flex items-center gap-4 px-4">
-                            <div className="flex-1 h-px bg-white/20"></div>
-                            <span className="text-white/50 text-sm font-medium">État du groupe</span>
-                            <div className="flex-1 h-px bg-white/20"></div>
+                            <div className="flex-1 h-px bg-slate-700"></div>
+                            <span className="text-slate-500 text-sm font-medium">État du groupe</span>
+                            <div className="flex-1 h-px bg-slate-700"></div>
                         </div>
 
                         {/* SECTION 2: État du Groupe */}
-                        <div className="glass-strong rounded-3xl p-6 md:p-8 shadow-2xl space-y-6 animate-scale-in" style={{ animationDelay: '100ms' }}>
+                        <section
+                            className="glass-strong rounded-3xl p-6 md:p-8 shadow-2xl space-y-6 animate-scale-in border-2 border-slate-600/50"
+                            style={{ animationDelay: '100ms' }}
+                            aria-labelledby="group-section-title"
+                        >
                             {/* Progression */}
                             <div>
-                                <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                                    <span>🎯</span>
+                                <h2 id="group-section-title" className="text-xl font-bold text-slate-50 mb-4 flex items-center gap-2">
+                                    <Icons.Target className="w-6 h-6 text-violet-400" />
                                     Progression
                                 </h2>
                                 <ProgressCounter readyCount={readyCount} totalCount={totalCount} />
@@ -218,32 +237,39 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
 
                             {/* Liste des Membres */}
                             <div>
-                                <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                                    <span>👥</span>
+                                <h3 className="text-xl font-bold text-slate-50 mb-4 flex items-center gap-2">
+                                    <Icons.Users className="w-6 h-6 text-blue-400" />
                                     Membres ({totalCount})
-                                </h2>
-                                <MemberList groupId={group.id} currentMemberId={memberId} />
+                                </h3>
+                                <div role="list">
+                                    <MemberList groupId={group.id} currentMemberId={memberId} />
+                                </div>
                             </div>
-                        </div>
+                        </section>
 
                         {/* Share Link Section */}
-                        <div className="glass rounded-2xl p-6 text-center space-y-3 animate-fade-in">
-                            <p className="text-sm text-white/70 font-medium">Partager ce groupe</p>
+                        <div className="glass rounded-2xl p-6 text-center space-y-3 animate-fade-in border border-slate-700/50">
+                            <p className="text-sm text-slate-400 font-medium">Partager ce groupe</p>
                             <button
-                                onClick={() => {
-                                    navigator.clipboard.writeText(window.location.href);
-                                    alert('Lien copié ! 📋');
-                                }}
-                                className="w-full px-4 py-3 bg-white/10 hover:bg-white/20 rounded-xl 
-                         text-white font-mono text-sm transition-all
-                         border border-white/20 hover:border-white/40
-                         truncate"
+                                onClick={handleCopyLink}
+                                className="w-full px-4 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl 
+                         text-slate-200 font-mono text-sm transition-all
+                         border border-slate-600 hover:border-slate-500
+                         truncate flex items-center justify-center gap-2"
+                                aria-label="Copier le lien du groupe"
                             >
-                                {window.location.href}
+                                {copied ? (
+                                    <>
+                                        <Icons.Check className="w-4 h-4 text-emerald-400" />
+                                        <span className="text-emerald-400">Lien copié !</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Icons.Copy className="w-4 h-4" />
+                                        Copier le lien
+                                    </>
+                                )}
                             </button>
-                            <p className="text-xs text-white/50">
-                                Cliquez pour copier le lien
-                            </p>
                         </div>
                     </>
                 )}
