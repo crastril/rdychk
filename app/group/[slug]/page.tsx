@@ -10,6 +10,7 @@ import MemberList from '@/components/MemberList';
 import ReadyButton from '@/components/ReadyButton';
 import ProgressCounter from '@/components/ProgressCounter';
 import { TimerPicker } from '@/components/TimerPicker';
+import { ShareMenu } from '@/components/ShareMenu';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Copy, Check, Target, Users, Loader2, LogOut } from 'lucide-react';
@@ -27,7 +28,6 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
     const [timerEndTime, setTimerEndTime] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [members, setMembers] = useState<Member[]>([]);
-    const [copied, setCopied] = useState(false);
 
     useEffect(() => {
         const fetchGroup = async () => {
@@ -206,15 +206,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
         }
     };
 
-    const handleCopyLink = async () => {
-        try {
-            await navigator.clipboard.writeText(window.location.href);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        } catch (err) {
-            console.error('Failed to copy', err);
-        }
-    };
+
 
     const handleLeaveGroup = async () => {
         if (!memberId) return;
@@ -259,49 +251,45 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
 
             <div className="max-w-2xl mx-auto p-6 space-y-6">
                 {/* Header */}
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <Button
-                            asChild
-                            variant="ghost"
-                            size="icon"
-                        >
-                            <Link href="/">
-                                <ArrowLeft className="w-5 h-5" />
-                            </Link>
-                        </Button>
-                        <div>
-                            <h1 className="text-2xl font-bold">
-                                {group.name}
-                            </h1>
-                            <p className="text-sm text-muted-foreground">
-                                {totalCount} {totalCount === 1 ? 'membre' : 'membres'}
-                            </p>
+                <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <Button
+                                asChild
+                                variant="ghost"
+                                size="icon"
+                            >
+                                <Link href="/">
+                                    <ArrowLeft className="w-5 h-5" />
+                                </Link>
+                            </Button>
+                            <div>
+                                <h1 className="text-2xl font-bold">
+                                    {group.name}
+                                </h1>
+                                <p className="text-sm text-muted-foreground">
+                                    {totalCount} {totalCount === 1 ? 'membre' : 'membres'}
+                                </p>
+                            </div>
                         </div>
+
+                        <ShareMenu
+                            groupName={group.name}
+                            url={typeof window !== 'undefined' ? window.location.href : ''}
+                        />
                     </div>
 
-                    <Button
-                        onClick={handleCopyLink}
-                        variant="outline"
-                        size="sm"
-                    >
-                        {copied ? (
-                            <>
-                                <Check className="w-4 h-4 mr-2" />
-                                Copié
-                            </>
-                        ) : (
-                            <>
-                                <Copy className="w-4 h-4 mr-2" />
-                                Copier le lien
-                            </>
-                        )}
-                    </Button>
+                    {/* Progress Bar in Header */}
+                    <div className="bg-card/50 rounded-xl border p-4 backdrop-blur-sm">
+                        <ProgressCounter readyCount={readyCount} totalCount={totalCount} />
+                    </div>
                 </div>
 
                 {
                     memberId && (
                         <>
+                            {/* Your Status Card */}
+
                             {/* Your Status Card */}
                             <Card>
                                 <CardHeader>
@@ -324,13 +312,15 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                                     <CardDescription>{memberName}</CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="flex gap-4">
-                                        <ReadyButton
-                                            memberId={memberId}
-                                            isReady={isReady}
-                                            timerEndTime={timerEndTime}
-                                        />
-                                        <div className="flex flex-col justify-center">
+                                    <div className="flex gap-3">
+                                        <div className="flex-1">
+                                            <ReadyButton
+                                                memberId={memberId}
+                                                isReady={isReady}
+                                                timerEndTime={timerEndTime}
+                                            />
+                                        </div>
+                                        <div>
                                             <TimerPicker
                                                 memberId={memberId}
                                                 currentTimerEnd={timerEndTime}
@@ -338,19 +328,6 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                                             />
                                         </div>
                                     </div>
-                                </CardContent>
-                            </Card>
-
-                            {/* Group Status Card */}
-                            <Card>
-                                <CardHeader>
-                                    <div className="flex items-center gap-2">
-                                        <Target className="w-5 h-5 text-muted-foreground" />
-                                        <CardTitle className="text-lg">Progression</CardTitle>
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <ProgressCounter readyCount={readyCount} totalCount={totalCount} />
                                 </CardContent>
                             </Card>
 
