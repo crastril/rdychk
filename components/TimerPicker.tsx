@@ -63,12 +63,12 @@ export function TimerPicker({ memberId, currentTimerEnd, isReady }: TimerPickerP
                 <Button
                     variant={isActive ? "secondary" : "outline"}
                     className={cn(
-                        "h-24 w-full px-4 border-2 transition-all duration-300 flex flex-col items-center justify-center gap-2",
+                        "h-12 w-full px-4 border-2 transition-all duration-300 flex flex-row items-center justify-center gap-2",
                         isActive && "border-amber-500 text-amber-500 animate-pulse bg-amber-500/10"
                     )}
                 >
                     <Timer className={cn("w-6 h-6", isActive && "animate-pulse")} />
-                    <span className="text-xs font-semibold">Minuteur</span>
+                    <span className="font-semibold">Minuteur</span>
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-80 p-4" align="center">
