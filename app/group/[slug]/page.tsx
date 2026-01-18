@@ -11,6 +11,7 @@ import ReadyButton from '@/components/ReadyButton';
 import ProgressCounter from '@/components/ProgressCounter';
 import { TimerPicker } from '@/components/TimerPicker';
 import { ShareMenu } from '@/components/ShareMenu';
+import { NotificationManager } from '@/components/NotificationManager';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Copy, Check, Target, Users, Loader2, LogOut } from 'lucide-react';
@@ -248,6 +249,12 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
     return (
         <div className="min-h-screen">
             {!memberId && <JoinModal onJoin={handleJoin} groupName={group.name} />}
+
+            <NotificationManager
+                readyCount={readyCount}
+                totalCount={totalCount}
+                groupName={group.name}
+            />
 
             <div className="max-w-2xl mx-auto p-6 space-y-6">
                 {/* Header */}

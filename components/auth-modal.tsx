@@ -94,7 +94,7 @@ export function AuthModal({ trigger, open: controlledOpen, onOpenChange: setCont
                             },
                         }}
                         theme={theme === 'dark' ? 'dark' : 'default'}
-                        providers={['google', 'apple']}
+                        providers={['google']}
                         redirectTo={`${origin}/`}
                         localization={{
                             variables: {
