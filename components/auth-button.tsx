@@ -35,8 +35,7 @@ export function AuthButton({ view = 'default', className }: AuthButtonProps) {
     }
 
     if (!user) {
-        if (view === 'icon') return null; // Don't show anything in navbar if not logged in (per request)
-
+        // Always show connection button if not logged in
         return (
             <AuthModal
                 open={open}
