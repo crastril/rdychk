@@ -27,37 +27,41 @@ export default function CreateGroupForm() {
         if (!groupName.trim()) return;
 
         setLoading(true);
-        let caughtError: any = null;
+
+        // 1. Database Operation
+        let uniqueSlug = '';
         try {
             const slug = createSlug(groupName);
-            const uniqueSlug = `${slug}-${Math.random().toString(36).substring(2, 8)}`;
+            uniqueSlug = `${slug}-${Math.random().toString(36).substring(2, 8)}`;
 
-            const { error } = await supabase
+            const { error: dbError } = await supabase
                 .from('groups')
                 .insert({ name: groupName, slug: uniqueSlug });
 
-            if (error) throw error;
+            if (dbError) throw dbError;
 
+        } catch (error: any) {
+            console.error('Group creation failed:', error);
+            alert("Erreur lors de la création du groupe: " + (error?.message || "Erreur inconnue"));
+            setLoading(false);
+            return; // Stop here if DB failed
+        }
+
+        // 2. Navigation
+        try {
             router.push(`/group/${uniqueSlug}`);
         } catch (error: any) {
-            caughtError = error;
-            // Ignore benign Next.js redirect/navigation errors
-            if (
-                error?.message?.includes('NEXT_REDIRECT') ||
-                error?.name === 'AbortError' ||
-                error?.message?.includes('The operation was aborted')
-            ) {
+            // Only ignore navigation-related AbortErrors here
+            if (error?.message?.includes('NEXT_REDIRECT') || error?.name === 'AbortError') {
                 return;
             }
-            console.error('Error creating group:', error?.message || error);
-            alert("Erreur lors de la création du groupe: " + (error?.message || "Erreur inconnue"));
-        } finally {
-            // If AbortError happened, we might be navigating away or cancelled.
-            // If it's a real error, we want to stop loading.
-            if (caughtError?.name !== 'AbortError') {
-                setLoading(false);
-            }
+            console.error('Navigation failed:', error);
+            // Even if nav fails, we stop loading so user knows. 
+            // Ideally we might show a link "Click here to go to group" if auto-redirect dies.
+            setLoading(false);
         }
+        // Note: We don't finally{setLoading(false)} because if router.push succeeds (and yields),
+        // we want the spinner to stay until the new page loads (or component unmounts).
     };
 
     return (
