@@ -95,7 +95,7 @@ export default function MemberList({ groupId, currentMemberId }: MemberListProps
                                 </p>
                                 {isCurrentUser && (
                                     <Badge variant="secondary" className="text-xs font-normal">
-                                        You
+                                        Vous
                                     </Badge>
                                 )}
                             </div>

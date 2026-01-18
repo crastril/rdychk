@@ -48,39 +48,35 @@ export default function CreateGroupForm() {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-                <Label htmlFor="group-name" className="text-muted-foreground font-medium">Group Name</Label>
-                <Input
-                    id="group-name"
-                    type="text"
-                    value={groupName}
-                    onChange={(e) => setGroupName(e.target.value)}
-                    placeholder="e.g., Friday Night Out"
-                    disabled={loading}
-                    maxLength={50}
-                    required
-                    className="h-12 text-lg bg-secondary/50 border-input focus-visible:ring-primary"
-                />
-            </div>
-
-            <Button
-                type="submit"
-                disabled={loading || !groupName.trim()}
-                className="w-full h-12 text-lg font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.02]"
-                size="lg"
-            >
-                {loading ? (
-                    <>
+            <div className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="groupName">Nom du groupe</Label>
+                    <Input
+                        id="groupName"
+                        type="text"
+                        value={groupName}
+                        onChange={(e) => setGroupName(e.target.value)}
+                        placeholder="Entrez le nom du groupe..."
+                        required
+                        className="h-12 text-lg"
+                        disabled={loading}
+                    />
+                </div>
+                <Button
+                    type="submit"
+                    className="w-full h-12 text-lg font-semibold bg-primary hover:bg-primary/90 transition-all"
+                    disabled={loading || !groupName.trim()}
+                >
+                    {loading ? (
                         <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                        Creating Group...
-                    </>
-                ) : (
-                    <>
-                        Create Group
-                        <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </>
-                )}
-            </Button>
+                    ) : (
+                        <>
+                            Créer
+                            <ArrowRight className="w-5 h-5 ml-2" />
+                        </>
+                    )}
+                </Button>
+            </div>
         </form>
     );
 }

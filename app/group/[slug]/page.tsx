@@ -201,7 +201,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                                 {group.name}
                             </h1>
                             <p className="text-sm text-muted-foreground">
-                                {totalCount} {totalCount === 1 ? 'member' : 'members'}
+                                {totalCount} {totalCount === 1 ? 'membre' : 'membres'}
                             </p>
                         </div>
                     </div>
@@ -215,12 +215,12 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                             {copied ? (
                                 <>
                                     <Check className="w-4 h-4 mr-2" />
-                                    Copied
+                                    Copié
                                 </>
                             ) : (
                                 <>
                                     <Copy className="w-4 h-4 mr-2" />
-                                    Copy Link
+                                    Copier le lien
                                 </>
                             )}
                         </Button>
@@ -233,7 +233,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                         {/* Your Status Card */}
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-lg">Your Status</CardTitle>
+                                <CardTitle className="text-lg">Votre statut</CardTitle>
                                 <CardDescription>{memberName}</CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -246,7 +246,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                             <CardHeader>
                                 <div className="flex items-center gap-2">
                                     <Target className="w-5 h-5 text-muted-foreground" />
-                                    <CardTitle className="text-lg">Progress</CardTitle>
+                                    <CardTitle className="text-lg">Progression</CardTitle>
                                 </div>
                             </CardHeader>
                             <CardContent>
@@ -259,7 +259,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                             <CardHeader>
                                 <div className="flex items-center gap-2">
                                     <Users className="w-5 h-5 text-muted-foreground" />
-                                    <CardTitle className="text-lg">Members</CardTitle>
+                                    <CardTitle className="text-lg">Membres</CardTitle>
                                 </div>
                             </CardHeader>
                             <CardContent>

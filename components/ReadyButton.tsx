@@ -42,27 +42,27 @@ export default function ReadyButton({ memberId, isReady }: ReadyButtonProps) {
                     : 'bg-background hover:bg-accent hover:text-accent-foreground border-2'
                 }
             `}
-            aria-label={isReady ? "Mark as not ready" : "Mark as ready"}
+            aria-label={isReady ? "Marquer comme pas prêt" : "Marquer comme prêt"}
             aria-pressed={isReady}
         >
             {loading ? (
                 <div className="flex items-center gap-3">
                     <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                    <span className="text-muted-foreground">Updating...</span>
+                    <span className="text-muted-foreground">Mise à jour...</span>
                 </div>
             ) : isReady ? (
                 <div className="flex items-center gap-3 animate-slide-up">
                     <div className="p-1 rounded-full bg-primary-foreground/20">
                         <Check className="w-6 h-6" />
                     </div>
-                    READY
+                    JE SUIS PRÊT !
                 </div>
             ) : (
                 <div className="flex items-center gap-3 text-muted-foreground group">
                     <Clock className="w-6 h-6 group-hover:text-foreground transition-colors" />
-                    <span>NOT READY</span>
+                    <span>PAS PRÊT</span>
                 </div>
             )}
-        </Button>
+        </Button >
     );
 }

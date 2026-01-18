@@ -26,9 +26,9 @@ export default function Home() {
         {/* Form Card */}
         <Card>
           <CardHeader>
-            <CardTitle>Create a Group</CardTitle>
+            <CardTitle>Créer un groupe</CardTitle>
             <CardDescription>
-              Start a new group and share the link with your friends
+              Lancez un nouveau groupe et partagez le lien avec vos amis
             </CardDescription>
           </CardHeader>
           <CardContent>
