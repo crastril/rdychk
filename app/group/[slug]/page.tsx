@@ -12,6 +12,7 @@ import ProgressCounter from '@/components/ProgressCounter';
 import { TimerPicker } from '@/components/TimerPicker';
 import { ShareMenu } from '@/components/ShareMenu';
 import { NotificationManager } from '@/components/NotificationManager';
+import { TimeProposalModal } from '@/components/TimeProposalModal';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Copy, Check, Target, Users, Loader2, LogOut } from 'lucide-react';
@@ -245,6 +246,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
 
     const readyCount = members.filter((m) => m.is_ready).length;
     const totalCount = members.length;
+    const currentMember = members.find(m => m.id === memberId);
 
     return (
         <div className="min-h-screen">
@@ -329,6 +331,10 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                                             memberId={memberId}
                                             currentTimerEnd={timerEndTime}
                                             isReady={isReady}
+                                        />
+                                        <TimeProposalModal
+                                            memberId={memberId}
+                                            currentProposedTime={currentMember?.proposed_time ?? null}
                                         />
                                     </div>
                                 </CardContent>

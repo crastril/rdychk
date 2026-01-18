@@ -30,6 +30,7 @@ export type Database = {
                     joined_at: string;
                     updated_at: string;
                     timer_end_time: string | null;
+                    proposed_time: string | null;
                 };
                 Insert: {
                     id?: string;

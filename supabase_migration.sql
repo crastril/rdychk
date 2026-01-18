@@ -38,6 +38,10 @@ begin
     if not exists (select from information_schema.columns where table_name = 'members' and column_name = 'timer_end_time') then
         alter table members add column timer_end_time timestamptz;
     end if;
+
+    if not exists (select from information_schema.columns where table_name = 'members' and column_name = 'proposed_time') then
+        alter table members add column proposed_time text;
+    end if;
 end $$;
 
 -- Clean up existing duplicates before adding constraint
