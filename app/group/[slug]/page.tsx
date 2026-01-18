@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Copy, Check, Target, Users, Loader2 } from 'lucide-react';
 import { ModeToggle } from '@/components/mode-toggle';
+import { AuthButton } from '@/components/auth-button';
 import type { Group, Member } from '@/types/database';
 
 export default function GroupPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -206,69 +207,68 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <Button
-                            onClick={handleCopyLink}
-                            variant="outline"
-                            size="sm"
-                        >
-                            {copied ? (
-                                <>
-                                    <Check className="w-4 h-4 mr-2" />
-                                    Copié
-                                </>
-                            ) : (
-                                <>
-                                    <Copy className="w-4 h-4 mr-2" />
-                                    Copier le lien
-                                </>
-                            )}
-                        </Button>
-                        <ModeToggle />
-                    </div>
+                    <Button
+                        onClick={handleCopyLink}
+                        variant="outline"
+                        size="sm"
+                    >
+                        {copied ? (
+                            <>
+                                <Check className="w-4 h-4 mr-2" />
+                                Copié
+                            </>
+                        ) : (
+                            <>
+                                <Copy className="w-4 h-4 mr-2" />
+                                Copier le lien
+                            </>
+                        )}
+                    </Button>
                 </div>
 
-                {memberId && (
-                    <>
-                        {/* Your Status Card */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-lg">Votre statut</CardTitle>
-                                <CardDescription>{memberName}</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <ReadyButton memberId={memberId} isReady={isReady} />
-                            </CardContent>
-                        </Card>
+                {
+                    memberId && (
+                        <>
+                            {/* Your Status Card */}
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-lg">Votre statut</CardTitle>
+                                    <CardDescription>{memberName}</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <ReadyButton memberId={memberId} isReady={isReady} />
+                                </CardContent>
+                            </Card>
 
-                        {/* Group Status Card */}
-                        <Card>
-                            <CardHeader>
-                                <div className="flex items-center gap-2">
-                                    <Target className="w-5 h-5 text-muted-foreground" />
-                                    <CardTitle className="text-lg">Progression</CardTitle>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <ProgressCounter readyCount={readyCount} totalCount={totalCount} />
-                            </CardContent>
-                        </Card>
+                            {/* Group Status Card */}
+                            <Card>
+                                <CardHeader>
+                                    <div className="flex items-center gap-2">
+                                        <Target className="w-5 h-5 text-muted-foreground" />
+                                        <CardTitle className="text-lg">Progression</CardTitle>
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <ProgressCounter readyCount={readyCount} totalCount={totalCount} />
+                                </CardContent>
+                            </Card>
 
-                        {/* Members Card */}
-                        <Card>
-                            <CardHeader>
-                                <div className="flex items-center gap-2">
-                                    <Users className="w-5 h-5 text-muted-foreground" />
-                                    <CardTitle className="text-lg">Membres</CardTitle>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <MemberList groupId={group.id} currentMemberId={memberId} />
-                            </CardContent>
-                        </Card>
-                    </>
-                )}
-            </div>
-        </div>
+                            {/* Members Card */}
+                            <Card>
+                                <CardHeader>
+                                    <div className="flex items-center gap-2">
+                                        <Users className="w-5 h-5 text-muted-foreground" />
+                                        <CardTitle className="text-lg">Membres</CardTitle>
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <MemberList groupId={group.id} currentMemberId={memberId} />
+                                </CardContent>
+                            </Card>
+                        </>
+                    )
+                }
+            </div >
+        </div >
     );
 }

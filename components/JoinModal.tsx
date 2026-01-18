@@ -12,6 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Sparkles } from 'lucide-react';
+import { useAuth } from '@/components/auth-provider';
+import { useEffect } from 'react';
 
 interface JoinModalProps {
     onJoin: (name: string) => void;
@@ -20,6 +22,13 @@ interface JoinModalProps {
 
 export default function JoinModal({ onJoin, groupName }: JoinModalProps) {
     const [name, setName] = useState('');
+    const { profile, user } = useAuth();
+
+    useEffect(() => {
+        if (profile?.display_name) {
+            setName(profile.display_name);
+        }
+    }, [profile]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -41,17 +50,24 @@ export default function JoinModal({ onJoin, groupName }: JoinModalProps) {
                 <form onSubmit={handleSubmit} className="space-y-4 py-4">
                     <div className="space-y-2">
                         <Label htmlFor="name" className="text-muted-foreground font-medium">Votre Nom</Label>
-                        <Input
-                            id="name"
-                            type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="Entrez votre nom..."
-                            autoFocus
-                            maxLength={20}
-                            required
-                            className="h-11"
-                        />
+                        <div className="relative">
+                            <Input
+                                id="name"
+                                type="text"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                placeholder="Entrez votre nom..."
+                                autoFocus
+                                maxLength={20}
+                                required
+                                className="h-11"
+                            />
+                            {user && !name && (
+                                <span className="absolute right-3 top-2.5 text-xs text-muted-foreground animate-pulse">
+                                    Utilisation du profil...
+                                </span>
+                            )}
+                        </div>
                     </div>
 
                     <div className="flex justify-end gap-3 pt-2">
