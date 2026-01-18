@@ -11,6 +11,7 @@ import ProgressCounter from '@/components/ProgressCounter';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Copy, Check, Target, Users, Loader2 } from 'lucide-react';
+import { ModeToggle } from '@/components/mode-toggle';
 import type { Group, Member } from '@/types/database';
 
 export default function GroupPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -205,23 +206,26 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                         </div>
                     </div>
 
-                    <Button
-                        onClick={handleCopyLink}
-                        variant="outline"
-                        size="sm"
-                    >
-                        {copied ? (
-                            <>
-                                <Check className="w-4 h-4 mr-2" />
-                                Copied
-                            </>
-                        ) : (
-                            <>
-                                <Copy className="w-4 h-4 mr-2" />
-                                Copy Link
-                            </>
-                        )}
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            onClick={handleCopyLink}
+                            variant="outline"
+                            size="sm"
+                        >
+                            {copied ? (
+                                <>
+                                    <Check className="w-4 h-4 mr-2" />
+                                    Copied
+                                </>
+                            ) : (
+                                <>
+                                    <Copy className="w-4 h-4 mr-2" />
+                                    Copy Link
+                                </>
+                            )}
+                        </Button>
+                        <ModeToggle />
+                    </div>
                 </div>
 
                 {memberId && (
