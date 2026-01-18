@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Member } from '@/types/database';
 import { Badge } from '@/components/ui/badge';
-import { Check, Clock, Users as UsersIcon } from 'lucide-react';
+import { Check, Clock, Users as UsersIcon, Timer, AlertTriangle } from 'lucide-react';
 
 interface MemberListProps {
     groupId: string;
@@ -13,6 +13,12 @@ interface MemberListProps {
 
 export default function MemberList({ groupId, currentMemberId }: MemberListProps) {
     const [members, setMembers] = useState<Member[]>([]);
+    const [now, setNow] = useState(new Date());
+
+    useEffect(() => {
+        const interval = setInterval(() => setNow(new Date()), 1000);
+        return () => clearInterval(interval);
+    }, []);
 
     useEffect(() => {
         const fetchMembers = async () => {
@@ -109,17 +115,48 @@ export default function MemberList({ groupId, currentMemberId }: MemberListProps
                                 : "text-muted-foreground"
                                 }`}
                         >
-                            {member.is_ready ? (
-                                <div className="flex items-center gap-1.5">
-                                    <Check className="w-4 h-4" />
-                                    <span>Ready</span>
-                                </div>
-                            ) : (
-                                <div className="flex items-center gap-1.5">
-                                    <Clock className="w-3.5 h-3.5" />
-                                    <span>Waiting</span>
-                                </div>
-                            )}
+                            {(() => {
+                                if (member.is_ready) {
+                                    return (
+                                        <div className="flex items-center gap-1.5">
+                                            <Check className="w-4 h-4" />
+                                            <span>Prêt</span>
+                                        </div>
+                                    );
+                                }
+
+                                if (member.timer_end_time) {
+                                    const end = new Date(member.timer_end_time);
+                                    const diff = end.getTime() - now.getTime();
+
+                                    if (diff <= 0) {
+                                        return (
+                                            <div className="flex items-center gap-1.5 text-amber-500 animate-pulse">
+                                                <AlertTriangle className="w-3.5 h-3.5" />
+                                                <span>Bientôt prêt</span>
+                                            </div>
+                                        );
+                                    }
+
+                                    const minutes = Math.floor(diff / 60000);
+                                    const seconds = Math.floor((diff % 60000) / 1000);
+                                    const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+                                    return (
+                                        <div className="flex items-center gap-1.5 text-amber-500">
+                                            <Timer className="w-3.5 h-3.5 animate-pulse" />
+                                            <span className="tabular-nums">{timeStr}</span>
+                                        </div>
+                                    );
+                                }
+
+                                return (
+                                    <div className="flex items-center gap-1.5">
+                                        <Clock className="w-3.5 h-3.5" />
+                                        <span>En attente</span>
+                                    </div>
+                                );
+                            })()}
                         </Badge>
                     </div>
                 );

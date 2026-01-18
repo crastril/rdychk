@@ -34,6 +34,10 @@ begin
     if not exists (select from information_schema.columns where table_name = 'members' and column_name = 'user_id') then
         alter table members add column user_id uuid references auth.users(id);
     end if;
+
+    if not exists (select from information_schema.columns where table_name = 'members' and column_name = 'timer_end_time') then
+        alter table members add column timer_end_time timestamptz;
+    end if;
 end $$;
 
 -- Clean up existing duplicates before adding constraint

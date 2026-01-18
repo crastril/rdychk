@@ -29,6 +29,7 @@ export type Database = {
                     is_ready: boolean;
                     joined_at: string;
                     updated_at: string;
+                    timer_end_time: string | null;
                 };
                 Insert: {
                     id?: string;
@@ -37,6 +38,7 @@ export type Database = {
                     is_ready?: boolean;
                     joined_at?: string;
                     updated_at?: string;
+                    timer_end_time?: string | null;
                 };
                 Update: {
                     id?: string;

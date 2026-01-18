@@ -1,0 +1,120 @@
+'use client';
+
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Slider } from '@/components/ui/slider';
+import { Timer, Clock } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { cn } from '@/lib/utils';
+
+interface TimerPickerProps {
+    memberId: string;
+    currentTimerEnd: string | null;
+    isReady: boolean;
+}
+
+export function TimerPicker({ memberId, currentTimerEnd, isReady }: TimerPickerProps) {
+    const [open, setOpen] = useState(false);
+    const [minutes, setMinutes] = useState(5);
+    const [loading, setLoading] = useState(false);
+
+    const handleSetTimer = async () => {
+        setLoading(true);
+        const endTime = new Date();
+        endTime.setMinutes(endTime.getMinutes() + minutes);
+
+        try {
+            await supabase
+                .from('members')
+                .update({
+                    timer_end_time: endTime.toISOString(),
+                    is_ready: false // Ensure not ready when timer starts
+                })
+                .eq('id', memberId);
+            setOpen(false);
+        } catch (error) {
+            console.error('Error setting timer:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCancelTimer = async () => {
+        setLoading(true);
+        try {
+            await supabase
+                .from('members')
+                .update({ timer_end_time: null })
+                .eq('id', memberId);
+            setOpen(false);
+        } catch (error) {
+            console.error('Error cancelling timer:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const isActive = !!currentTimerEnd && new Date(currentTimerEnd) > new Date();
+
+    return (
+        <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+                <Button
+                    variant={isActive ? "secondary" : "outline"}
+                    size="icon"
+                    className={cn(
+                        "h-14 w-14 rounded-full border-2 transition-all duration-300",
+                        isActive && "border-amber-500 text-amber-500 animate-pulse bg-amber-500/10"
+                    )}
+                >
+                    <Timer className={cn("w-6 h-6", isActive && "animate-pulse")} />
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-4" align="center">
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h4 className="font-medium leading-none flex items-center gap-2">
+                            <Clock className="w-4 h-4" />
+                            Minuteur
+                        </h4>
+                        <span className="text-sm text-muted-foreground">{minutes} min</span>
+                    </div>
+
+                    <div className="py-2">
+                        <Slider
+                            defaultValue={[5]}
+                            max={60}
+                            min={1}
+                            step={1}
+                            value={[minutes]}
+                            onValueChange={(vals) => setMinutes(vals[0])}
+                            className="[&_[role=slider]]:h-4 [&_[role=slider]]:w-4"
+                        />
+                    </div>
+
+                    <div className="flex gap-2">
+                        <Button
+                            className="flex-1"
+                            onClick={handleSetTimer}
+                            disabled={loading}
+                        >
+                            Lancer
+                        </Button>
+                        {isActive && (
+                            <Button
+                                variant="destructive"
+                                size="icon"
+                                onClick={handleCancelTimer}
+                                disabled={loading}
+                            >
+                                <span className="sr-only">Annuler</span>
+                                ×
+                            </Button>
+                        )}
+                    </div>
+                </div>
+            </PopoverContent>
+        </Popover>
+    );
+}

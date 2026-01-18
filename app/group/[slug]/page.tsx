@@ -9,6 +9,7 @@ import JoinModal from '@/components/JoinModal';
 import MemberList from '@/components/MemberList';
 import ReadyButton from '@/components/ReadyButton';
 import ProgressCounter from '@/components/ProgressCounter';
+import { TimerPicker } from '@/components/TimerPicker';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Copy, Check, Target, Users, Loader2, LogOut } from 'lucide-react';
@@ -23,6 +24,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
     const [memberId, setMemberId] = useState<string | null>(null);
     const [memberName, setMemberName] = useState<string | null>(null);
     const [isReady, setIsReady] = useState(false);
+    const [timerEndTime, setTimerEndTime] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [members, setMembers] = useState<Member[]>([]);
     const [copied, setCopied] = useState(false);
@@ -108,6 +110,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                 },
                 (payload: any) => {
                     setIsReady(payload.new.is_ready);
+                    setTimerEndTime(payload.new.timer_end_time);
                 }
             )
             .subscribe();
@@ -115,12 +118,13 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
         const fetchMemberStatus = async () => {
             const { data } = await supabase
                 .from('members')
-                .select('is_ready')
+                .select('is_ready, timer_end_time')
                 .eq('id', memberId)
                 .single();
 
             if (data) {
                 setIsReady(data.is_ready);
+                setTimerEndTime(data.timer_end_time);
             }
         };
 
@@ -149,6 +153,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                 setMemberId(existingMember.id);
                 setMemberName(existingMember.name);
                 setIsReady(existingMember.is_ready);
+                setTimerEndTime(existingMember.timer_end_time);
                 localStorage.setItem(`member_${slug}`, existingMember.id);
                 localStorage.setItem(`member_name_${slug}`, existingMember.name);
                 return;
@@ -181,6 +186,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                         setMemberId(existingMember.id);
                         setMemberName(existingMember.name);
                         setIsReady(existingMember.is_ready);
+                        setTimerEndTime(existingMember.timer_end_time);
                         localStorage.setItem(`member_${slug}`, existingMember.id);
                         localStorage.setItem(`member_name_${slug}`, existingMember.name);
                         return;
@@ -318,7 +324,20 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                                     <CardDescription>{memberName}</CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <ReadyButton memberId={memberId} isReady={isReady} />
+                                    <div className="flex gap-4">
+                                        <ReadyButton
+                                            memberId={memberId}
+                                            isReady={isReady}
+                                            timerEndTime={timerEndTime}
+                                        />
+                                        <div className="flex flex-col justify-center">
+                                            <TimerPicker
+                                                memberId={memberId}
+                                                currentTimerEnd={timerEndTime}
+                                                isReady={isReady}
+                                            />
+                                        </div>
+                                    </div>
                                 </CardContent>
                             </Card>
 
