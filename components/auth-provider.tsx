@@ -7,8 +7,9 @@ import { supabase } from '@/lib/supabase';
 interface AuthContextType {
     user: User | null;
     session: Session | null;
-    profile: { display_name: string | null; avatar_url: string | null } | null;
+    profile: { display_name: string | null; avatar_url: string | null; is_inferred?: boolean } | null;
     loading: boolean;
+    refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -16,6 +17,7 @@ const AuthContext = createContext<AuthContextType>({
     session: null,
     profile: null,
     loading: true,
+    refreshProfile: async () => { },
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -23,7 +25,7 @@ export const useAuth = () => useContext(AuthContext);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [session, setSession] = useState<Session | null>(null);
-    const [profile, setProfile] = useState<{ display_name: string | null; avatar_url: string | null } | null>(null);
+    const [profile, setProfile] = useState<{ display_name: string | null; avatar_url: string | null; is_inferred?: boolean } | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -75,8 +77,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setProfile(data);
     };
 
+    const refreshProfile = async () => {
+        if (user) {
+            await fetchProfile(user.id);
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, session, profile, loading }}>
+        <AuthContext.Provider value={{ user, session, profile, loading, refreshProfile }}>
             {children}
         </AuthContext.Provider>
     );
