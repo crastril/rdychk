@@ -16,10 +16,12 @@ import { ManageGroupModal } from '@/components/ManageGroupModal';
 import { TimeProposalModal } from '@/components/TimeProposalModal';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Copy, Check, Target, Users, Loader2, LogOut } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Target, Users, Loader2, LogOut, Settings } from 'lucide-react';
 import { ModeToggle } from '@/components/mode-toggle';
 import { AuthButton } from '@/components/auth-button';
 import type { Group, Member } from '@/types/database';
+import { LocationCard } from '@/components/LocationCard';
+import { GroupSettingsModal } from '@/components/GroupSettingsModal';
 
 export default function GroupPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = use(params);
@@ -32,21 +34,32 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
     const [loading, setLoading] = useState(true);
     const [members, setMembers] = useState<Member[]>([]);
     const [isManageModalOpen, setIsManageModalOpen] = useState(false);
+    const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
     useEffect(() => {
         const fetchGroup = async () => {
-            const { data } = await supabase
-                .from('groups')
-                .select('*')
-                .eq('slug', slug)
-                .single();
+            try {
+                const { data, error } = await supabase
+                    .from('groups')
+                    .select('*')
+                    .eq('slug', slug)
+                    .single();
 
-            if (!data) {
-                notFound();
+                if (error) {
+                    throw error;
+                }
+
+                if (!data) {
+                    notFound();
+                }
+
+                setGroup(data);
+            } catch (error) {
+                console.error("Error fetching group:", error);
+                // We might want to handle notFound differently if it's a real error vs 404
+            } finally {
+                setLoading(false);
             }
-
-            setGroup(data);
-            setLoading(false);
         };
 
         fetchGroup();
@@ -64,7 +77,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
     }, [slug]);
 
     useEffect(() => {
-        if (!group) return;
+        if (!group?.id) return;
 
         const fetchMembers = async () => {
             const { data } = await supabase
@@ -97,7 +110,31 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [group]);
+    }, [group?.id]);
+
+    useEffect(() => {
+        if (!group) return;
+
+        const channel = supabase
+            .channel(`group:${group.id}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'groups',
+                    filter: `id=eq.${group.id}`,
+                },
+                (payload) => {
+                    setGroup(prev => (prev ? { ...prev, ...payload.new as Group } : payload.new as Group));
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [group?.id]);
 
     useEffect(() => {
         const ensureAdmin = async () => {
@@ -166,6 +203,16 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
             supabase.removeChannel(channel);
         };
     }, [memberId]);
+
+    const guestMembers = members.filter(m => {
+        // Explicit check for null/undefined to catch any weirdness
+        return m.user_id === null || m.user_id === undefined;
+    });
+
+    useEffect(() => {
+        console.log('Members updated:', members.length);
+        console.log('Guest members:', guestMembers.length, guestMembers);
+    }, [members]);
 
     const { user } = useAuth();
 
@@ -295,6 +342,19 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
         }
     };
 
+    const handleReclaim = async (id: string, name: string) => {
+        // Double check it exists locally
+        const member = members.find(m => m.id === id);
+        if (member) {
+            setMemberId(member.id);
+            setMemberName(member.name);
+            setIsReady(member.is_ready);
+            setTimerEndTime(member.timer_end_time);
+            localStorage.setItem(`member_${slug}`, member.id);
+            localStorage.setItem(`member_name_${slug}`, member.name);
+        }
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -315,9 +375,17 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
     const currentMember = members.find(m => m.id === memberId);
     const isAdmin = currentMember?.role === 'admin';
 
+
     return (
         <div className="min-h-screen">
-            {!memberId && <JoinModal onJoin={handleJoin} groupName={group.name} />}
+            {!memberId && (
+                <JoinModal
+                    onJoin={handleJoin}
+                    onReclaim={handleReclaim}
+                    groupName={group.name}
+                    existingGuests={guestMembers}
+                />
+            )}
 
             <NotificationManager
                 readyCount={readyCount}
@@ -349,16 +417,30 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                             </div>
                         </div>
 
-                        <ShareMenu
-                            groupName={group.name}
-                            url={typeof window !== 'undefined' ? window.location.href : ''}
-                        />
+                        <div className="flex items-center gap-2">
+                            {isAdmin && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="gap-2"
+                                    onClick={() => setIsSettingsModalOpen(true)}
+                                >
+                                    <Settings className="w-4 h-4" />
+                                    Paramètres
+                                </Button>
+                            )}
+                            <ShareMenu
+                                groupName={group.name}
+                                url={typeof window !== 'undefined' ? window.location.href : ''}
+                            />
+                        </div>
                     </div>
 
                     {/* Progress Bar in Header */}
                     <div className="bg-card/50 rounded-xl border p-4 backdrop-blur-sm">
                         <ProgressCounter readyCount={readyCount} totalCount={totalCount} />
                     </div>
+
                 </div>
 
                 {
@@ -371,19 +453,22 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                                 <CardHeader>
                                     <div className="flex justify-between items-center">
                                         <CardTitle className="text-lg">Votre statut</CardTitle>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 -mr-2"
-                                            onClick={() => {
-                                                if (confirm("Voulez-vous vraiment quitter ce groupe ?")) {
-                                                    handleLeaveGroup();
-                                                }
-                                            }}
-                                        >
-                                            <LogOut className="w-4 h-4 mr-2" />
-                                            Quitter
-                                        </Button>
+                                        <div className="flex gap-2">
+
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 -mr-2"
+                                                onClick={() => {
+                                                    if (confirm("Voulez-vous vraiment quitter ce groupe ?")) {
+                                                        handleLeaveGroup();
+                                                    }
+                                                }}
+                                            >
+                                                <LogOut className="w-4 h-4 mr-2" />
+                                                Quitter
+                                            </Button>
+                                        </div>
                                     </div>
                                     <CardDescription>{memberName}</CardDescription>
                                 </CardHeader>
@@ -406,6 +491,16 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                                     </div>
                                 </CardContent>
                             </Card>
+
+                            {/* Location Card (if In Person) */}
+                            {group.type === 'in_person' && (
+                                <LocationCard
+                                    group={group}
+                                    memberId={memberId}
+                                    isAdmin={isAdmin}
+                                    currentMemberName={memberName}
+                                />
+                            )}
 
                             {/* Members Card */}
                             <Card>
@@ -437,6 +532,12 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                                 onOpenChange={setIsManageModalOpen}
                                 groupId={group.id}
                                 currentMemberId={memberId}
+                            />
+
+                            <GroupSettingsModal
+                                isOpen={isSettingsModalOpen}
+                                onOpenChange={setIsSettingsModalOpen}
+                                groupId={group.id}
                             />
                         </>
                     )

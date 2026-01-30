@@ -13,7 +13,7 @@ import {
     DialogClose
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Clock } from 'lucide-react';
+import { Clock, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 interface TimeProposalModalProps {
@@ -45,14 +45,43 @@ export function TimeProposalModal({ memberId, currentProposedTime }: TimeProposa
         }
     };
 
+    const handleClear = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setLoading(true);
+        try {
+            await supabase
+                .from('members')
+                .update({ proposed_time: null })
+                .eq('id', memberId);
+        } catch (error) {
+            console.error('Error clearing time:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button variant="outline" className="w-full gap-2">
-                    <Clock className="w-4 h-4" />
-                    {currentProposedTime ? `Proposé : ${currentProposedTime}` : 'Proposer un horaire'}
-                </Button>
-            </DialogTrigger>
+            <div className="flex gap-2 w-full">
+                <DialogTrigger asChild>
+                    <Button variant="outline" className="flex-1 gap-2">
+                        <Clock className="w-4 h-4" />
+                        {currentProposedTime ? `Proposé : ${currentProposedTime}` : 'Proposer un horaire'}
+                    </Button>
+                </DialogTrigger>
+                {currentProposedTime && (
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="shrink-0 hover:bg-destructive/10 hover:text-destructive"
+                        onClick={handleClear}
+                        disabled={loading}
+                    >
+                        <X className="w-4 h-4" />
+                    </Button>
+                )}
+            </div>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>Proposer un horaire</DialogTitle>

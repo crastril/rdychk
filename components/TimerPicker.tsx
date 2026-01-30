@@ -68,17 +68,22 @@ export function TimerPicker({ memberId, currentTimerEnd, isReady }: TimerPickerP
                     )}
                 >
                     <Timer className={cn("w-6 h-6", isActive && "animate-pulse")} />
-                    <span className="font-semibold">Minuteur</span>
+                    <span className="font-semibold">Bientôt prêt ?</span>
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-80 p-4" align="center">
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <h4 className="font-medium leading-none flex items-center gap-2">
-                            <Clock className="w-4 h-4" />
-                            Minuteur
-                        </h4>
-                        <span className="text-sm text-muted-foreground">{minutes} min</span>
+                    <div className="flex flex-col gap-2">
+                        <div className="flex items-center justify-between">
+                            <h4 className="font-medium leading-none flex items-center gap-2">
+                                <Clock className="w-4 h-4" />
+                                Minuteur
+                            </h4>
+                            <span className="text-sm text-muted-foreground">{minutes} min</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            Indiquez aux autres participants dans combien de temps vous serez prêt.
+                        </p>
                     </div>
 
                     <div className="py-2">

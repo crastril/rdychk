@@ -9,9 +9,12 @@ import { Label } from '@/components/ui/label';
 import { Loader2, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
 
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+
 export default function CreateGroupForm() {
     const { user } = useAuth();
     const [groupName, setGroupName] = useState('');
+    const [groupType, setGroupType] = useState<'remote' | 'in_person'>('remote');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
@@ -41,7 +44,8 @@ export default function CreateGroupForm() {
                 .insert({
                     name: groupName,
                     slug: uniqueSlug,
-                    created_by: user?.id
+                    created_by: user?.id,
+                    type: groupType
                 });
 
             if (dbError) throw dbError;
@@ -86,6 +90,30 @@ export default function CreateGroupForm() {
                         disabled={loading}
                     />
                 </div>
+                <div className="space-y-4">
+                    <Label>Type de groupe</Label>
+                    <RadioGroup value={groupType} onValueChange={(val: any) => setGroupType(val)} className="flex flex-col gap-4">
+                        <div className="flex items-center space-x-2 border p-4 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                            <RadioGroupItem value="remote" id="remote" />
+                            <div className="flex-1 cursor-pointer" onClick={() => setGroupType('remote')}>
+                                <Label htmlFor="remote" className="cursor-pointer font-semibold text-base">À distance</Label>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                    Pas de lieu physique. Idéal pour des appels vidéo ou jeux en ligne.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-2 border p-4 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                            <RadioGroupItem value="in_person" id="in_person" />
+                            <div className="flex-1 cursor-pointer" onClick={() => setGroupType('in_person')}>
+                                <Label htmlFor="in_person" className="cursor-pointer font-semibold text-base">Sur place</Label>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                    Définnissez un lieu de rendez-vous pour que les membres s'y retrouvent.
+                                </p>
+                            </div>
+                        </div>
+                    </RadioGroup>
+                </div>
+
                 <Button
                     type="submit"
                     className="w-full h-12 text-lg font-semibold bg-primary hover:bg-primary/90 transition-all"

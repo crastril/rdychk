@@ -13,7 +13,6 @@ import { supabase } from '@/lib/supabase';
 import { Loader2, Trash2, ShieldAlert } from 'lucide-react';
 import { Member } from '@/types/database';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils'; // Assuming you have a cn utility
 
 interface ManageGroupModalProps {
     isOpen: boolean;
@@ -35,7 +34,7 @@ export function ManageGroupModal({ isOpen, onOpenChange, groupId, currentMemberI
 
     const fetchMembers = async () => {
         setLoading(true);
-        const { data, error } = await supabase
+        const { data } = await supabase
             .from('members')
             .select('*')
             .eq('group_id', groupId)
@@ -71,57 +70,59 @@ export function ManageGroupModal({ isOpen, onOpenChange, groupId, currentMemberI
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-md sm:max-w-lg">
-                <DialogHeader>
+            <DialogContent className="max-w-md sm:max-w-lg h-[80vh] flex flex-col p-0">
+                <DialogHeader className="p-6 pb-2">
                     <DialogTitle>Gérer les membres</DialogTitle>
                     <DialogDescription>
-                        Supprimez les membres inactifs ou indésirables.
+                        Liste des membres du groupe.
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-                    {loading ? (
-                        <div className="flex justify-center py-4">
-                            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-                        </div>
-                    ) : members.length === 0 ? (
-                        <p className="text-center text-muted-foreground py-4">Aucun membre (étrange...)</p>
-                    ) : (
-                        members.map((member) => (
-                            <div key={member.id} className="flex items-center justify-between p-3 rounded-lg border bg-card/50">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-bold">
-                                        {member.name.substring(0, 2).toUpperCase()}
-                                    </div>
-                                    <div>
-                                        <p className="font-medium text-sm flex items-center gap-2">
-                                            {member.name}
-                                            {member.id === currentMemberId && <Badge variant="secondary" className="text-[10px] h-4">Vous</Badge>}
-                                            {member.role === 'admin' && <Badge variant="outline" className="text-[10px] h-4 border-primary text-primary">Admin</Badge>}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {member.id !== currentMemberId ? (
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                        onClick={() => handleDeleteMember(member.id)}
-                                        disabled={deletingId === member.id}
-                                    >
-                                        {deletingId === member.id ? (
-                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                        ) : (
-                                            <Trash2 className="w-4 h-4" />
-                                        )}
-                                    </Button>
-                                ) : (
-                                    <ShieldAlert className="w-4 h-4 text-muted-foreground/30" />
-                                )}
+                <div className="flex-1 overflow-hidden p-6 pt-4">
+                    <div className="space-y-4 h-full overflow-y-auto pr-2">
+                        {loading ? (
+                            <div className="flex justify-center py-4">
+                                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                             </div>
-                        ))
-                    )}
+                        ) : members.length === 0 ? (
+                            <p className="text-center text-muted-foreground py-4">Aucun membre trouvé.</p>
+                        ) : (
+                            members.map((member) => (
+                                <div key={member.id} className="flex items-center justify-between p-3 rounded-lg border bg-card/50">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-bold">
+                                            {member.name.substring(0, 2).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <p className="font-medium text-sm flex items-center gap-2">
+                                                {member.name}
+                                                {member.id === currentMemberId && <Badge variant="secondary" className="text-[10px] h-4">Vous</Badge>}
+                                                {member.role === 'admin' && <Badge variant="outline" className="text-[10px] h-4 border-primary text-primary">Admin</Badge>}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {member.id !== currentMemberId ? (
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                            onClick={() => handleDeleteMember(member.id)}
+                                            disabled={deletingId === member.id}
+                                        >
+                                            {deletingId === member.id ? (
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                            ) : (
+                                                <Trash2 className="w-4 h-4" />
+                                            )}
+                                        </Button>
+                                    ) : (
+                                        <ShieldAlert className="w-4 h-4 text-muted-foreground/30" />
+                                    )}
+                                </div>
+                            ))
+                        )}
+                    </div>
                 </div>
             </DialogContent>
         </Dialog>
