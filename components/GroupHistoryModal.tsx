@@ -46,23 +46,49 @@ export function GroupHistoryModal({ open, onOpenChange }: GroupHistoryModalProps
         if (!user) return;
         setLoading(true);
         try {
-            const { data, error } = await supabase
+            // 1. Get membership details
+            const { data: memberData, error: memberError } = await supabase
                 .from('members')
-                .select(`
-                    id,
-                    group_id,
-                    joined_at,
-                    groups (
-                        name,
-                        slug
-                    )
-                `)
+                .select('id, group_id, joined_at')
                 .eq('user_id', user.id)
                 .order('joined_at', { ascending: false });
 
-            if (error) throw error;
-            // Filter out any where groups might be null (if group deleted but member invalid)
-            setGroups((data as any[]).filter(item => item.groups) as JoinedGroup[]);
+            if (memberError) throw memberError;
+
+            if (!memberData || memberData.length === 0) {
+                setGroups([]);
+                return;
+            }
+
+            // 2. Get group details
+            const groupIds = memberData.map(m => m.group_id);
+            const { data: groupData, error: groupError } = await supabase
+                .from('groups')
+                .select('id, name, slug')
+                .in('id', groupIds);
+
+            if (groupError) throw groupError;
+
+            // 3. Merge data
+            const groupsMap = new Map(groupData?.map(g => [g.id, g]));
+
+            const joinedGroups: JoinedGroup[] = memberData
+                .map(member => {
+                    const group = groupsMap.get(member.group_id);
+                    if (!group) return null;
+                    return {
+                        id: member.id,
+                        group_id: member.group_id,
+                        joined_at: member.joined_at,
+                        groups: {
+                            name: group.name,
+                            slug: group.slug
+                        }
+                    };
+                })
+                .filter((item): item is JoinedGroup => item !== null);
+
+            setGroups(joinedGroups);
         } catch (error) {
             console.error('Error fetching history:', error);
         } finally {
