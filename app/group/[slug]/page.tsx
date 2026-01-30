@@ -22,6 +22,7 @@ import { AuthButton } from '@/components/auth-button';
 import type { Group, Member } from '@/types/database';
 import { LocationCard } from '@/components/LocationCard';
 import { GroupSettingsModal } from '@/components/GroupSettingsModal';
+import { ConnectionStatus } from '@/components/ConnectionStatus';
 
 export default function GroupPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = use(params);
@@ -36,34 +37,43 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
     const [isManageModalOpen, setIsManageModalOpen] = useState(false);
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
-    useEffect(() => {
-        const fetchGroup = async () => {
-            try {
-                const { data, error } = await supabase
-                    .from('groups')
-                    .select('*')
-                    .eq('slug', slug)
-                    .single();
+    const fetchGroup = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('groups')
+                .select('*')
+                .eq('slug', slug)
+                .single();
 
-                if (error) {
-                    throw error;
-                }
-
-                if (!data) {
-                    notFound();
-                }
-
-                setGroup(data);
-            } catch (error) {
-                console.error("Error fetching group:", error);
-                // We might want to handle notFound differently if it's a real error vs 404
-            } finally {
-                setLoading(false);
+            if (error) {
+                throw error;
             }
-        };
 
+            if (!data) {
+                notFound();
+            }
+
+            setGroup(data);
+        } catch (error) {
+            console.error("Error fetching group:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchMembers = async () => {
+        if (!group?.id) return;
+        const { data } = await supabase
+            .from('members')
+            .select('*')
+            .eq('group_id', group.id)
+            .order('joined_at', { ascending: true });
+
+        if (data) setMembers(data);
+    };
+
+    useEffect(() => {
         fetchGroup();
-
     }, [slug]);
 
     useEffect(() => {
@@ -78,16 +88,6 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
 
     useEffect(() => {
         if (!group?.id) return;
-
-        const fetchMembers = async () => {
-            const { data } = await supabase
-                .from('members')
-                .select('*')
-                .eq('group_id', group.id)
-                .order('joined_at', { ascending: true });
-
-            if (data) setMembers(data);
-        };
 
         fetchMembers();
 
@@ -135,6 +135,17 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
             supabase.removeChannel(channel);
         };
     }, [group?.id]);
+
+    const handleRefresh = async () => {
+        // Refresh server components
+        router.refresh();
+
+        // Refresh client data
+        await Promise.all([
+            fetchGroup(),
+            fetchMembers()
+        ]);
+    };
 
     useEffect(() => {
         const ensureAdmin = async () => {
@@ -378,6 +389,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
 
     return (
         <div className="min-h-screen">
+            <ConnectionStatus onRefresh={handleRefresh} />
             {!memberId && (
                 <JoinModal
                     onJoin={handleJoin}
