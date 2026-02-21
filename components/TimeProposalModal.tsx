@@ -14,14 +14,13 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Clock, X } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
 
 interface TimeProposalModalProps {
-    memberId: string;
     currentProposedTime: string | null;
+    onUpdate: (updates: { proposed_time?: string | null; is_ready?: boolean; timer_end_time?: string | null }) => Promise<void>;
 }
 
-export function TimeProposalModal({ memberId, currentProposedTime }: TimeProposalModalProps) {
+export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposalModalProps) {
     const [time, setTime] = useState(currentProposedTime || '');
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -32,10 +31,11 @@ export function TimeProposalModal({ memberId, currentProposedTime }: TimeProposa
             // If time is empty, we clear the proposed time
             const valueToSave = time.trim() === '' ? null : time;
 
-            await supabase
-                .from('members')
-                .update({ proposed_time: valueToSave, is_ready: false, timer_end_time: null }) // Reset other statuses if proposing time
-                .eq('id', memberId);
+            await onUpdate({
+                proposed_time: valueToSave,
+                is_ready: false,
+                timer_end_time: null
+            });
 
             setOpen(false);
         } catch (error) {
@@ -50,10 +50,7 @@ export function TimeProposalModal({ memberId, currentProposedTime }: TimeProposa
         e.stopPropagation();
         setLoading(true);
         try {
-            await supabase
-                .from('members')
-                .update({ proposed_time: null })
-                .eq('id', memberId);
+            await onUpdate({ proposed_time: null });
         } catch (error) {
             console.error('Error clearing time:', error);
         } finally {

@@ -1,17 +1,16 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/lib/supabase';
 import { Check, Clock, Loader2, Timer, AlertTriangle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface ReadyButtonProps {
-    memberId: string;
     isReady: boolean;
     timerEndTime?: string | null;
+    onToggle: () => Promise<void>;
 }
 
-export default function ReadyButton({ memberId, isReady, timerEndTime }: ReadyButtonProps) {
+export default function ReadyButton({ isReady, timerEndTime, onToggle }: ReadyButtonProps) {
     const [loading, setLoading] = useState(false);
     const [timeLeft, setTimeLeft] = useState<string | null>(null);
     const [isSoonReady, setIsSoonReady] = useState(false);
@@ -44,19 +43,10 @@ export default function ReadyButton({ memberId, isReady, timerEndTime }: ReadyBu
         return () => clearInterval(interval);
     }, [timerEndTime, isReady]);
 
-    const toggleReady = async () => {
+    const handleToggle = async () => {
         setLoading(true);
         try {
-            const { error } = await supabase
-                .from('members')
-                .update({
-                    is_ready: !isReady,
-                    updated_at: new Date().toISOString(),
-                    timer_end_time: null // Clear timer when manually toggling
-                })
-                .eq('id', memberId);
-
-            if (error) throw error;
+            await onToggle();
         } catch (error) {
             console.error('Error updating status:', error);
         } finally {
@@ -66,7 +56,7 @@ export default function ReadyButton({ memberId, isReady, timerEndTime }: ReadyBu
 
     return (
         <Button
-            onClick={toggleReady}
+            onClick={handleToggle}
             disabled={loading}
             variant={isReady ? "default" : "outline"}
             size="lg"

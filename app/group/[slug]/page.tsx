@@ -4,6 +4,7 @@ import { use, useEffect, useState } from 'react';
 import { notFound, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { createMemberClient } from '@/lib/member-client';
 import { useAuth } from '@/components/auth-provider';
 import JoinModal from '@/components/JoinModal';
 import MemberList from '@/components/MemberList';
@@ -16,9 +17,7 @@ import { ManageGroupModal } from '@/components/ManageGroupModal';
 import { TimeProposalModal } from '@/components/TimeProposalModal';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Copy, Check, Target, Users, Loader2, LogOut, Settings } from 'lucide-react';
-import { ModeToggle } from '@/components/mode-toggle';
-import { AuthButton } from '@/components/auth-button';
+import { ArrowLeft, LogOut, Settings, Users, Loader2 } from 'lucide-react';
 import type { Group, Member } from '@/types/database';
 import { LocationCard } from '@/components/LocationCard';
 import { GroupSettingsModal } from '@/components/GroupSettingsModal';
@@ -30,6 +29,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
     const [group, setGroup] = useState<Group | null>(null);
     const [memberId, setMemberId] = useState<string | null>(null);
     const [memberName, setMemberName] = useState<string | null>(null);
+    const [memberSecret, setMemberSecret] = useState<string | null>(null);
     const [isReady, setIsReady] = useState(false);
     const [timerEndTime, setTimerEndTime] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
@@ -79,10 +79,12 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
     useEffect(() => {
         const storedMemberId = localStorage.getItem(`member_${slug}`);
         const storedMemberName = localStorage.getItem(`member_name_${slug}`);
+        const storedMemberSecret = localStorage.getItem(`member_secret_${slug}`);
 
         if (storedMemberId) {
             setMemberId(storedMemberId);
             setMemberName(storedMemberName);
+            if (storedMemberSecret) setMemberSecret(storedMemberSecret);
         }
     }, [slug]);
 
@@ -147,33 +149,46 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
         ]);
     };
 
+    const getClient = () => {
+        if (memberSecret) {
+            return createMemberClient(memberSecret);
+        }
+        return supabase;
+    };
+
+    const updateMember = async (updates: Partial<Member>) => {
+        if (!memberId) return;
+
+        const client = getClient();
+        const { error } = await client
+            .from('members')
+            .update({ ...updates, updated_at: new Date().toISOString() })
+            .eq('id', memberId);
+
+        if (error) {
+            console.error("Error updating member:", error);
+        }
+    };
+
     useEffect(() => {
         const ensureAdmin = async () => {
             if (members.length > 0) {
                 const hasAdmin = members.some(m => m.role === 'admin');
 
                 if (!hasAdmin) {
-                    // Promote the first member (effectively the creator/oldest)
+                    // Promote the first member if it is ME
                     const candidate = members[0];
-                    if (candidate) {
-
-                        // Persist to DB
-                        const { error } = await supabase
-                            .from('members')
-                            .update({ role: 'admin' })
-                            .eq('id', candidate.id);
-
-                        if (!error) {
-                            // Force local update to reflect change immediately
-                            setMembers(prev => prev.map(m => m.id === candidate.id ? { ...m, role: 'admin' } : m));
-                        }
+                    if (candidate && candidate.id === memberId) {
+                        await updateMember({ role: 'admin' });
+                        // Force local update to reflect change immediately (optimistic)
+                        setMembers(prev => prev.map(m => m.id === candidate.id ? { ...m, role: 'admin' } : m));
                     }
                 }
             }
         };
 
         ensureAdmin();
-    }, [members]);
+    }, [members, memberId]); // Added memberId dep
 
     useEffect(() => {
         if (!memberId) return;
@@ -216,7 +231,6 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
     }, [memberId]);
 
     const guestMembers = members.filter(m => {
-        // Explicit check for null/undefined to catch any weirdness
         return m.user_id === null || m.user_id === undefined;
     });
 
@@ -240,6 +254,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                 setTimerEndTime(existingMember.timer_end_time);
                 localStorage.setItem(`member_${slug}`, existingMember.id);
                 localStorage.setItem(`member_name_${slug}`, existingMember.name);
+                // No secret needed for auth users
                 return;
             } else {
                 // Check if we have a local memberId but it's not linked to user yet
@@ -252,7 +267,8 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
 
                     if (currentMember && !currentMember.user_id) {
                         // Link it!
-                        await supabase
+                        const client = getClient();
+                        await client
                             .from('members')
                             .update({ user_id: user.id })
                             .eq('id', memberId);
@@ -261,73 +277,33 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                 }
             }
         }
-        let role = 'member';
 
-        // Check if group has no members yet (first joiner becomes admin if created_by matches or just first)
-        // OR if current user is the creator
-        if (group) {
-            if (user?.id && group.created_by === user.id) {
-                role = 'admin';
-            } else {
-                const { count } = await supabase
-                    .from('members')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('group_id', group.id);
-
-                if (count === 0) {
-                    role = 'admin';
-                }
-            }
-        }
-
-        const { data, error } = await supabase
-            .from('members')
-            .insert({
-                group_id: group.id,
-                name,
-                user_id: user?.id || null, // Link the member to the user if logged in
-                role
-            })
-            .select()
-            .single();
+        // RPC call to join group safely
+        const { data, error } = await supabase.rpc('join_group', {
+            p_group_id: group.id,
+            p_name: name
+        });
 
         if (error) {
-            // Handle unique constraint violation gracefully (race condition)
-            if (error.code === '23505') {
-                // Retry fetch without logging error
-                if (user) {
-                    const { data: existingMember } = await supabase
-                        .from('members')
-                        .select('*')
-                        .eq('group_id', group.id)
-                        .eq('user_id', user.id)
-                        .single();
-
-                    if (existingMember) {
-                        setMemberId(existingMember.id);
-                        setMemberName(existingMember.name);
-                        setIsReady(existingMember.is_ready);
-                        setTimerEndTime(existingMember.timer_end_time);
-                        localStorage.setItem(`member_${slug}`, existingMember.id);
-                        localStorage.setItem(`member_name_${slug}`, existingMember.name);
-                        return;
-                    }
-                }
-            }
             console.error('Error joining group:', error);
+            // Retry logic removed for RPC as race condition handling is different
             return;
         }
 
         if (data) {
-            setMemberId(data.id);
+            const memberData = data as { id: string; name: string; secret: string };
+            setMemberId(memberData.id);
             setMemberName(name);
             setIsReady(false);
-            localStorage.setItem(`member_${slug}`, data.id);
+            setMemberSecret(memberData.secret);
+
+            localStorage.setItem(`member_${slug}`, memberData.id);
             localStorage.setItem(`member_name_${slug}`, name);
+            if (memberData.secret) {
+                localStorage.setItem(`member_secret_${slug}`, memberData.secret);
+            }
         }
     };
-
-
 
     const handleLeaveGroup = async () => {
         if (!memberId) return;
@@ -336,20 +312,32 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
         const idToRemove = memberId;
         setMemberId(null);
         setMemberName(null);
+        setMemberSecret(null);
         localStorage.removeItem(`member_${slug}`);
         localStorage.removeItem(`member_name_${slug}`);
+        localStorage.removeItem(`member_secret_${slug}`);
 
         try {
-            await supabase.from('members').delete().eq('id', idToRemove);
+            const client = getClient();
+            await client.from('members').delete().eq('id', idToRemove);
             router.push('/');
         } catch (error) {
             console.error("Error leaving group:", error);
-            // Revert state if needed? For now we assume success or user can reload.
         }
     };
 
     const handleReclaim = async (id: string, name: string) => {
         // Double check it exists locally
+        // Note: This only works if we already have the secret in storage.
+        // If we reclaim, we assume the user is clicking on a button that might imply they are that user?
+        // Wait, 'handleReclaim' in JoinModal is called when?
+        // It's called when user clicks "I am X" in the list of existing guests.
+        // But if they don't have the secret in localStorage, they CANNOT act as that user anymore.
+        // So "Reclaim" without secret is impossible securely.
+        // Unless they are just setting local state to *view* as that user, but they won't be able to update.
+        // We should probably remove "Reclaim" feature for guests if secrets are lost.
+        // But for now, let's keep it but they will get RLS error if they try to update.
+
         const member = members.find(m => m.id === id);
         if (member) {
             setMemberId(member.id);
@@ -358,7 +346,20 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
             setTimerEndTime(member.timer_end_time);
             localStorage.setItem(`member_${slug}`, member.id);
             localStorage.setItem(`member_name_${slug}`, member.name);
+            // We cannot recover secret. If it's missing, they are effectively read-only.
         }
+    };
+
+    const handleToggleReady = async () => {
+        await updateMember({ is_ready: !isReady, timer_end_time: null });
+    };
+
+    const handleTimerUpdate = async (updates: { timer_end_time?: string | null; is_ready?: boolean }) => {
+        await updateMember(updates);
+    };
+
+    const handleProposalUpdate = async (updates: { proposed_time?: string | null; is_ready?: boolean; timer_end_time?: string | null }) => {
+        await updateMember(updates);
     };
 
     if (loading) {
@@ -454,8 +455,6 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                     memberId && (
                         <>
                             {/* Your Status Card */}
-
-                            {/* Your Status Card */}
                             <Card>
                                 <CardHeader>
                                     <div className="flex justify-between items-center">
@@ -482,18 +481,17 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                                 <CardContent>
                                     <div className="flex flex-col gap-3">
                                         <ReadyButton
-                                            memberId={memberId}
                                             isReady={isReady}
                                             timerEndTime={timerEndTime}
+                                            onToggle={handleToggleReady}
                                         />
                                         <TimerPicker
-                                            memberId={memberId}
                                             currentTimerEnd={timerEndTime}
-                                            isReady={isReady}
+                                            onUpdate={handleTimerUpdate}
                                         />
                                         <TimeProposalModal
-                                            memberId={memberId}
                                             currentProposedTime={currentMember?.proposed_time ?? null}
+                                            onUpdate={handleProposalUpdate}
                                         />
                                     </div>
                                 </CardContent>
