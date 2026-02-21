@@ -1,0 +1,17 @@
+{
+  "code": "PGRST201",
+  "details": [
+    {
+      "cardinality": "many-to-one",
+      "embedding": "members with groups",
+      "relationship": "members_group_id_fkey using members(group_id) and groups(id)"
+    },
+    {
+      "cardinality": "many-to-many",
+      "embedding": "members with groups",
+      "relationship": "location_votes using location_votes_member_id_fkey(member_id) and location_votes_group_id_fkey(group_id)"
+    }
+  ],
+  "hint": "Try changing 'groups' to one of the following: 'groups!members_group_id_fkey', 'groups!location_votes'. Find the desired relationship in the 'details' key.",
+  "message": "Could not embed because more than one relationship was found for 'members' and 'groups'"
+}

@@ -53,7 +53,7 @@ export function GroupHistoryModal({ open, onOpenChange }: GroupHistoryModalProps
             // Get membership details with joined group data
             const { data, error } = await supabase
                 .from('members')
-                .select('id, group_id, joined_at, groups(name, slug)')
+                .select('id, group_id, joined_at, groups!members_group_id_fkey(name, slug)')
                 .eq('user_id', user.id)
                 .order('joined_at', { ascending: false });
 
