@@ -5,7 +5,7 @@ import { notFound, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/auth-provider';
-import { joinGroupAction, reclaimSessionAction, leaveGroupAction, updateMemberAction, promoteToAdminAction } from '@/app/actions/member';
+import { joinGroupAction, reclaimSessionAction, leaveGroupAction, updateMemberAction, promoteToAdminAction, linkGuestToUserAction } from '@/app/actions/member';
 import JoinModal from '@/components/JoinModal';
 import MemberList from '@/components/MemberList';
 import ReadyButton from '@/components/ReadyButton';
@@ -222,27 +222,42 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
     // Auto-reconnect for logged-in users who navigate here (e.g. from history)
     useEffect(() => {
         const checkMembership = async () => {
-            if (user && group?.id && !memberId) {
-                const { data } = await supabase
-                    .from('members')
-                    .select('*')
-                    .eq('group_id', group.id)
-                    .eq('user_id', user.id)
-                    .single();
+            if (user && group?.id) {
+                // If we have a local guest memberId, try to link it to the user_id if not done
+                if (memberId) {
+                    const currentMember = members.find(m => m.id === memberId);
+                    if (currentMember && !currentMember.user_id) {
+                        console.log('Linking guest session to user profile...');
+                        await linkGuestToUserAction(slug, memberId, user.id);
+                        // No need to setMemberId again, just update local list for UI consistency
+                        setMembers(prev => prev.map(m => m.id === memberId ? { ...m, user_id: user.id } : m));
+                    }
+                }
 
-                if (data) {
-                    setMemberId(data.id);
-                    setMemberName(data.name);
-                    setIsReady(data.is_ready);
-                    setTimerEndTime(data.timer_end_time);
-                    localStorage.setItem(`member_${slug}`, data.id);
-                    localStorage.setItem(`member_name_${slug}`, data.name);
+                // If no local memberId yet, or link just happened, ensure we sync state
+                if (!memberId) {
+                    const { data } = await supabase
+                        .from('members')
+                        .select('*')
+                        .eq('group_id', group.id)
+                        .eq('user_id', user.id)
+                        .single();
+
+                    if (data) {
+                        setMemberId(data.id);
+                        setMemberName(data.name);
+                        setIsReady(data.is_ready);
+                        setTimerEndTime(data.timer_end_time);
+                        localStorage.setItem(`member_${slug}`, data.id);
+                        localStorage.setItem(`member_name_${slug}`, data.name);
+                    }
                 }
             }
         };
 
         checkMembership();
-    }, [user, group?.id, memberId, slug]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user, group?.id, memberId, slug, members]);
 
     const handleJoin = async (name: string) => {
         if (!group) return;

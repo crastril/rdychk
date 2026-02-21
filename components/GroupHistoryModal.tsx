@@ -61,12 +61,16 @@ export function GroupHistoryModal({ open, onOpenChange }: GroupHistoryModalProps
             }
 
             // Transform data to match JoinedGroup interface
-            const joinedGroups: JoinedGroup[] = (data as unknown as { id: string; group_id: string; joined_at: string; groups: { name: string; slug: string } | { name: string; slug: string }[] }[])
+            const joinedGroups: JoinedGroup[] = (data as unknown as any[])
                 .map((member) => {
-                    // Supabase join can return array or single object depending on relationship cardinality
-                    const group = Array.isArray(member.groups) ? member.groups[0] : member.groups;
+                    // Supabase join can return plural 'groups' or singular 'group' depending on relationship detection
+                    const groupData = member.groups || member.group;
+                    const group = Array.isArray(groupData) ? groupData[0] : groupData;
 
-                    if (!group) return null;
+                    if (!group) {
+                        console.warn('Membership found but related group data is missing (check RLS on groups table):', member);
+                        return null;
+                    }
 
                     return {
                         id: member.id,

@@ -107,6 +107,29 @@ export async function joinGroupAction(groupId: string, slug: string, name: strin
 }
 
 /**
+ * Server Action: Link a guest membership to an authenticated user ID.
+ * Used when a guest logs in and we want to preserve their history and identity in that group.
+ */
+export async function linkGuestToUserAction(slug: string, memberId: string, userId: string) {
+    const isAuthorized = await verifyGuestSession(slug, memberId);
+    if (!isAuthorized) {
+        return { success: false, error: 'Unauthorized: Invalid guest session.' };
+    }
+
+    const { error } = await supabase
+        .from('members')
+        .update({ user_id: userId, updated_at: new Date().toISOString() })
+        .eq('id', memberId);
+
+    if (error) {
+        console.error('Error linking guest to user:', error);
+        return { success: false, error: error.message };
+    }
+
+    return { success: true };
+}
+
+/**
  * Server Action: Reclaim an existing guest session (usually called when selecting an existing name).
  * In a highly secure app, we'd need email/password here. For this app, simply picking the name
  * grants access (as designed in the original UI), but we still set the secure cookie to lock it down afterwards.
