@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -18,33 +18,14 @@ interface ManageGroupModalProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
     groupId: string;
+    members: Member[];
+    loading?: boolean;
+    onRefresh?: () => Promise<void>;
     currentMemberId: string | null;
 }
 
-export function ManageGroupModal({ isOpen, onOpenChange, groupId, currentMemberId }: ManageGroupModalProps) {
-    const [members, setMembers] = useState<Member[]>([]);
-    const [loading, setLoading] = useState(false);
+export function ManageGroupModal({ isOpen, onOpenChange, groupId, members, loading, onRefresh, currentMemberId }: ManageGroupModalProps) {
     const [deletingId, setDeletingId] = useState<string | null>(null);
-
-    useEffect(() => {
-        if (isOpen) {
-            fetchMembers();
-        }
-    }, [isOpen, groupId]);
-
-    const fetchMembers = async () => {
-        setLoading(true);
-        const { data } = await supabase
-            .from('members')
-            .select('*')
-            .eq('group_id', groupId)
-            .order('joined_at', { ascending: true });
-
-        if (data) {
-            setMembers(data);
-        }
-        setLoading(false);
-    };
 
     const handleDeleteMember = async (memberId: string) => {
         if (!confirm("Voulez-vous vraiment supprimer ce membre du groupe ?")) return;
@@ -57,9 +38,7 @@ export function ManageGroupModal({ isOpen, onOpenChange, groupId, currentMemberI
                 .eq('id', memberId);
 
             if (error) throw error;
-
-            // Remove from local state
-            setMembers(members.filter(m => m.id !== memberId));
+            if (onRefresh) await onRefresh();
         } catch (error) {
             console.error('Error deleting member:', error);
             alert("Erreur lors de la suppression.");
@@ -80,7 +59,7 @@ export function ManageGroupModal({ isOpen, onOpenChange, groupId, currentMemberI
 
                 <div className="flex-1 overflow-hidden p-6 pt-4">
                     <div className="space-y-4 h-full overflow-y-auto pr-2">
-                        {loading ? (
+                        {loading && members.length === 0 ? (
                             <div className="flex justify-center py-4">
                                 <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                             </div>

@@ -3,17 +3,18 @@
 import { useEffect, useState } from 'react';
 import type { Member } from '@/types/database';
 import { Badge } from '@/components/ui/badge';
-import { Users as UsersIcon } from 'lucide-react';
+import { Users as UsersIcon, Loader2 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { MemberStatus } from './MemberStatus';
 
 interface MemberListProps {
+    loading?: boolean;
     currentMemberId?: string | null;
     members: Member[];
 }
 
-export default function MemberList({ currentMemberId, members }: MemberListProps) {
+export default function MemberList({ loading, currentMemberId, members }: MemberListProps) {
 
     const getInitials = (name: string) => {
         return name
@@ -23,6 +24,14 @@ export default function MemberList({ currentMemberId, members }: MemberListProps
             .toUpperCase()
             .slice(0, 2);
     };
+
+    if (loading && members.length === 0) {
+        return (
+            <div className="flex justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     if (members.length === 0) {
         return (
