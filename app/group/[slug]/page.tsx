@@ -531,7 +531,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                                     </div>
                                 </CardHeader>
                                 <CardContent>
-                                    <MemberList groupId={group.id} currentMemberId={memberId} />
+                                    <MemberList members={members} currentMemberId={memberId} />
                                 </CardContent>
                             </Card>
 

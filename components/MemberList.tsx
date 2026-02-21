@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import type { Member } from '@/types/database';
 import { Badge } from '@/components/ui/badge';
 import { Check, Clock, Users as UsersIcon, Timer, AlertTriangle } from 'lucide-react';
@@ -9,52 +8,17 @@ import { Check, Clock, Users as UsersIcon, Timer, AlertTriangle } from 'lucide-r
 import { cn } from '@/lib/utils';
 
 interface MemberListProps {
-    groupId: string;
     currentMemberId?: string | null;
+    members: Member[];
 }
 
-export default function MemberList({ groupId, currentMemberId }: MemberListProps) {
-    const [members, setMembers] = useState<Member[]>([]);
+export default function MemberList({ currentMemberId, members }: MemberListProps) {
     const [now, setNow] = useState(new Date());
 
     useEffect(() => {
         const interval = setInterval(() => setNow(new Date()), 1000);
         return () => clearInterval(interval);
     }, []);
-
-    useEffect(() => {
-        const fetchMembers = async () => {
-            const { data } = await supabase
-                .from('members')
-                .select('*')
-                .eq('group_id', groupId)
-                .order('joined_at', { ascending: true });
-
-            if (data) setMembers(data);
-        };
-
-        fetchMembers();
-
-        const channel = supabase
-            .channel(`members:${groupId}`)
-            .on(
-                'postgres_changes',
-                {
-                    event: '*',
-                    schema: 'public',
-                    table: 'members',
-                    filter: `group_id=eq.${groupId}`,
-                },
-                () => {
-                    fetchMembers();
-                }
-            )
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, [groupId]);
 
     const getInitials = (name: string) => {
         return name
