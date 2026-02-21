@@ -67,32 +67,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const fetchProfile = async (userId: string) => {
         try {
-            const { data, error } = await supabase
+            // 1. Try to get existing profile
+            const { data: existingProfile, error: fetchError } = await supabase
                 .from('profiles')
                 .select('display_name, avatar_url')
                 .eq('id', userId)
                 .single();
 
-            if (error && error.code !== 'PGRST116') { // Ignore "no rows found" error
-                console.error("Error fetching profile:", error);
+            // 2. Identify if we need to sync from metadata
+            const { data: { user } } = await supabase.auth.getUser();
+            const meta = user?.user_metadata;
+
+            const metaName = meta?.full_name || meta?.name || user?.email?.split('@')[0] || "Utilisateur";
+            const metaAvatar = meta?.avatar_url;
+
+            // If profile exists and has a name, we're good
+            if (existingProfile?.display_name) {
+                setProfile(existingProfile);
+                return;
             }
 
-            // Fallback to user metadata if profile is missing
-            if (!data || !data.display_name) {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (user?.user_metadata) {
-                    setProfile({
-                        display_name: data?.display_name || user.user_metadata.full_name || user.user_metadata.name || user.email?.split('@')[0] || "Utilisateur",
-                        avatar_url: data?.avatar_url || user.user_metadata.avatar_url,
-                    });
-                    return;
+            // 3. Auto-creation / Sync logic
+            // If we have metadata but no profile (or profile has no name), upsert it
+            if (metaName) {
+                const newProfile = {
+                    id: userId,
+                    display_name: metaName,
+                    avatar_url: metaAvatar,
+                    updated_at: new Date().toISOString()
+                };
+
+                const { data: savedProfile, error: upsertError } = await supabase
+                    .from('profiles')
+                    .upsert(newProfile)
+                    .select('display_name, avatar_url')
+                    .single();
+
+                if (!upsertError && savedProfile) {
+                    setProfile(savedProfile);
+                } else {
+                    // Fallback to local state if DB update fails but we have meta
+                    setProfile({ display_name: metaName, avatar_url: metaAvatar, is_inferred: true });
                 }
             }
-            setProfile(data);
         } catch (err) {
             console.error("Unexpected error in fetchProfile:", err);
-            // Non-blocking fallback
-            setProfile({ display_name: "Utilisateur", avatar_url: null });
+            setProfile({ display_name: "Utilisateur", avatar_url: null, is_inferred: true });
         }
     };
 
