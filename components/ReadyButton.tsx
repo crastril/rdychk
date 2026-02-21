@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { Check, Clock, Loader2, Timer, AlertTriangle } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useOptimistic, startTransition } from 'react';
 
 interface ReadyButtonProps {
     memberId: string;
@@ -12,12 +12,16 @@ interface ReadyButtonProps {
 }
 
 export default function ReadyButton({ memberId, isReady, timerEndTime }: ReadyButtonProps) {
-    const [loading, setLoading] = useState(false);
     const [timeLeft, setTimeLeft] = useState<string | null>(null);
     const [isSoonReady, setIsSoonReady] = useState(false);
 
+    const [optimisticIsReady, addOptimisticIsReady] = useOptimistic<boolean, boolean>(
+        isReady,
+        (state, newState) => newState
+    );
+
     useEffect(() => {
-        if (!timerEndTime || isReady) {
+        if (!timerEndTime || optimisticIsReady) {
             setTimeLeft(null);
             setIsSoonReady(false);
             return;
@@ -42,12 +46,14 @@ export default function ReadyButton({ memberId, isReady, timerEndTime }: ReadyBu
         tick();
         const interval = setInterval(tick, 1000);
         return () => clearInterval(interval);
-    }, [timerEndTime, isReady]);
+    }, [timerEndTime, optimisticIsReady]);
 
     const toggleReady = async () => {
+        const nextState = !optimisticIsReady;
+
         // Haptic feedback
         if (typeof window !== 'undefined' && navigator.vibrate) {
-            if (!isReady) {
+            if (nextState) {
                 // Confident single vibration when becoming ready
                 navigator.vibrate(50);
             } else {
@@ -56,12 +62,15 @@ export default function ReadyButton({ memberId, isReady, timerEndTime }: ReadyBu
             }
         }
 
-        setLoading(true);
+        startTransition(() => {
+            addOptimisticIsReady(nextState);
+        });
+
         try {
             const { error } = await supabase
                 .from('members')
                 .update({
-                    is_ready: !isReady,
+                    is_ready: nextState,
                     updated_at: new Date().toISOString(),
                     timer_end_time: null // Clear timer when manually toggling
                 })
@@ -70,35 +79,27 @@ export default function ReadyButton({ memberId, isReady, timerEndTime }: ReadyBu
             if (error) throw error;
         } catch (error) {
             console.error('Error updating status:', error);
-        } finally {
-            setLoading(false);
         }
     };
 
     return (
         <Button
             onClick={toggleReady}
-            disabled={loading}
-            variant={isReady ? "default" : "outline"}
+            variant={optimisticIsReady ? "default" : "outline"}
             size="lg"
             className={`
                 w-full h-24 text-xl font-bold tracking-wide transition-all duration-500
-                ${isReady
+                ${optimisticIsReady
                     ? 'bg-primary hover:bg-primary/90 shadow-[0_0_30px_-5px_hsl(var(--primary)/0.6)] scale-[1.02] border-primary'
                     : isSoonReady || timeLeft
                         ? 'bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/50 text-amber-500'
                         : 'bg-background hover:bg-accent hover:text-accent-foreground border-2'
                 }
             `}
-            aria-label={isReady ? "Marquer comme pas prêt" : "Marquer comme prêt"}
-            aria-pressed={isReady}
+            aria-label={optimisticIsReady ? "Marquer comme pas prêt" : "Marquer comme prêt"}
+            aria-pressed={optimisticIsReady}
         >
-            {loading ? (
-                <div className="flex items-center gap-3">
-                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                    <span className="text-muted-foreground">Mise à jour...</span>
-                </div>
-            ) : isReady ? (
+            {optimisticIsReady ? (
                 <div className="flex items-center gap-3 animate-slide-up">
                     <div className="p-1 rounded-full bg-primary-foreground/20">
                         <Check className="w-6 h-6" />
