@@ -43,7 +43,9 @@ export default function CreateGroupForm() {
 
         } catch (error: unknown) {
             console.error('Group creation failed:', error);
-            const errorMessage = error instanceof Error ? error.message : "Erreur inconnue";
+            const errorMessage = error instanceof Error
+                ? error.message
+                : (error as any)?.message || (typeof error === 'object' ? JSON.stringify(error) : "Erreur inconnue");
             alert("Erreur lors de la création du groupe: " + errorMessage);
             setLoading(false);
             return; // Stop here if DB failed
