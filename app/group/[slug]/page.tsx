@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { use, useEffect, useState, useCallback, useMemo } from 'react';
 import { notFound, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
@@ -215,10 +215,10 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
         };
     }, [memberId]);
 
-    const guestMembers = members.filter(m => {
+    const guestMembers = useMemo(() => members.filter(m => {
         // Explicit check for null/undefined to catch any weirdness
         return m.user_id === null || m.user_id === undefined;
-    });
+    }), [members]);
 
     useEffect(() => {
         console.log('Members updated:', members.length);
@@ -227,7 +227,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
 
     const { user } = useAuth();
 
-    const handleJoin = async (name: string) => {
+    const handleJoin = useCallback(async (name: string) => {
         if (!group) return;
 
         // If user is logged in, check if they are already a member
@@ -330,7 +330,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
             localStorage.setItem(`member_${slug}`, data.id);
             localStorage.setItem(`member_name_${slug}`, name);
         }
-    };
+    }, [group, user, memberId, slug]);
 
 
 
@@ -353,7 +353,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
         }
     };
 
-    const handleReclaim = async (id: string, name: string) => {
+    const handleReclaim = useCallback(async (id: string, name: string) => {
         // Double check it exists locally
         const member = members.find(m => m.id === id);
         if (member) {
@@ -364,7 +364,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
             localStorage.setItem(`member_${slug}`, member.id);
             localStorage.setItem(`member_name_${slug}`, member.name);
         }
-    };
+    }, [members, slug]);
 
     if (loading) {
         return (

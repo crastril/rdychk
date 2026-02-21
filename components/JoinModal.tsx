@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -32,16 +32,13 @@ export default function JoinModal({ onJoin, onReclaim, groupName, existingGuests
     const [view, setView] = useState<'create' | 'reclaim'>('create');
     const [selectedGuestId, setSelectedGuestId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const hasAttemptedAutoJoin = useRef(false);
 
     useEffect(() => {
-        if (profile?.display_name && !isAutoJoining && !user) { // Only auto-fill if not logged in (handled by parent otherwise)
-            // Actually, parent handles auto-login for matched users. 
-            // If we are here, it means we are either a guest or a new user.
-            // Let's just pre-fill if available but NOT auto-submit to give choice?
-            // The original logic auto-submitted. Let's keep it for now if it's a known profile.
-        }
-        if (profile?.display_name && !isAutoJoining) {
+        if (profile?.display_name && !isAutoJoining && !hasAttemptedAutoJoin.current) {
+            hasAttemptedAutoJoin.current = true;
             setName(profile.display_name);
+
             // Auto-join if we have a name from the profile
             const autoJoin = async () => {
                 setIsAutoJoining(true); // Keep this for the specific "joining as..." screen
