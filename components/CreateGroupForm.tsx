@@ -10,6 +10,7 @@ import { Loader2, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
 
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { createSlug } from '@/lib/slug';
 
 export default function CreateGroupForm() {
     const { user } = useAuth();
@@ -17,15 +18,6 @@ export default function CreateGroupForm() {
     const [groupType, setGroupType] = useState<'remote' | 'in_person'>('remote');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
-
-    const createSlug = (name: string) => {
-        return name
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-+|-+$/g, '');
-    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
