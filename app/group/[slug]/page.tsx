@@ -34,6 +34,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
     const [timerEndTime, setTimerEndTime] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [members, setMembers] = useState<Member[]>([]);
+    const [loadingMembers, setLoadingMembers] = useState(false);
     const [isManageModalOpen, setIsManageModalOpen] = useState(false);
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
@@ -63,6 +64,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
 
     const fetchMembers = async () => {
         if (!group?.id) return;
+        setLoadingMembers(true);
         const { data } = await supabase
             .from('members')
             .select('*')
@@ -70,6 +72,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
             .order('joined_at', { ascending: true });
 
         if (data) setMembers(data);
+        setLoadingMembers(false);
     };
 
     useEffect(() => {
@@ -535,7 +538,7 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                                     </div>
                                 </CardHeader>
                                 <CardContent>
-                                    <MemberList groupId={group.id} currentMemberId={memberId} />
+                                    <MemberList members={members} loading={loadingMembers} groupId={group.id} currentMemberId={memberId} />
                                 </CardContent>
                             </Card>
 
@@ -543,6 +546,9 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
                                 isOpen={isManageModalOpen}
                                 onOpenChange={setIsManageModalOpen}
                                 groupId={group.id}
+                                members={members}
+                                loading={loadingMembers}
+                                onRefresh={fetchMembers}
                                 currentMemberId={memberId}
                             />
 
