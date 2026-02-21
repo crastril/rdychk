@@ -55,7 +55,9 @@ export function NotificationManager({ readyCount, totalCount, groupName }: Notif
 
             // 2. Sound
             if (audioRef.current) {
-                audioRef.current.play().catch(e => console.log("Audio play failed (user interaction needed first)", e));
+                audioRef.current.play().catch(() => {
+                    // Ignore autoplay failures - browser requires user interaction first
+                });
             }
 
             // 3. Browser Notification
@@ -69,6 +71,7 @@ export function NotificationManager({ readyCount, totalCount, groupName }: Notif
 
         prevReadyCountRef.current = readyCount;
     }, [readyCount, totalCount, groupName]);
+
 
     return null; // Headless component
 }
