@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import confetti from 'canvas-confetti';
 
 interface NotificationManagerProps {
@@ -27,20 +27,7 @@ export function NotificationManager({ readyCount, totalCount, groupName }: Notif
         }
     }, []);
 
-    useEffect(() => {
-        // Trigger only when we reach 100% ready (and we weren't already there or just starting)
-        // We also want to ensure we have at least 2 people for it to be a "group" event worth celebrating
-        const isComplete = totalCount > 1 && readyCount === totalCount;
-        const wasComplete = totalCount > 1 && prevReadyCountRef.current === totalCount;
-
-        if (isComplete && !wasComplete) {
-            triggerCompletionEffects();
-        }
-
-        prevReadyCountRef.current = readyCount;
-    }, [readyCount, totalCount, groupName]);
-
-    const triggerCompletionEffects = () => {
+    const triggerCompletionEffects = useCallback(() => {
         // 1. Confetti
         const duration = 3000;
         const animationEnd = Date.now() + duration;
@@ -48,7 +35,7 @@ export function NotificationManager({ readyCount, totalCount, groupName }: Notif
 
         const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
 
-        const interval: any = setInterval(function () {
+        const interval = setInterval(function () {
             const timeLeft = animationEnd - Date.now();
 
             if (timeLeft <= 0) {
@@ -62,7 +49,9 @@ export function NotificationManager({ readyCount, totalCount, groupName }: Notif
 
         // 2. Sound
         if (audioRef.current) {
-            audioRef.current.play().catch(e => console.log("Audio play failed (user interaction needed first)", e));
+            audioRef.current.play().catch(() => {
+                // Ignore autoplay errors
+            });
         }
 
         // 3. Browser Notification
@@ -72,7 +61,20 @@ export function NotificationManager({ readyCount, totalCount, groupName }: Notif
                 icon: '/icon.png' // Ensure you have an icon or remove this line
             });
         }
-    };
+    }, [groupName]);
+
+    useEffect(() => {
+        // Trigger only when we reach 100% ready (and we weren't already there or just starting)
+        // We also want to ensure we have at least 2 people for it to be a "group" event worth celebrating
+        const isComplete = totalCount > 1 && readyCount === totalCount;
+        const wasComplete = totalCount > 1 && prevReadyCountRef.current === totalCount;
+
+        if (isComplete && !wasComplete) {
+            triggerCompletionEffects();
+        }
+
+        prevReadyCountRef.current = readyCount;
+    }, [readyCount, totalCount, groupName, triggerCompletionEffects]);
 
     return null; // Headless component
 }
