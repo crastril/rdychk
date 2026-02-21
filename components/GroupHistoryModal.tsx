@@ -46,36 +46,28 @@ export function GroupHistoryModal({ open, onOpenChange }: GroupHistoryModalProps
         if (!user) return;
         setLoading(true);
         try {
-            // 1. Get membership details
-            const { data: memberData, error: memberError } = await supabase
+            // Get membership details with joined group data
+            const { data, error } = await supabase
                 .from('members')
-                .select('id, group_id, joined_at')
+                .select('id, group_id, joined_at, groups(name, slug)')
                 .eq('user_id', user.id)
                 .order('joined_at', { ascending: false });
 
-            if (memberError) throw memberError;
+            if (error) throw error;
 
-            if (!memberData || memberData.length === 0) {
+            if (!data) {
                 setGroups([]);
                 return;
             }
 
-            // 2. Get group details
-            const groupIds = memberData.map(m => m.group_id);
-            const { data: groupData, error: groupError } = await supabase
-                .from('groups')
-                .select('id, name, slug')
-                .in('id', groupIds);
+            // Transform data to match JoinedGroup interface
+            const joinedGroups: JoinedGroup[] = (data as any[])
+                .map((member) => {
+                    // Supabase join can return array or single object depending on relationship cardinality
+                    const group = Array.isArray(member.groups) ? member.groups[0] : member.groups;
 
-            if (groupError) throw groupError;
-
-            // 3. Merge data
-            const groupsMap = new Map(groupData?.map(g => [g.id, g]));
-
-            const joinedGroups: JoinedGroup[] = memberData
-                .map(member => {
-                    const group = groupsMap.get(member.group_id);
                     if (!group) return null;
+
                     return {
                         id: member.id,
                         group_id: member.group_id,
