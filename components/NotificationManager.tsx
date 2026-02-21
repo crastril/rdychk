@@ -60,6 +60,11 @@ export function NotificationManager({ readyCount, totalCount, groupName }: Notif
                 });
             }
 
+            // 2b. Haptics
+            if (typeof window !== 'undefined' && navigator.vibrate) {
+                navigator.vibrate([100, 50, 100, 50, 200]);
+            }
+
             // 3. Browser Notification
             if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
                 new Notification(`Tout le monde est prêt ! 🎉`, {

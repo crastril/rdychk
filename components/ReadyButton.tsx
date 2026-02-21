@@ -45,6 +45,17 @@ export default function ReadyButton({ memberId, isReady, timerEndTime }: ReadyBu
     }, [timerEndTime, isReady]);
 
     const toggleReady = async () => {
+        // Haptic feedback
+        if (typeof window !== 'undefined' && navigator.vibrate) {
+            if (!isReady) {
+                // Confident single vibration when becoming ready
+                navigator.vibrate(50);
+            } else {
+                // Double light vibration when canceling
+                navigator.vibrate([30, 50, 30]);
+            }
+        }
+
         setLoading(true);
         try {
             const { error } = await supabase
