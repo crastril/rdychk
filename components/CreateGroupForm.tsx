@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
 
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { GroupTypeSelector } from '@/components/GroupTypeSelector';
 
 export default function CreateGroupForm() {
     const { user } = useAuth();
@@ -92,26 +92,7 @@ export default function CreateGroupForm() {
                 </div>
                 <div className="space-y-4">
                     <Label>Type de groupe</Label>
-                    <RadioGroup value={groupType} onValueChange={(val: any) => setGroupType(val)} className="flex flex-col gap-4">
-                        <div className="flex items-center space-x-2 border p-4 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
-                            <RadioGroupItem value="remote" id="remote" />
-                            <div className="flex-1 cursor-pointer" onClick={() => setGroupType('remote')}>
-                                <Label htmlFor="remote" className="cursor-pointer font-semibold text-base">À distance</Label>
-                                <p className="text-sm text-muted-foreground mt-1">
-                                    Pas de lieu physique. Idéal pour des appels vidéo ou jeux en ligne.
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex items-center space-x-2 border p-4 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
-                            <RadioGroupItem value="in_person" id="in_person" />
-                            <div className="flex-1 cursor-pointer" onClick={() => setGroupType('in_person')}>
-                                <Label htmlFor="in_person" className="cursor-pointer font-semibold text-base">Sur place</Label>
-                                <p className="text-sm text-muted-foreground mt-1">
-                                    Définnissez un lieu de rendez-vous pour que les membres s'y retrouvent.
-                                </p>
-                            </div>
-                        </div>
-                    </RadioGroup>
+                    <GroupTypeSelector value={groupType} onValueChange={(val) => setGroupType(val)} />
                 </div>
 
                 <Button
