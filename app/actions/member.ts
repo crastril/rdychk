@@ -194,3 +194,73 @@ export async function leaveGroupAction(slug: string, memberId: string) {
 
     return { success: true };
 }
+
+/**
+ * Server Action: Promote a member to admin (requester must be admin or first admin).
+ */
+export async function promoteToAdminAction(slug: string, requesterId: string, targetMemberId: string) {
+    const isAuthorized = await verifyGuestSession(slug, requesterId);
+    if (!isAuthorized) {
+        return { success: false, error: 'Unauthorized: No valid session.' };
+    }
+
+    // Check requester's role and group
+    const { data: requester } = await supabase
+        .from('members')
+        .select('role, group_id')
+        .eq('id', requesterId)
+        .single();
+
+    if (!requester) return { success: false, error: 'Requester not found.' };
+
+    // Allow promotion if there are no admins at all (bootstrap case), or requester is admin
+    const { count: adminCount } = await supabase
+        .from('members')
+        .select('*', { count: 'exact', head: true })
+        .eq('group_id', requester.group_id)
+        .eq('role', 'admin');
+
+    if (requester.role !== 'admin' && (adminCount ?? 0) > 0) {
+        return { success: false, error: 'Forbidden: Only admins can promote members.' };
+    }
+
+    const { error } = await supabase
+        .from('members')
+        .update({ role: 'admin', updated_at: new Date().toISOString() })
+        .eq('id', targetMemberId);
+
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+}
+
+/**
+ * Server Action: Kick a member from the group (requester must be admin).
+ */
+export async function kickMemberAction(slug: string, requesterId: string, targetMemberId: string) {
+    if (requesterId === targetMemberId) {
+        return { success: false, error: 'Cannot kick yourself. Use leaveGroupAction instead.' };
+    }
+
+    const isAuthorized = await verifyGuestSession(slug, requesterId);
+    if (!isAuthorized) {
+        return { success: false, error: 'Unauthorized: No valid session.' };
+    }
+
+    const { data: requester } = await supabase
+        .from('members')
+        .select('role')
+        .eq('id', requesterId)
+        .single();
+
+    if (!requester || requester.role !== 'admin') {
+        return { success: false, error: 'Forbidden: Only admins can kick members.' };
+    }
+
+    const { error } = await supabase
+        .from('members')
+        .delete()
+        .eq('id', targetMemberId);
+
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+}

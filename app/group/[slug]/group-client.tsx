@@ -5,7 +5,7 @@ import { notFound, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/auth-provider';
-import { joinGroupAction, reclaimSessionAction, leaveGroupAction, updateMemberAction } from '@/app/actions/member';
+import { joinGroupAction, reclaimSessionAction, leaveGroupAction, updateMemberAction, promoteToAdminAction } from '@/app/actions/member';
 import JoinModal from '@/components/JoinModal';
 import MemberList from '@/components/MemberList';
 import ReadyButton from '@/components/ReadyButton';
@@ -150,22 +150,15 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
 
     useEffect(() => {
         const ensureAdmin = async () => {
-            if (members.length > 0) {
+            if (members.length > 0 && memberId) {
                 const hasAdmin = members.some(m => m.role === 'admin');
 
                 if (!hasAdmin) {
-                    // Promote the first member (effectively the creator/oldest)
+                    // Promote the oldest member via server action (verifies session)
                     const candidate = members[0];
                     if (candidate) {
-
-                        // Persist to DB
-                        const { error } = await supabase
-                            .from('members')
-                            .update({ role: 'admin' })
-                            .eq('id', candidate.id);
-
-                        if (!error) {
-                            // Force local update to reflect change immediately
+                        const result = await promoteToAdminAction(slug, memberId, candidate.id);
+                        if (result.success) {
                             setMembers(prev => prev.map(m => m.id === candidate.id ? { ...m, role: 'admin' } : m));
                         }
                     }
@@ -174,6 +167,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
         };
 
         ensureAdmin();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [members]);
 
     useEffect(() => {
@@ -516,6 +510,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                                 isOpen={isManageModalOpen}
                                 onOpenChange={setIsManageModalOpen}
                                 groupId={group.id}
+                                slug={slug}
                                 members={members}
                                 loading={loadingMembers}
                                 onRefresh={fetchMembers}

@@ -12,8 +12,8 @@ import {
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
-// Threshold for auto-refresh in milliseconds (e.g., 5 minutes)
-const REFRESH_THRESHOLD = 5 * 60 * 1000;
+// Threshold for auto-refresh in milliseconds (90 seconds — catches most mobile wake-ups)
+const REFRESH_THRESHOLD = 90 * 1000;
 
 interface ConnectionStatusProps {
     onRefresh: () => Promise<void>;

@@ -9,7 +9,7 @@ import {
     DialogTitle,
     DialogDescription,
 } from '@/components/ui/dialog';
-import { supabase } from '@/lib/supabase';
+import { kickMemberAction } from '@/app/actions/member';
 import { Loader2, Trash2, ShieldAlert } from 'lucide-react';
 import { Member } from '@/types/database';
 import { Badge } from '@/components/ui/badge';
@@ -18,30 +18,30 @@ interface ManageGroupModalProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
     groupId: string;
+    slug: string;
     members: Member[];
     loading?: boolean;
     onRefresh?: () => Promise<void>;
     currentMemberId: string | null;
 }
 
-export function ManageGroupModal({ isOpen, onOpenChange, groupId, members, loading, onRefresh, currentMemberId }: ManageGroupModalProps) {
+export function ManageGroupModal({ isOpen, onOpenChange, slug, members, loading, onRefresh, currentMemberId }: ManageGroupModalProps) {
     const [deletingId, setDeletingId] = useState<string | null>(null);
 
-    const handleDeleteMember = async (memberId: string) => {
-        if (!confirm("Voulez-vous vraiment supprimer ce membre du groupe ?")) return;
+    const handleDeleteMember = async (targetId: string) => {
+        if (!currentMemberId) return;
+        if (!confirm('Voulez-vous vraiment exclure ce membre du groupe ?')) return;
 
-        setDeletingId(memberId);
+        setDeletingId(targetId);
         try {
-            const { error } = await supabase
-                .from('members')
-                .delete()
-                .eq('id', memberId);
-
-            if (error) throw error;
+            const result = await kickMemberAction(slug, currentMemberId, targetId);
+            if (!result.success) {
+                console.error('Kick failed:', result.error);
+                return;
+            }
             if (onRefresh) await onRefresh();
         } catch (error) {
-            console.error('Error deleting member:', error);
-            alert("Erreur lors de la suppression.");
+            console.error('Error kicking member:', error);
         } finally {
             setDeletingId(null);
         }
