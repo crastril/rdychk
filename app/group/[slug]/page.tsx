@@ -220,10 +220,6 @@ export default function GroupPage({ params }: { params: Promise<{ slug: string }
         return m.user_id === null || m.user_id === undefined;
     });
 
-    useEffect(() => {
-        console.log('Members updated:', members.length);
-        console.log('Guest members:', guestMembers.length, guestMembers);
-    }, [members]);
 
     const { user } = useAuth();
 
