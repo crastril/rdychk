@@ -60,7 +60,7 @@ export function ShareMenu({ groupName, url }: ShareMenuProps) {
         }
 
         if (shareUrl) {
-            window.open(shareUrl, '_blank');
+            window.open(shareUrl, '_blank', 'noopener,noreferrer');
         }
     };
 
