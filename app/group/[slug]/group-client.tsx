@@ -278,6 +278,10 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
             // set by the server action.
             localStorage.setItem(`member_${slug}`, result.member.id);
             localStorage.setItem(`member_name_${slug}`, result.member.name);
+
+            // Force aggressive sync with server and local state
+            router.refresh();
+            await fetchMembers();
         } else {
             console.error('Error joining group via action:', result.error);
             // Handle error (e.g., unique constraint on user_id if already joined)
@@ -492,6 +496,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                                     currentMemberName={memberName}
                                     onLocationUpdate={(newLocation) => {
                                         setGroup(prev => prev ? { ...prev, location: { ...newLocation, name: newLocation.name || '' } as unknown as NonNullable<typeof prev.location> } : null);
+                                        router.refresh();
                                     }}
                                 />
                             )}

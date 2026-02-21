@@ -2,6 +2,7 @@
 
 import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
+import { revalidatePath } from 'next/cache';
 import crypto from 'crypto';
 
 // Secret key for HMAC (In production, use a secure env variable like process.env.SESSION_SECRET)
@@ -103,6 +104,7 @@ export async function joinGroupAction(groupId: string, slug: string, name: strin
     // 3. Set secure cookie for guests AND users (unified approach)
     await setSecureGuestCookie(slug, member.id);
 
+    revalidatePath(`/group/${slug}`);
     return { success: true, member };
 }
 
@@ -126,6 +128,7 @@ export async function linkGuestToUserAction(slug: string, memberId: string, user
         return { success: false, error: error.message };
     }
 
+    revalidatePath(`/group/${slug}`);
     return { success: true };
 }
 
@@ -166,6 +169,7 @@ export async function toggleReadyAction(slug: string, memberId: string, isReady:
         return { success: false, error: error.message };
     }
 
+    revalidatePath(`/group/${slug}`);
     return { success: true };
 }
 
@@ -197,6 +201,7 @@ export async function updateMemberAction(
         return { success: false, error: error.message };
     }
 
+    revalidatePath(`/group/${slug}`);
     return { success: true };
 }
 
@@ -215,6 +220,7 @@ export async function leaveGroupAction(slug: string, memberId: string) {
     await supabase.from('members').delete().eq('id', memberId);
     await clearSecureGuestCookie(slug);
 
+    revalidatePath(`/group/${slug}`);
     return { success: true };
 }
 
@@ -253,6 +259,8 @@ export async function promoteToAdminAction(slug: string, requesterId: string, ta
         .eq('id', targetMemberId);
 
     if (error) return { success: false, error: error.message };
+
+    revalidatePath(`/group/${slug}`);
     return { success: true };
 }
 
@@ -285,5 +293,7 @@ export async function kickMemberAction(slug: string, requesterId: string, target
         .eq('id', targetMemberId);
 
     if (error) return { success: false, error: error.message };
+
+    revalidatePath(`/group/${slug}`);
     return { success: true };
 }
