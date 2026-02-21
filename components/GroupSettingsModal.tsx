@@ -34,7 +34,7 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId }: GroupSetti
         setLoading(true);
         const { data } = await supabase.from('groups').select('type').eq('id', groupId).single();
         if (data) {
-            setGroupType(data.type as any || 'remote');
+            setGroupType((data.type as 'remote' | 'in_person') || 'remote');
         }
         setLoading(false);
     };

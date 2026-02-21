@@ -1,17 +1,18 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/lib/supabase';
+import { toggleReadyAction } from '@/app/actions/member';
 import { Check, Clock, Loader2, Timer, AlertTriangle } from 'lucide-react';
 import { useEffect, useState, useOptimistic, startTransition } from 'react';
 
 interface ReadyButtonProps {
+    slug: string; // Need slug for the secure cookie verification
     memberId: string;
     isReady: boolean;
     timerEndTime?: string | null;
 }
 
-export default function ReadyButton({ memberId, isReady, timerEndTime }: ReadyButtonProps) {
+export default function ReadyButton({ slug, memberId, isReady, timerEndTime }: ReadyButtonProps) {
     const [timeLeft, setTimeLeft] = useState<string | null>(null);
     const [isSoonReady, setIsSoonReady] = useState(false);
 
@@ -22,7 +23,9 @@ export default function ReadyButton({ memberId, isReady, timerEndTime }: ReadyBu
 
     useEffect(() => {
         if (!timerEndTime || optimisticIsReady) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setTimeLeft(null);
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setIsSoonReady(false);
             return;
         }
@@ -67,18 +70,14 @@ export default function ReadyButton({ memberId, isReady, timerEndTime }: ReadyBu
         });
 
         try {
-            const { error } = await supabase
-                .from('members')
-                .update({
-                    is_ready: nextState,
-                    updated_at: new Date().toISOString(),
-                    timer_end_time: null // Clear timer when manually toggling
-                })
-                .eq('id', memberId);
-
-            if (error) throw error;
+            const result = await toggleReadyAction(slug, memberId, nextState);
+            if (!result.success) {
+                console.error("Action failed:", result.error);
+                // Optionally revert the optimistic update here if needed
+                // startTransition(() => addOptimisticIsReady(!nextState)); 
+            }
         } catch (error) {
-            console.error('Error updating status:', error);
+            console.error('Error updating status context:', error);
         }
     };
 

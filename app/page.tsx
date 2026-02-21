@@ -114,7 +114,7 @@ export default function Home() {
               onClick={() => setHistoryOpen(true)}
             >
               <HistoryIcon className="w-4 h-4" />
-              Voir tout l'historique
+              Voir tout l&apos;historique
             </Button>
 
             <GroupHistoryModal open={historyOpen} onOpenChange={setHistoryOpen} />

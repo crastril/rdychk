@@ -116,7 +116,7 @@ export function ConnectionStatus({ onRefresh }: ConnectionStatusProps) {
                 <DialogHeader>
                     <DialogTitle>Mise à jour nécessaire</DialogTitle>
                     <DialogDescription>
-                        Nous n'arrivons pas à récupérer les dernières informations. Veuillez rafraîchir la page.
+                        Nous n&apos;arrivons pas à récupérer les dernières informations. Veuillez rafraîchir la page.
                     </DialogDescription>
                 </DialogHeader>
                 <Button onClick={handleManualRefresh} className="w-full">

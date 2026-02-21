@@ -42,9 +42,10 @@ export default function CreateGroupForm() {
 
             if (dbError) throw dbError;
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Group creation failed:', error);
-            alert("Erreur lors de la création du groupe: " + (error?.message || "Erreur inconnue"));
+            const errorMessage = error instanceof Error ? error.message : "Erreur inconnue";
+            alert("Erreur lors de la création du groupe: " + errorMessage);
             setLoading(false);
             return; // Stop here if DB failed
         }
@@ -52,9 +53,10 @@ export default function CreateGroupForm() {
         // 2. Navigation
         try {
             router.push(`/group/${uniqueSlug}`);
-        } catch (error: any) {
+        } catch (error: unknown) {
             // Only ignore navigation-related AbortErrors here
-            if (error?.message?.includes('NEXT_REDIRECT') || error?.name === 'AbortError') {
+            const isAbortError = error instanceof Error && (error.message.includes('NEXT_REDIRECT') || error.name === 'AbortError');
+            if (isAbortError) {
                 return;
             }
             console.error('Navigation failed:', error);

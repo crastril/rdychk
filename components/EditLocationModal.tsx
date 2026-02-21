@@ -22,9 +22,10 @@ interface EditLocationModalProps {
     existingLocation?: { name: string; address?: string; link?: string } | null;
     currentMemberName: string | null;
     currentMemberId: string | null;
+    onLocationUpdate: (location: { name?: string | null; address?: string | null; link?: string | null; image?: string | null;[key: string]: string | null | undefined }) => void;
 }
 
-export function EditLocationModal({ isOpen, onOpenChange, groupId, existingLocation, currentMemberName, currentMemberId }: EditLocationModalProps) {
+export function EditLocationModal({ isOpen, onOpenChange, groupId, existingLocation, currentMemberName, currentMemberId, onLocationUpdate }: EditLocationModalProps) {
     const [name, setName] = useState('');
     const [link, setLink] = useState('');
     const [saving, setSaving] = useState(false);
@@ -103,6 +104,7 @@ export function EditLocationModal({ isOpen, onOpenChange, groupId, existingLocat
             // Reset votes when location changes
             await supabase.from('location_votes').delete().eq('group_id', groupId);
 
+            onLocationUpdate(newLocation);
             onOpenChange(false);
         } catch (err) {
             console.error(err);
@@ -142,7 +144,7 @@ export function EditLocationModal({ isOpen, onOpenChange, groupId, existingLocat
                             onChange={(e) => setLink(e.target.value)}
                         />
                         <p className="text-xs text-muted-foreground">
-                            Permet aux membres d'ouvrir l'itinéraire directement.
+                            Permet aux membres d&apos;ouvrir l&apos;itinéraire directement.
                         </p>
 
                         {/* Link Preview */}
@@ -151,7 +153,7 @@ export function EditLocationModal({ isOpen, onOpenChange, groupId, existingLocat
                                 {isFetchingPreview ? (
                                     <div className="p-3 flex items-center gap-2 text-muted-foreground text-sm">
                                         <Loader2 className="w-3 h-3 animate-spin" />
-                                        Chargement de l'aperçu...
+                                        Chargement de l&apos;aperçu...
                                     </div>
                                 ) : preview && (
                                     <div className="flex h-16">

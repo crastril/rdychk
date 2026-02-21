@@ -61,7 +61,7 @@ export function GroupHistoryModal({ open, onOpenChange }: GroupHistoryModalProps
             }
 
             // Transform data to match JoinedGroup interface
-            const joinedGroups: JoinedGroup[] = (data as any[])
+            const joinedGroups: JoinedGroup[] = (data as unknown as { id: string; group_id: string; joined_at: string; groups: { name: string; slug: string } | { name: string; slug: string }[] }[])
                 .map((member) => {
                     // Supabase join can return array or single object depending on relationship cardinality
                     const group = Array.isArray(member.groups) ? member.groups[0] : member.groups;
@@ -139,7 +139,7 @@ export function GroupHistoryModal({ open, onOpenChange }: GroupHistoryModalProps
                             </div>
                         ) : groups.length === 0 ? (
                             <div className="text-center text-muted-foreground py-8">
-                                <p>Vous n'avez rejoint aucun groupe pour le moment.</p>
+                                <p>Vous n&apos;avez rejoint aucun groupe pour le moment.</p>
                             </div>
                         ) : (
                             <div className="space-y-3">

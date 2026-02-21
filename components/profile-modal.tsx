@@ -50,9 +50,10 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
 
             await refreshProfile();
             onOpenChange?.(false);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error updating profile:', err);
-            setError(err.message || "Une erreur est survenue lors de l'enregistrement.");
+            const errorMessage = err instanceof Error ? err.message : "Une erreur est survenue lors de l'enregistrement.";
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }

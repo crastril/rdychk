@@ -12,16 +12,17 @@ interface LocationCardProps {
     memberId: string | null;
     isAdmin: boolean;
     currentMemberName: string | null;
+    onLocationUpdate: (location: { name?: string | null; address?: string | null; link?: string | null; image?: string | null;[key: string]: string | null | undefined }) => void;
 }
 
-export function LocationCard({ group, memberId, isAdmin, currentMemberName }: LocationCardProps) {
+export function LocationCard({ group, memberId, isAdmin, currentMemberName, onLocationUpdate }: LocationCardProps) {
     const [score, setScore] = useState(0);
     const [userVote, setUserVote] = useState<number>(0); // 0, 1, or -1
     const [loading, setLoading] = useState(false);
     const [editMode, setEditMode] = useState<'edit' | 'counter' | null>(null);
     const [isCollapsed, setIsCollapsed] = useState(false);
 
-    const hasLocation = !!(group.location as any)?.name;
+    const hasLocation = !!(group.location as { name?: string })?.name;
 
     useEffect(() => {
         if (!group.id) return;
@@ -87,10 +88,10 @@ export function LocationCard({ group, memberId, isAdmin, currentMemberName }: Lo
         const previousVote = userVote;
         const previousScore = score;
 
-        let nextVote = newVote;
+        let nextVote: number = newVote;
         if (userVote === newVote) {
             // Toggle off
-            nextVote = 0 as any; // logic helper
+            nextVote = 0;
             setUserVote(0);
             setScore(prev => prev - newVote);
         } else {
@@ -290,9 +291,10 @@ export function LocationCard({ group, memberId, isAdmin, currentMemberName }: Lo
                 isOpen={!!editMode}
                 onOpenChange={(open) => !open && setEditMode(null)}
                 groupId={group.id}
-                existingLocation={editMode === 'edit' ? (group.location as any) : null}
+                existingLocation={editMode === 'edit' && group.location && (group.location as { name?: string | null })?.name ? (group.location as { name: string; address?: string; link?: string; image?: string }) : null}
                 currentMemberName={currentMemberName}
                 currentMemberId={memberId}
+                onLocationUpdate={onLocationUpdate}
             />
         </>
     );

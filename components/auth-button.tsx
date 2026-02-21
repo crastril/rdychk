@@ -32,6 +32,7 @@ export function AuthButton({ view = 'default', className }: AuthButtonProps) {
     // Auto-open profile modal if profile is inferred (not saved in DB)
     useEffect(() => {
         if (profile?.is_inferred) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setShowProfileModal(true);
         }
     }, [profile]);

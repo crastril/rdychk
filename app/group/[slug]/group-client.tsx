@@ -5,6 +5,7 @@ import { notFound, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/auth-provider';
+import { joinGroupAction, reclaimSessionAction, leaveGroupAction } from '@/app/actions/member';
 import JoinModal from '@/components/JoinModal';
 import MemberList from '@/components/MemberList';
 import ReadyButton from '@/components/ReadyButton';
@@ -73,6 +74,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
 
     useEffect(() => {
         fetchGroup();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [slug]);
 
     useEffect(() => {
@@ -187,7 +189,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                     table: 'members',
                     filter: `id=eq.${memberId}`,
                 },
-                (payload: any) => {
+                (payload: { new: { is_ready: boolean; timer_end_time: string | null } }) => {
                     setIsReady(payload.new.is_ready);
                     setTimerEndTime(payload.new.timer_end_time);
                 }
@@ -212,7 +214,8 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [memberId]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [group?.id, memberId]);
 
     const guestMembers = members.filter(m => {
         // Explicit check for null/undefined to catch any weirdness
@@ -250,105 +253,43 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
     const handleJoin = async (name: string) => {
         if (!group) return;
 
-        // If user is logged in, check if they are already a member
-        if (user) {
-            const { data: existingMember } = await supabase
-                .from('members')
-                .select('*')
-                .eq('group_id', group.id)
-                .eq('user_id', user.id)
-                .single();
+        // Note: With Server Actions doing the heavy lifting and security,
+        // we mainly just call the action and handle the local state here.
+        // We still check if logged-in user is already a member locally if possible to save a trip,
+        // but the action itself is safe.
 
-            if (existingMember) {
-                setMemberName(existingMember.name);
-                setIsReady(existingMember.is_ready);
-                setTimerEndTime(existingMember.timer_end_time);
-                localStorage.setItem(`member_${slug}`, existingMember.id);
-                localStorage.setItem(`member_name_${slug}`, existingMember.name);
-                return;
-            } else {
-                // Check if we have a local memberId but it's not linked to user yet
-                if (memberId) {
-                    const { data: currentMember } = await supabase
-                        .from('members')
-                        .select('*')
-                        .eq('id', memberId)
-                        .single();
+        const result = await joinGroupAction(group.id, slug, name, user?.id);
 
-                    if (currentMember && !currentMember.user_id) {
-                        // Link it!
-                        await supabase
-                            .from('members')
-                            .update({ user_id: user.id })
-                            .eq('id', memberId);
-                        return;
-                    }
-                }
-            }
-        }
-        let role = 'member';
-
-        // Check if group has no members yet (first joiner becomes admin if created_by matches or just first)
-        // OR if current user is the creator
-        if (group) {
-            if (user?.id && group.created_by === user.id) {
-                role = 'admin';
-            } else {
-                const { count } = await supabase
-                    .from('members')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('group_id', group.id);
-
-                if (count === 0) {
-                    role = 'admin';
-                }
-            }
-        }
-
-        const { data, error } = await supabase
-            .from('members')
-            .insert({
-                group_id: group.id,
-                name,
-                user_id: user?.id || null, // Link the member to the user if logged in
-                role
-            })
-            .select()
-            .single();
-
-        if (error) {
-            // Handle unique constraint violation gracefully (race condition)
-            if (error.code === '23505') {
-                // Retry fetch without logging error
-                if (user) {
-                    const { data: existingMember } = await supabase
-                        .from('members')
-                        .select('*')
-                        .eq('group_id', group.id)
-                        .eq('user_id', user.id)
-                        .single();
-
-                    if (existingMember) {
-                        setMemberId(existingMember.id);
-                        setMemberName(existingMember.name);
-                        setIsReady(existingMember.is_ready);
-                        setTimerEndTime(existingMember.timer_end_time);
-                        localStorage.setItem(`member_${slug}`, existingMember.id);
-                        localStorage.setItem(`member_name_${slug}`, existingMember.name);
-                        return;
-                    }
-                }
-            }
-            console.error('Error joining group:', error);
-            return;
-        }
-
-        if (data) {
-            setMemberId(data.id);
-            setMemberName(name);
+        if (result.success && result.member) {
+            setMemberId(result.member.id);
+            setMemberName(result.member.name);
             setIsReady(false);
-            localStorage.setItem(`member_${slug}`, data.id);
-            localStorage.setItem(`member_name_${slug}`, name);
+
+            // Still keep local storage for UX convenience, but SECURITY relies on the httpOnly cookie
+            // set by the server action.
+            localStorage.setItem(`member_${slug}`, result.member.id);
+            localStorage.setItem(`member_name_${slug}`, result.member.name);
+        } else {
+            console.error('Error joining group via action:', result.error);
+            // Handle error (e.g., unique constraint on user_id if already joined)
+            // If we hit the race condition where they exist, we could fetch them here or the action could handle returning them.
+            if (user) {
+                const { data: existingMember } = await supabase
+                    .from('members')
+                    .select('*')
+                    .eq('group_id', group.id)
+                    .eq('user_id', user.id)
+                    .single();
+
+                if (existingMember) {
+                    setMemberId(existingMember.id);
+                    setMemberName(existingMember.name);
+                    setIsReady(existingMember.is_ready);
+                    setTimerEndTime(existingMember.timer_end_time);
+                    localStorage.setItem(`member_${slug}`, existingMember.id);
+                    localStorage.setItem(`member_name_${slug}`, existingMember.name);
+                }
+            }
         }
     };
 
@@ -365,8 +306,15 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
         localStorage.removeItem(`member_name_${slug}`);
 
         try {
-            await supabase.from('members').delete().eq('id', idToRemove);
-            router.push('/');
+            const result = await leaveGroupAction(slug, idToRemove);
+            if (result.success) {
+                router.push('/');
+            } else {
+                console.error("Error leaving group server action:", result.error);
+                // In a real app we might revert the optimistic UI if it failed, 
+                // but usually leaving is final for the user's intent.
+                router.push('/');
+            }
         } catch (error) {
             console.error("Error leaving group:", error);
             // Revert state if needed? For now we assume success or user can reload.
@@ -377,12 +325,17 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
         // Double check it exists locally
         const member = members.find(m => m.id === id);
         if (member) {
-            setMemberId(member.id);
-            setMemberName(member.name);
-            setIsReady(member.is_ready);
-            setTimerEndTime(member.timer_end_time);
-            localStorage.setItem(`member_${slug}`, member.id);
-            localStorage.setItem(`member_name_${slug}`, member.name);
+            const result = await reclaimSessionAction(slug, member.id);
+            if (result.success) {
+                setMemberId(member.id);
+                setMemberName(member.name);
+                setIsReady(member.is_ready);
+                setTimerEndTime(member.timer_end_time);
+                localStorage.setItem(`member_${slug}`, member.id);
+                localStorage.setItem(`member_name_${slug}`, member.name);
+            } else {
+                console.error("Failed to reclaim session securely");
+            }
         }
     };
 
@@ -498,6 +451,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                                 <CardContent>
                                     <div className="flex flex-col gap-3">
                                         <ReadyButton
+                                            slug={slug}
                                             memberId={memberId}
                                             isReady={isReady}
                                             timerEndTime={timerEndTime}
@@ -523,7 +477,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                                     isAdmin={isAdmin}
                                     currentMemberName={memberName}
                                     onLocationUpdate={(newLocation) => {
-                                        setGroup(prev => prev ? { ...prev, location: newLocation } : null);
+                                        setGroup(prev => prev ? { ...prev, location: { ...newLocation, name: newLocation.name || '' } as unknown as NonNullable<typeof prev.location> } : null);
                                     }}
                                 />
                             )}

@@ -26,6 +26,7 @@ export function AuthModal({ trigger, open: controlledOpen, onOpenChange: setCont
     const setOpen = isControlled ? setControlledOpen : setInternalOpen;
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setOrigin(window.location.origin);
     }, []);
 
