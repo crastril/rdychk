@@ -73,8 +73,8 @@ export function ShareMenu({ groupName, url }: ShareMenuProps) {
                     text: `Rejoins mon groupe "${groupName}" sur rdychk !`,
                     url: url,
                 });
-            } catch (err) {
-                console.log('Error sharing', err);
+            } catch {
+                // Ignore share errors (e.g. user cancelled)
             }
         }
     };
