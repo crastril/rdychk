@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import * as cheerio from 'cheerio';
+import { safeFetch } from '@/lib/security';
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
@@ -10,7 +11,7 @@ export async function GET(request: Request) {
     }
 
     try {
-        const response = await fetch(url, {
+        const response = await safeFetch(url, {
             headers: {
                 // Mimic Facebook bot to get better OG tags from sites like Google Maps
                 'User-Agent': 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
