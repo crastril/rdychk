@@ -147,6 +147,37 @@ export async function toggleReadyAction(slug: string, memberId: string, isReady:
 }
 
 /**
+ * Server Action: Update member fields (timer, proposal) securely.
+ */
+export async function updateMemberAction(
+    slug: string,
+    memberId: string,
+    updates: {
+        timer_end_time?: string | null;
+        is_ready?: boolean;
+        proposed_time?: string | null;
+    }
+) {
+    const isAuthorized = await verifyGuestSession(slug, memberId);
+
+    if (!isAuthorized) {
+        return { success: false, error: 'Unauthorized access: Invalid or missing session cookie.' };
+    }
+
+    const { error } = await supabase
+        .from('members')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', memberId);
+
+    if (error) {
+        console.error('Error updating member via action:', error);
+        return { success: false, error: error.message };
+    }
+
+    return { success: true };
+}
+
+/**
  * Server Action: Leave group securely.
  */
 export async function leaveGroupAction(slug: string, memberId: string) {

@@ -60,7 +60,7 @@ export function ShareMenu({ groupName, url }: ShareMenuProps) {
         }
 
         if (shareUrl) {
-            window.open(shareUrl, '_blank');
+            window.open(shareUrl, '_blank', 'noopener,noreferrer');
         }
     };
 
@@ -73,8 +73,8 @@ export function ShareMenu({ groupName, url }: ShareMenuProps) {
                     text: `Rejoins mon groupe "${groupName}" sur rdychk !`,
                     url: url,
                 });
-            } catch (err) {
-                console.log('Error sharing', err);
+            } catch {
+                // Ignore share errors (e.g. user cancelled)
             }
         }
     };

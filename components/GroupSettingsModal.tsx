@@ -80,7 +80,11 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId }: GroupSetti
                     </div>
                 ) : (
                     <div className="space-y-6 py-4">
-                        <GroupTypeSelector value={groupType} onValueChange={(val) => setGroupType(val)} />
+                        <GroupTypeSelector
+                            value={groupType}
+                            onValueChange={(val) => setGroupType(val)}
+                            idPrefix="settings-"
+                        />
 
                         <div className="flex justify-end pt-4">
                             <Button onClick={handleSave} disabled={saving}>

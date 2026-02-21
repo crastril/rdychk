@@ -163,7 +163,7 @@ export function LocationCard({ group, memberId, isAdmin, currentMemberName, onLo
                             // If there is a link, open it? Or just let the link inside handle it?
                             // Let's make the whole card clickable if there is a link, except for buttons
                             if (group.location?.link && !(e.target as HTMLElement).closest('button')) {
-                                window.open(group.location.link, '_blank');
+                                window.open(group.location.link, '_blank', 'noopener,noreferrer');
                             }
                         }}>
                             {/* Left: Image or Icon */}

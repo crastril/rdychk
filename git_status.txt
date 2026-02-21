@@ -1,0 +1,38 @@
+﻿On branch main
+Your branch and 'origin/main' have diverged,
+and have 23 and 20 different commits each, respectively.
+  (use "git pull" if you want to integrate the remote branch with yours)
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   app/group/[slug]/group-client.tsx
+	modified:   app/page.tsx
+	modified:   components/ConnectionStatus.tsx
+	modified:   components/CreateGroupForm.tsx
+	modified:   components/EditLocationModal.tsx
+	modified:   components/GroupHistoryModal.tsx
+	modified:   components/GroupSettingsModal.tsx
+	modified:   components/LocationCard.tsx
+	modified:   components/ReadyButton.tsx
+	modified:   components/auth-button.tsx
+	modified:   components/auth-modal.tsx
+	modified:   components/profile-modal.tsx
+	modified:   package-lock.json
+	modified:   tailwind.config.ts
+	modified:   vitest.setup.ts
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	app/actions/
+	errors.txt
+	eslint-errors.txt
+	eslint-results-new.json
+	eslint-results-new2.json
+	eslint-results-new3.json
+	eslint-results.json
+	eslint_out.txt
+	eslint_out2.txt
+	git_status.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")

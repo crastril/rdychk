@@ -1,6 +1,6 @@
 # rdychk 🚀
 
-**Real-time Group Readiness Check** - Une application web minimaliste pour vérifier en temps réel qui est prêt dans un groupe.
+**Real-time Group Readiness Check** - La solution ultime pour coordonner vos groupes en temps réel.
 
 ![Next.js](https://img.shields.io/badge/Next.js-16.1-black)
 ![React](https://img.shields.io/badge/React-19.2-blue)
@@ -8,161 +8,134 @@
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.x-38bdf8)
 ![Supabase](https://img.shields.io/badge/Supabase-Realtime-green)
 
-## ✨ Fonctionnalités
+## ✨ Fonctionnalités Avancées
 
-- 🎯 **Création de groupe** instantanée avec URL unique
-- 👥 **Multi-utilisateurs** - Rejoignez avec votre prénom
-- ⚡ **Temps réel** - Synchronisation instantanée via Supabase
-- ✅ **Toggle de statut** - Indiquez si vous êtes prêt d'un simple clic
-- 📊 **Compteur dynamique** - Suivez combien de personnes sont prêtes
-- 🎉 **Célébration automatique** quand tout le monde est prêt
-- 📱 **Responsive** - Fonctionne sur tous les appareils
-- 🔒 **Sans authentification** - Pas besoin de compte
+Une expérience de coordination complète et fluide :
 
-## 🎬 Démo
+- ⚡ **Synchronisation Temps Réel** - Voyez instantanément qui est prêt ou non.
+- 🔐 **Authentification & Profils** - Connectez-vous pour conserver votre historique et personnaliser votre profil, ou rejoignez en tant qu'invité.
+- 📍 **Gestion de Lieu** - Proposez un lieu de rendez-vous avec aperçu automatique (Open Graph) et lien Google Maps.
+- ⏱️ **Minuteur Intelligent** - Indiquez "Prêt dans 5 min" avec un compte à rebours partagé en direct.
+- 📅 **Propositions d'Horaires** - Suggérez une heure de rendez-vous directement depuis votre statut.
+- 📜 **Historique des Groupes** - Retrouvez facilement tous les groupes que vous avez rejoints (nécessite un compte).
+- 🌓 **Mode Sombre/Clair** - Une interface soignée qui s'adapte à vos préférences.
+- 📱 **100% Responsive** - Parfait sur mobile comme sur desktop.
+- 🎉 **Célébration** - Confettis automatiques quand tout le monde est prêt !
 
-Créez un groupe, partagez le lien avec vos amis, et voyez en temps réel qui est prêt !
+## 🎬 Démo Rapide
+
+1. **Créez un groupe** en un clic.
+2. **Partagez le lien** unique ou le QR Code.
+3. Les membres rejoignent et **indiquent leur statut** (Prêt / Pas prêt / Minuteur).
+4. **Visualisez la progression** globale en temps réel.
 
 ## 🚀 Installation
 
 ### Prérequis
 
 - Node.js 20+
-- Un compte Supabase gratuit
+- Un compte [Supabase](https://supabase.com) gratuit
 
-### 1. Cloner le repository
+### 1. Cloner le projet
 
-\`\`\`bash
+```bash
 git clone https://github.com/VOTRE_USERNAME/rdychk.git
 cd rdychk
-\`\`\`
+```
 
 ### 2. Installer les dépendances
 
-\`\`\`bash
+```bash
 npm install
-\`\`\`
+```
 
-### 3. Configurer Supabase
+### 3. Configuration Supabase
 
-1. Créez un projet sur [supabase.com](https://supabase.com)
-2. Copiez `.env.local.example` vers `.env.local`
-3. Ajoutez vos credentials Supabase dans `.env.local` :
+1. Créez un nouveau projet sur [supabase.com](https://supabase.com).
+2. Allez dans l'éditeur SQL de votre projet Supabase.
+3. **Important :** Exécutez les scripts SQL fournis dans le dossier `supabase/` **dans l'ordre suivant** :
 
-\`\`\`env
+   1. `supabase/schema.sql` (Structure de base)
+   2. `supabase_migration.sql` (Ajout des fonctionnalités avancées : profils, minuteurs, lieux...)
+   3. `fix_history_rls.sql` (Correction des permissions pour l'historique)
+
+4. Récupérez vos clés API (URL et Anon Key) dans les paramètres du projet Supabase.
+
+### 4. Variables d'Environnement
+
+Copiez le fichier d'exemple et configurez vos clés :
+
+```bash
+cp .env.local.example .env.local
+```
+
+Modifiez `.env.local` avec vos informations :
+
+```env
 NEXT_PUBLIC_SUPABASE_URL=votre_url_supabase
 NEXT_PUBLIC_SUPABASE_ANON_KEY=votre_anon_key
-\`\`\`
-
-### 4. Initialiser la base de données
-
-Dans le SQL Editor de Supabase, exécutez le script `supabase/schema.sql` :
-
-\`\`\`sql
--- Voir le fichier supabase/schema.sql pour le script complet
-\`\`\`
+```
 
 ### 5. Lancer l'application
 
-\`\`\`bash
+```bash
 npm run dev
-\`\`\`
+```
 
-Ouvrez [http://localhost:3000](http://localhost:3000) dans votre navigateur.
+Ouvrez [http://localhost:3000](http://localhost:3000) pour voir l'application.
 
 ## 📂 Structure du Projet
 
-\`\`\`
+L'architecture suit les bonnes pratiques Next.js 14+ (App Router) :
+
+```
 rdychk/
 ├── app/
-│   ├── page.tsx                 # Page d'accueil
-│   └── group/[slug]/
-│       └── page.tsx             # Page dynamique du groupe
+│   ├── group/[slug]/    # Page dynamique de groupe
+│   ├── api/og/          # Génération d'images Open Graph
+│   └── page.tsx         # Page d'accueil
 ├── components/
-│   ├── CreateGroupForm.tsx      # Formulaire création
-│   ├── JoinModal.tsx            # Modal de jonction
-│   ├── MemberList.tsx           # Liste temps réel
-│   └── ReadyButton.tsx          # Bouton toggle
+│   ├── ui/              # Composants réutilisables (Shadcn UI)
+│   ├── MemberList.tsx   # Liste des membres en temps réel
+│   ├── TimerPicker.tsx  # Sélecteur de minuteur
+│   ├── JoinModal.tsx    # Modal de connexion/inscription
+│   └── ...              # Autres composants métier
 ├── lib/
-│   └── supabase.ts              # Client Supabase
-├── types/
-│   └── database.ts              # Types TypeScript
-└── supabase/
-    └── schema.sql               # Schéma de BDD
-\`\`\`
+│   ├── supabase.ts      # Client Supabase configuré
+│   └── utils.ts         # Utilitaires divers
+├── supabase/            # Scripts de migration SQL
+└── types/               # Définitions TypeScript
+```
 
-## 🛠️ Technologies
+## 🛠️ Stack Technique
 
-- **[Next.js 16](https://nextjs.org)** - Framework React
-- **[React 19](https://react.dev)** - Bibliothèque UI
-- **[TypeScript](https://www.typescriptlang.org)** - Typage statique
-- **[TailwindCSS 4](https://tailwindcss.com)** - Styling
-- **[Supabase](https://supabase.com)** - Base de données PostgreSQL + Realtime
+- **Framework** : [Next.js 16](https://nextjs.org) (App Router)
+- **Langage** : [TypeScript](https://www.typescriptlang.org)
+- **UI** : [React 19](https://react.dev), [TailwindCSS 4](https://tailwindcss.com), [Shadcn UI](https://ui.shadcn.com)
+- **Backend/DB** : [Supabase](https://supabase.com) (PostgreSQL, Auth, Realtime)
+- **Icônes** : [Lucide React](https://lucide.dev)
 
 ## 🎯 Cas d'Usage
 
-Parfait pour :
-- 🍕 Savoir qui est prêt pour commander à manger
-- 🎮 Vérifier qui est prêt pour lancer une partie
-- 🚗 Coordonner un départ en groupe
-- 🎬 Organiser une soirée ciné
-- 🏃 Partir pour un running collectif
-
-## 📝 Utilisation
-
-1. **Créez un groupe** sur la page d'accueil
-2. **Partagez le lien** avec vos amis
-3. Chacun **rejoint avec son prénom**
-4. **Cliquez** sur le bouton pour indiquer votre statut
-5. **Regardez** la liste se mettre à jour en temps réel !
-
-## 🔐 Base de Données
-
-### Tables Supabase
-
-- **groups** : Stocke les groupes créés
-  - `id`, `name`, `slug`, `created_at`
-
-- **members** : Stocke les membres de chaque groupe
-  - `id`, `group_id`, `name`, `is_ready`, `joined_at`, `updated_at`
-
-### Row Level Security (RLS)
-
-L'application utilise RLS pour permettre l'accès public sans authentification tout en sécurisant les données.
-
-## 🚀 Déploiement
-
-### Vercel (Recommandé)
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/VOTRE_USERNAME/rdychk)
-
-1. Connectez votre repository GitHub
-2. Ajoutez les variables d'environnement
-3. Déployez !
-
-### Variables d'Environnement
-
-N'oubliez pas de configurer :
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+Idéal pour synchroniser des groupes dans de nombreuses situations :
+- 🎮 **Gaming** : "Qui est prêt pour la ranked ?"
+- 🍕 **Repas** : "On commande quand tout le monde a choisi."
+- 🚗 **Départ** : "On part dès que tout le monde est dans la voiture."
+- 🏢 **Réunions** : "On commence quand tout le monde est connecté."
 
 ## 🤝 Contribution
 
-Les contributions sont les bienvenues ! N'hésitez pas à :
-- 🐛 Signaler des bugs
-- 💡 Proposer des nouvelles fonctionnalités
-- 🔧 Soumettre des pull requests
+Les contributions sont les bienvenues !
+1. Forkez le projet
+2. Créez votre branche (`git checkout -b feature/AmazingFeature`)
+3. Committez vos changements (`git commit -m 'Add some AmazingFeature'`)
+4. Pushez vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrez une Pull Request
 
 ## 📄 Licence
 
-MIT
-
-## 👨‍💻 Auteur
-
-Créé avec ❤️ pour simplifier la coordination en groupe.
+Distribué sous la licence MIT. Voir `LICENSE` pour plus d'informations.
 
 ---
 
-**Astuce** : Ajoutez cette app à l'écran d'accueil de votre mobile pour un accès rapide !
-\`\`\`
-
+**Astuce** : Installez l'application en tant que PWA sur votre mobile pour un accès encore plus rapide !

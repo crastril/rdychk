@@ -5,16 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Slider } from '@/components/ui/slider';
 import { Timer, Clock } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 
 interface TimerPickerProps {
-    memberId: string;
     currentTimerEnd: string | null;
-    isReady: boolean;
+    onUpdate: (updates: { timer_end_time?: string | null; is_ready?: boolean }) => Promise<void>;
 }
 
-export function TimerPicker({ memberId, currentTimerEnd, isReady }: TimerPickerProps) {
+export function TimerPicker({ currentTimerEnd, onUpdate }: TimerPickerProps) {
     const [open, setOpen] = useState(false);
     const [minutes, setMinutes] = useState(5);
     const [loading, setLoading] = useState(false);
@@ -25,13 +23,10 @@ export function TimerPicker({ memberId, currentTimerEnd, isReady }: TimerPickerP
         endTime.setMinutes(endTime.getMinutes() + minutes);
 
         try {
-            await supabase
-                .from('members')
-                .update({
-                    timer_end_time: endTime.toISOString(),
-                    is_ready: false // Ensure not ready when timer starts
-                })
-                .eq('id', memberId);
+            await onUpdate({
+                timer_end_time: endTime.toISOString(),
+                is_ready: false // Ensure not ready when timer starts
+            });
             setOpen(false);
         } catch (error) {
             console.error('Error setting timer:', error);
@@ -43,10 +38,7 @@ export function TimerPicker({ memberId, currentTimerEnd, isReady }: TimerPickerP
     const handleCancelTimer = async () => {
         setLoading(true);
         try {
-            await supabase
-                .from('members')
-                .update({ timer_end_time: null })
-                .eq('id', memberId);
+            await onUpdate({ timer_end_time: null });
             setOpen(false);
         } catch (error) {
             console.error('Error cancelling timer:', error);

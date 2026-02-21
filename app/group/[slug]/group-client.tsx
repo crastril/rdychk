@@ -5,7 +5,7 @@ import { notFound, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/auth-provider';
-import { joinGroupAction, reclaimSessionAction, leaveGroupAction } from '@/app/actions/member';
+import { joinGroupAction, reclaimSessionAction, leaveGroupAction, updateMemberAction } from '@/app/actions/member';
 import JoinModal from '@/components/JoinModal';
 import MemberList from '@/components/MemberList';
 import ReadyButton from '@/components/ReadyButton';
@@ -457,13 +457,18 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                                             timerEndTime={timerEndTime}
                                         />
                                         <TimerPicker
-                                            memberId={memberId}
                                             currentTimerEnd={timerEndTime}
-                                            isReady={isReady}
+                                            onUpdate={async (updates) => {
+                                                if (!memberId) return;
+                                                await updateMemberAction(slug, memberId, updates);
+                                            }}
                                         />
                                         <TimeProposalModal
-                                            memberId={memberId}
                                             currentProposedTime={currentMember?.proposed_time ?? null}
+                                            onUpdate={async (updates) => {
+                                                if (!memberId) return;
+                                                await updateMemberAction(slug, memberId, updates);
+                                            }}
                                         />
                                     </div>
                                 </CardContent>

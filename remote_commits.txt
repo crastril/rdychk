@@ -1,0 +1,20 @@
+﻿9254aed Merge pull request #16 from crastril/security-fix-tabnabbing-vulnerability-6205953906370357880
+860eb75 Merge pull request #17 from crastril/add-cn-unit-tests-6754664952110972845
+659db14 Merge pull request #18 from crastril/fix-tabnabbing-vulnerability-4937623021951963090
+25a1633 Merge pull request #7 from crastril/cleanup-notification-manager-log-13623467171908465148
+93ef3f2 Merge pull request #6 from crastril/fix-sharemenu-console-log-16577779978657072293
+2b909f0 Merge pull request #5 from crastril/fix-rls-security-updates-4013427631391830851
+0130ffe Merge pull request #4 from crastril/security/fix-ssrf-og-route-54362685035817268
+eb57d7a Merge pull request #2 from crastril/cleanup-group-page-logs-7824807173726321688
+aa57d12 Merge pull request #1 from crastril/update-readme-with-features-4573575290087476142
+7f57833 Merge pull request #19 from crastril/code-health-group-type-selector-1037234824972039383
+6311ef9 chore: extract GroupTypeSelector to remove code duplication
+d28a332 ­ƒöÆ fix: tabnabbing vulnerability in window.open calls
+3d470ee ­ƒº¬ Add unit tests for cn utility
+da0376f ­ƒöÆ fix: prevent tabnabbing via unprotected target blank
+0cb1f1b Remove debugging log in NotificationManager.tsx and improve code health
+c42a363 Remove leftover debugging code from ShareMenu
+175580d Fix insecure RLS policy for member updates using secret tokens
+6f9ae37 Fix SSRF vulnerability in OG metadata API by validating URLs and blocking private IPs
+3b1bd49 Remove leftover console.log from group page
+7d744c7 Update README.md to reflect current features and installation steps.

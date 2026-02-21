@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
-
 import { createSlug } from '@/lib/slug';
 import { GroupTypeSelector } from '@/components/GroupTypeSelector';
 
