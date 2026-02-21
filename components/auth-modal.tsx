@@ -96,7 +96,7 @@ export function AuthModal({ trigger, open: controlledOpen, onOpenChange: setCont
                         }}
                         theme={theme === 'dark' ? 'dark' : 'default'}
                         providers={['google']}
-                        redirectTo={`${origin}/`}
+                        redirectTo={`${origin}/auth/callback`}
                         localization={{
                             variables: {
                                 sign_in: {
