@@ -48,17 +48,17 @@ export default function Home() {
   }, [user]);
 
   return (
-    <div className="bg-background-dark text-slate-100 min-h-screen flex flex-col overflow-x-hidden selection:bg-red-500/30 relative">
+    <div className="bg-background-dark text-slate-100 min-h-screen flex flex-col overflow-x-hidden selection:bg-[var(--v2-primary)]/30 relative">
       {/* Background Orbs */}
       <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[-20%] left-[20%] w-[800px] h-[800px] bg-red-600/5 rounded-full blur-[150px]"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-red-600/5 rounded-full blur-[120px]"></div>
+        <div className="absolute top-[-20%] left-[20%] w-[800px] h-[800px] bg-[var(--v2-primary)]/5 rounded-full blur-[150px] transition-colors duration-700"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-[var(--v2-primary)]/5 rounded-full blur-[120px] transition-colors duration-700"></div>
       </div>
 
       <nav className="w-full flex justify-between items-center py-6 px-6 md:px-12 relative z-20">
         <div className="flex items-center gap-1 group cursor-pointer">
           <span className="text-2xl font-black tracking-tighter text-white">rdychk</span>
-          <div className="w-2 h-2 rounded-full bg-red-500 mt-2 shadow-[0_0_10px_#ff2e2e]"></div>
+          <div className="w-2 h-2 rounded-full bg-[var(--v2-primary)] mt-2 shadow-[0_0_10px_var(--v2-primary)] transition-all duration-500"></div>
         </div>
         <div className="flex items-center gap-6">
           <a className="text-sm font-medium text-slate-400 hover:text-white transition-colors hidden md:block" href="#">Fonctionnalités</a>
@@ -69,13 +69,13 @@ export default function Home() {
 
       <main className="flex-grow flex flex-col items-center justify-center px-4 relative z-10 py-12">
         <div className="text-center max-w-4xl mx-auto mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold uppercase tracking-widest mb-6">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--v2-primary)]/10 border border-[var(--v2-primary)]/20 text-[var(--v2-primary)] text-xs font-bold uppercase tracking-widest mb-6 transition-all duration-500">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--v2-primary)] animate-pulse"></span>
             Beta Publique
           </div>
           <h1 className="text-5xl md:text-7xl font-black text-white leading-[1.1] mb-6 tracking-tight">
             Arrêtez de demander<br />
-            <span className="text-red-gradient">"T'es prêt ?"</span>
+            <span className="text-theme-gradient">"T'es prêt ?"</span>
           </h1>
         </div>
 
@@ -100,8 +100,8 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {lastGroup ? (
                 <Link href={`/group/${lastGroup.slug}`} className="block">
-                  <div className="glass-panel p-4 rounded-xl flex items-center gap-4 group cursor-pointer hover:bg-white/5 transition-colors border-l-4 border-l-transparent hover:border-l-red-500">
-                    <div className="w-12 h-12 rounded-lg bg-white/5 flex items-center justify-center text-slate-300 ring-1 ring-white/10 group-hover:ring-red-500 transition-all">
+                  <div className="glass-panel p-4 rounded-xl flex items-center gap-4 group cursor-pointer hover:bg-white/5 transition-colors border-l-4 border-l-transparent hover:border-l-[var(--v2-primary)]">
+                    <div className="w-12 h-12 rounded-lg bg-white/5 flex items-center justify-center text-slate-300 ring-1 ring-white/10 group-hover:ring-[var(--v2-primary)] transition-all">
                       {lastGroup.type === 'remote' ? <Gamepad2 className="w-5 h-5" /> : <MapPin className="w-5 h-5" />}
                     </div>
                     <div className="flex-1">
