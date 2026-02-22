@@ -52,7 +52,7 @@ export default function Home() {
         `)
         .eq('user_id', user.id)
         .order('joined_at', { ascending: false })
-        .limit(3);
+        .limit(2);
 
       if (data && data.length > 0) {
         const transformedGroups = (data as any[])
@@ -127,7 +127,7 @@ export default function Home() {
               <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest">Groupes Récents</h3>
               <button onClick={() => setHistoryOpen(true)} className="text-xs text-slate-400 hover:text-white transition-colors">Tout voir</button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {recentGroups.length > 0 ? (
                 recentGroups.map((group) => (
                   <Link key={group.slug} href={`/group/${group.slug}`} className="block">
