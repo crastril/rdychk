@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html class="dark" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ReadyCheck - Dynamic Landing Page</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-red": "#ff2e2e",
+                        "primary-red-hover": "#e61a1a",
+                        "primary-purple": "#a855f7",
+                        "primary-purple-hover": "#9333ea",
+                        "background-dark": "#050505",
+                        "surface-dark": "#121212",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "2xl": "2rem",
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        "neon-red": "0 0 30px -5px rgba(255, 46, 46, 0.4)",
+                        "neon-purple": "0 0 30px -5px rgba(168, 85, 247, 0.4)",
+                    }
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        :root {
+            --accent-color: #ff2e2e;
+            --accent-gradient: linear-gradient(to right, #ff2e2e, #ff6b6b);
+            --accent-glow: 0 0 10px #ff2e2e;
+            --accent-shadow: 0 0 30px -5px rgba(255, 46, 46, 0.4);
+            --accent-badge-bg: rgba(255, 46, 46, 0.1);
+            --accent-badge-border: rgba(255, 46, 46, 0.2);
+            --accent-button-hover: #e61a1a;
+        }.theme-online {
+            --accent-color: #a855f7;
+            --accent-gradient: linear-gradient(to right, #a855f7, #6366f1);
+            --accent-glow: 0 0 10px #a855f7;
+            --accent-shadow: 0 0 30px -5px rgba(168, 85, 247, 0.4);
+            --accent-badge-bg: rgba(168, 85, 247, 0.1);
+            --accent-badge-border: rgba(168, 85, 247, 0.2);
+            --accent-button-hover: #9333ea;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-input {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        .glass-input:focus {
+            background: rgba(0, 0, 0, 0.6);
+            border-color: var(--accent-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.05);
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #000; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444; 
+        }
+        .dynamic-accent-text {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .dynamic-accent-bg {
+            background-color: var(--accent-color);
+        }
+        .dynamic-accent-glow {
+            box-shadow: var(--accent-glow);
+        }
+        .dynamic-accent-btn {
+            background-color: var(--accent-color);
+            box-shadow: var(--accent-shadow);
+        }
+        .dynamic-accent-btn:hover {
+            background-color: var(--accent-button-hover);
+        }
+        .dynamic-accent-badge {
+            background-color: var(--accent-badge-bg);
+            border-color: var(--accent-badge-border);
+            color: var(--accent-color);
+        }
+    </style>
+</head>
+<body class="bg-background-dark text-slate-100 font-display min-h-screen flex flex-col overflow-x-hidden selection:bg-red-500/30 relative">
+<div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+<div class="absolute top-[-20%] left-[20%] w-[800px] h-[800px] bg-red-600/5 rounded-full blur-[150px]"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-red-600/5 rounded-full blur-[120px]"></div>
+</div>
+<nav class="w-full flex justify-between items-center py-6 px-6 md:px-12 relative z-20">
+<div class="flex items-center gap-1 group cursor-pointer">
+<span class="text-2xl font-black tracking-tighter text-white">rdychk</span>
+<div class="w-2 h-2 rounded-full dynamic-accent-bg mt-2 dynamic-accent-glow"></div>
+</div>
+<div class="flex items-center gap-6">
+<a class="text-sm font-medium text-slate-400 hover:text-white transition-colors hidden md:block" href="#">Fonctionnalités</a>
+<a class="text-sm font-medium text-slate-400 hover:text-white transition-colors hidden md:block" href="#">À propos</a>
+<button class="px-4 py-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 text-sm font-medium transition-all">Connexion</button>
+</div>
+</nav>
+<main class="flex-grow flex flex-col items-center justify-center px-4 relative z-10 py-12">
+<div class="text-center max-w-4xl mx-auto mb-12">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full dynamic-accent-badge border text-xs font-bold uppercase tracking-widest mb-6">
+<span class="w-1.5 h-1.5 rounded-full dynamic-accent-bg animate-pulse"></span>
+            Beta Publique
+        </div>
+<h1 class="text-5xl md:text-7xl font-black text-white leading-[1.1] mb-6 tracking-tight">
+            Arrêtez de demander<br/>
+<span class="dynamic-accent-text">"T'es prêt ?"</span>
+</h1>
+</div>
+<div class="w-full max-w-[480px]">
+<div class="glass-panel rounded-3xl p-8 shadow-2xl shadow-black/80 flex flex-col gap-6 transform hover:scale-[1.01] transition-transform duration-500">
+<div class="flex items-center justify-between">
+<h2 class="text-xl font-bold text-white">Créer un groupe</h2>
+</div>
+<div class="space-y-5">
+<div>
+<label class="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wide">Nom du groupe</label>
+<div class="relative">
+<input class="w-full h-12 rounded-xl glass-input px-4 pl-11 text-base placeholder-slate-500 transition-all" placeholder="Ex: Raid WoW, Soirée Bar..." type="text"/>
+<span class="material-symbols-outlined absolute left-3.5 top-3 text-slate-500">edit</span>
+</div>
+</div>
+<div>
+<label class="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wide">Type d'activité</label>
+<div class="grid grid-cols-2 gap-2 p-1 bg-black/40 rounded-xl border border-white/5">
+<label class="cursor-pointer relative">
+<input class="peer sr-only" name="group-type" onchange="document.body.classList.add('theme-online')" type="radio"/>
+<div class="w-full py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-medium text-slate-400 peer-checked:bg-white/10 peer-checked:text-white transition-all">
+<span class="text-lg">🎮</span> En Ligne
+                            </div>
+</label>
+<label class="cursor-pointer relative">
+<input checked="" class="peer sr-only" name="group-type" onchange="document.body.classList.remove('theme-online')" type="radio"/>
+<div class="w-full py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-medium text-slate-400 peer-checked:bg-white/10 peer-checked:text-white transition-all">
+<span class="text-lg">📍</span> En Personne
+                            </div>
+</label>
+</div>
+</div>
+<button class="w-full h-14 dynamic-accent-btn text-white font-extrabold text-lg rounded-xl transition-all active:scale-[0.98] mt-2 flex items-center justify-center gap-2 group">
+                    C'est parti !
+                    <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<div class="mt-16 w-full max-w-2xl">
+<div class="flex items-center justify-between mb-4 px-2">
+<h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest">Groupes Récents</h3>
+<button class="text-xs text-slate-400 hover:text-white transition-colors">Tout voir</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="glass-panel p-4 rounded-xl flex items-center gap-4 group cursor-pointer hover:bg-white/5 transition-colors border-l-4 border-l-transparent hover:border-l-[var(--accent-color)]">
+<div class="w-12 h-12 rounded-lg bg-white/5 flex items-center justify-center text-slate-300 ring-1 ring-white/10 group-hover:ring-[var(--accent-color)] transition-all">
+<span class="material-symbols-outlined">sports_esports</span>
+</div>
+<div class="flex-1">
+<h4 class="text-white font-semibold text-sm group-hover:text-white transition-colors">Friday League</h4>
+<p class="text-slate-500 text-xs">Il y a 2 heures • 4/5 Joueurs</p>
+</div>
+<span class="material-symbols-outlined text-slate-600 group-hover:text-white transition-colors">chevron_right</span>
+</div>
+<div class="glass-panel p-4 rounded-xl flex items-center gap-4 group cursor-pointer hover:bg-white/5 transition-colors border-l-4 border-l-transparent hover:border-l-[var(--accent-color)]">
+<div class="w-12 h-12 rounded-lg bg-white/5 flex items-center justify-center text-slate-300 ring-1 ring-white/10 group-hover:ring-[var(--accent-color)] transition-all">
+<span class="material-symbols-outlined">local_bar</span>
+</div>
+<div class="flex-1">
+<h4 class="text-white font-semibold text-sm group-hover:text-white transition-colors">Anniv Thomas</h4>
+<p class="text-slate-500 text-xs">Hier • 8 Membres</p>
+</div>
+<span class="material-symbols-outlined text-slate-600 group-hover:text-white transition-colors">chevron_right</span>
+</div>
+</div>
+</div>
+</main>
+<footer class="w-full py-8 text-center text-slate-600 text-sm relative z-10">
+<p>© 2023 ReadyCheck. Designed for chaos coordination.</p>
+</footer>
+
+</body></html>

@@ -1,0 +1,243 @@
+<html class="dark" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ReadyCheck - Groupe In-Person</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ef4444", // Vibrant Red
+                        "secondary": "#2ae876", // Electric Green
+                        "accent": "#ef4444", // Red accent
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#000000", // Deep black background
+                        "surface-dark": "#0a0a0a",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        "neon-primary": "0 0 20px -5px rgba(239, 68, 68, 0.4)",
+                        "neon-secondary": "0 0 25px -5px rgba(42, 232, 118, 0.5)",
+                    }
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #000; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #222; 
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #333; 
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.8; }
+            100% { transform: scale(2.2); opacity: 0; }
+        }
+        .pulse-dot::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 50%;
+            background-color: inherit;
+            animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+            z-index: -1;
+        }
+        .progress-circle {
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+    </style>
+</head>
+<body class="bg-background-dark text-slate-100 font-display min-h-screen flex flex-col items-center selection:bg-primary/30">
+<nav class="w-full border-b border-white/5 bg-black/50 backdrop-blur-md sticky top-0 z-50">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="text-xl font-black tracking-tighter text-white">rdychk<span class="text-primary">.</span></span>
+<span class="bg-primary/20 text-primary text-[10px] font-black px-2 py-0.5 rounded-full border border-primary/30 tracking-widest uppercase">Beta</span>
+</div>
+<div class="flex items-center gap-2 sm:gap-4">
+<div class="flex items-center gap-2">
+<button class="flex items-center justify-center text-white w-10 h-10 rounded-full border border-primary/30 bg-primary/10 hover:bg-primary/20 transition-all" title="Partager">
+<span class="material-symbols-outlined text-[20px]">share</span>
+</button>
+<button class="flex items-center justify-center text-white w-10 h-10 rounded-full border border-primary/30 bg-primary/10 hover:bg-primary/20 transition-all" title="Paramètres">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</button>
+</div>
+<div class="h-6 w-[1px] bg-white/10 mx-1"></div>
+<button class="text-sm font-semibold text-white px-5 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-all">Connexion</button>
+</div>
+</div>
+</nav>
+<div class="w-full max-w-md flex flex-col gap-6 relative z-10 p-4 mt-4">
+<header class="flex flex-col items-center justify-center text-center">
+<h1 class="text-xs uppercase tracking-[0.2em] text-primary font-bold">Groupe</h1>
+<h2 class="text-white font-bold text-xl mt-1">Friday Night Drinks</h2>
+</header>
+<section class="flex flex-col items-center justify-center py-6 relative">
+<div class="absolute inset-0 bg-primary/10 blur-[80px] rounded-full pointer-events-none"></div>
+<div class="relative w-48 h-48 flex items-center justify-center">
+<svg class="w-full h-full" viewBox="0 0 100 100">
+<circle class="text-white/10 stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-width="6"></circle>
+<circle class="text-primary progress-circle stroke-current drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]" cx="50" cy="50" fill="transparent" r="40" stroke-dasharray="251.2" stroke-dashoffset="100.48" stroke-linecap="round" stroke-width="6"></circle>
+</svg>
+<div class="absolute flex flex-col items-center justify-center text-center">
+<span class="text-4xl font-extrabold text-white tracking-tight">3<span class="text-white/40 text-2xl font-normal">/5</span></span>
+<span class="text-sm font-medium text-primary mt-1 uppercase tracking-wider">Prêts</span>
+</div>
+</div>
+<p class="mt-4 text-slate-400 text-sm">En attente de 2 membres...</p>
+</section>
+<div class="glass-panel rounded-2xl p-5 flex flex-col gap-5 shadow-2xl shadow-black/50">
+<button class="group relative w-full h-16 flex items-center justify-center rounded-xl bg-secondary hover:bg-[#3bf183] text-black font-extrabold text-lg tracking-wide shadow-neon-secondary transition-all active:scale-[0.98] overflow-hidden">
+<div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+<span class="material-symbols-outlined mr-2 text-[24px]">check_circle</span>
+                I'M READY
+            </button>
+<div class="grid grid-cols-2 gap-3">
+<button class="flex items-center justify-center py-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-slate-200 text-sm font-medium transition-colors hover:text-white group">
+<span class="material-symbols-outlined mr-2 text-primary group-hover:scale-110 transition-transform">timer</span>
+                    Lancer un minuteur
+                </button>
+<button class="flex items-center justify-center py-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-slate-200 text-sm font-medium transition-colors hover:text-white group">
+<span class="material-symbols-outlined mr-2 text-primary group-hover:scale-110 transition-transform">schedule</span>
+                    Proposer un horaire
+                </button>
+</div>
+</div>
+<div class="glass-panel rounded-2xl overflow-hidden flex flex-col border border-white/10">
+<div class="flex items-stretch">
+<div class="w-24 h-24 relative bg-slate-800 shrink-0">
+<img alt="Dimly lit cocktail bar interior" class="w-full h-full object-cover opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTslo0duu48kfPrtO0fS8zo29AqM0WmHMnBlqM4I6cpiwuWHYJmpVYJGn1KK8r6zhy4ng1BAl4GD7tF2peEalqgk-DdvCh23NusTDvTxwuqDj8gKl_l0ypvPbG4hQtXb32aL_F-KgJ3FIW2ssGigsZID0yFz2DuRGU3tBpLBzVJRRfQCAclAsM_89FhX7OUjRMTZUj7SXnZfZEviFfu1J0uk6lcUGJSiCKBGprWYXtCPRylIinz78NUq3Bz0YqJQm3jXec2M-ACyJY"/>
+<div class="absolute inset-0 bg-gradient-to-r from-transparent to-black/80"></div>
+</div>
+<div class="flex-1 p-3 pl-4 flex flex-col justify-center relative">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="text-white font-bold text-base leading-tight">The Tipsy Crow</h3>
+<div class="flex items-center gap-1 mt-1 text-slate-400 text-xs">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+<span class="truncate max-w-[140px]">720 5th Ave, San Diego</span>
+</div>
+</div>
+<div class="flex flex-col items-center bg-white/5 rounded-lg border border-white/5 p-1 gap-1 ml-2">
+<button class="text-slate-400 hover:text-primary transition-colors h-4 flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">expand_less</span>
+</button>
+<span class="text-xs font-bold text-white">4</span>
+<button class="text-slate-400 hover:text-red-400 transition-colors h-4 flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+</div>
+</div>
+<a class="mt-3 text-xs text-primary font-medium hover:underline flex items-center gap-1" href="#">
+                        Voir sur la carte <span class="material-symbols-outlined text-[12px]">open_in_new</span>
+</a>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-1 mt-2 pb-12">
+<div class="flex items-center justify-between px-2 mb-2">
+<h3 class="text-sm font-semibold text-slate-400">Membres (5)</h3>
+<span class="text-xs text-slate-500 bg-white/5 px-2 py-0.5 rounded">Code: RDY-9X</span>
+</div>
+<div class="glass-panel rounded-xl p-3 flex items-center gap-4 group hover:bg-white/5 transition-colors">
+<div class="relative">
+<img alt="Sarah" class="w-10 h-10 rounded-full object-cover ring-2 ring-white/10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRqdzH_83qjaDNwDvuQ3WALroUc_Xjhw59CE7yA3bsFLmRR81jj6GpOfRTHf-2SB1ZQjlqBR69WmCl8-_KegCiwb3Wp3wxlgoCsbLGm0G6rUhEW7LcMwJ2--EO4Uj-aIB6U1NClFRQVwEMfonohN4XkAvn1l-m4MyCq6xc9tbpSrNQI97YtyIWh3ol364YXZrOeFykkCRzmLhE4S5hYIuvUfZWTTHbG5jFCMcgQOPIjIB5KcPLNUV8iSBtRkKCrGOdjK6blZlxgKGt"/>
+<div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-secondary rounded-full border-2 border-[#121212] pulse-dot"></div>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-2">
+<span class="text-white font-medium text-sm">Sarah</span>
+<span class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary/20 text-primary text-[10px] font-bold uppercase tracking-wider">
+<span class="material-symbols-outlined text-[12px] fill-current">crown</span>
+                            Chef
+                        </span>
+</div>
+<p class="text-secondary text-xs">Déjà sur place</p>
+</div>
+<div class="text-secondary">
+<span class="material-symbols-outlined text-[20px]">check</span>
+</div>
+</div>
+<div class="glass-panel rounded-xl p-3 flex items-center gap-4 group hover:bg-white/5 transition-colors border-l-2 border-l-primary">
+<div class="relative">
+<div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-red-800 flex items-center justify-center text-white font-bold ring-2 ring-white/10">
+                        Y
+                    </div>
+<div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-secondary rounded-full border-2 border-[#121212] pulse-dot"></div>
+</div>
+<div class="flex-1">
+<span class="text-white font-medium text-sm">Vous</span>
+<p class="text-slate-400 text-xs">Prêt à partir</p>
+</div>
+<div class="text-secondary">
+<span class="material-symbols-outlined text-[20px]">check</span>
+</div>
+</div>
+<div class="glass-panel rounded-xl p-3 flex items-center gap-4 group hover:bg-white/5 transition-colors">
+<div class="relative">
+<img alt="Mike" class="w-10 h-10 rounded-full object-cover ring-2 ring-white/10 grayscale opacity-70" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-3W2PJT4zSPtZe1yK1uX0l5pD1zP1mjmYSbPO5nE7bKJog4pjcKh7bW7wNXoJqq8j_8nkmSJo31XD7pCkHLDiyyVAgsMYxn8re0R2M9BuOBwh1_w8wkwGGtBQoV33MQSPhlARdPDRXqG1e1jEyxO6AjoG9sfgIpdk1SFTN0AFVRs74L5QSNJh2v_PHxQW0RP4NiXOooQ-ZocB1Aqh0oSON0_ozVvEh5hm9tZRZZ-zpoAocywEO8WhQd0ILc5YDeIPb7qUrbzLF0Sr"/>
+<div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-primary rounded-full border-2 border-[#121212] flex items-center justify-center">
+<span class="material-symbols-outlined text-[8px] text-white font-bold">schedule</span>
+</div>
+</div>
+<div class="flex-1">
+<span class="text-white font-medium text-sm opacity-70">Mike</span>
+<p class="text-primary text-xs flex items-center gap-1">
+                        En retard (+15m)
+                    </p>
+</div>
+<div class="text-primary animate-pulse">
+<span class="material-symbols-outlined text-[20px]">hourglass_top</span>
+</div>
+</div>
+<div class="glass-panel rounded-xl p-3 flex items-center gap-4 group hover:bg-white/5 transition-colors">
+<div class="relative">
+<img alt="Jessica" class="w-10 h-10 rounded-full object-cover ring-2 ring-white/10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDi2xnx4rc4T5Vxp7TzeGiyp60VYsLqlwYUItuGJrJvxlNJ_4Gfibwu8GjNSS3Vwl_vLxF-AL6UaG-uXU3YhdZep_k2LHo4T4sc5aNk4j9qT052KTDEUYimp2KaNXFF5ZCwbuED2LZ5SWRs3OABFulLzvlSC8CuemVUeRHtFXTxFL-bsKMzyqZFkHZ0bx7z_EYOjbNsofLya9-Np1iSauc_c8iDALLcq9z8CtOLS6ssmcf_NlvHEDaFf9RqmHoXUjNXL0DJLdWUzaKr"/>
+<div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-secondary rounded-full border-2 border-[#121212] pulse-dot"></div>
+</div>
+<div class="flex-1">
+<span class="text-white font-medium text-sm">Jessica</span>
+<p class="text-slate-400 text-xs">À 5m d'ici</p>
+</div>
+<div class="text-secondary">
+<span class="material-symbols-outlined text-[20px]">check</span>
+</div>
+</div>
+</div>
+</div>
+<div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+<div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px]"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-red-900/10 rounded-full blur-[120px]"></div>
+</div>
+
+</body></html>

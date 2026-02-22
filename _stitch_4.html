@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html class="dark" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ReadyCheck Design System Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style type="text/tailwindcss">
+        :root {
+            --primary-black: #000000;
+            --surface-glass: rgba(255, 255, 255, 0.05);
+            --surface-glass-hover: rgba(255, 255, 255, 0.1);
+            --accent-red: #ff2e2e;
+            --accent-red-gradient: linear-gradient(135deg, #ff2e2e 0%, #ff6b6b 100%);
+            --accent-purple: #a855f7;
+            --accent-purple-gradient: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+            --accent-success: #22c55e;
+            --border-subtle: rgba(255, 255, 255, 0.1);
+        }
+        body {
+            background-color: var(--primary-black);
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-panel {
+            background: var(--surface-glass);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border-subtle);
+        }
+        .section-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #64748b;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255,255,255,0.1);
+        }
+        .color-swatch {
+            width: 100%;
+            aspect-ratio: 16/9;
+            border-radius: 0.75rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .btn-massive {
+            background: var(--accent-red-gradient);
+            box-shadow: 0 0 40px -10px rgba(255, 46, 46, 0.5);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-massive:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 50px -10px rgba(255, 46, 46, 0.6);
+        }
+        .btn-massive:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen p-8 lg:p-12 overflow-x-hidden selection:bg-red-500/30">
+<div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-[-1]">
+<div class="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-purple-600/5 rounded-full blur-[120px]"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-red-600/5 rounded-full blur-[120px]"></div>
+</div>
+<header class="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<div class="flex items-center gap-2 mb-2">
+<span class="text-3xl font-black tracking-tighter text-white">rdychk</span>
+<div class="w-2 h-2 rounded-full bg-[var(--accent-red)] animate-pulse"></div>
+</div>
+<h1 class="text-4xl font-bold text-white mb-2">Design System</h1>
+<p class="text-slate-500 max-w-lg">
+                The visual language for the premium dark-mode experience. A system built on deep blacks, glassmorphism, and dynamic context-aware accents.
+            </p>
+</div>
+<div class="flex items-center gap-4 text-xs font-mono text-slate-500 bg-white/5 px-4 py-2 rounded-full border border-white/5">
+<span>v2.4.0</span>
+<span class="w-px h-3 bg-white/10"></span>
+<span>Last updated: Oct 24</span>
+</div>
+</header>
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+<div class="xl:col-span-4 space-y-12">
+<section>
+<div class="section-label">01. Typography</div>
+<div class="glass-panel p-6 rounded-2xl space-y-6">
+<div>
+<span class="text-xs text-slate-500 font-mono mb-1 block">H1 Display / Inter Black</span>
+<h1 class="text-4xl font-black text-white leading-[1.1] tracking-tight">
+                            Arrêtez de<br/>demander
+                        </h1>
+</div>
+<div>
+<span class="text-xs text-slate-500 font-mono mb-1 block">H2 Heading / Inter Bold</span>
+<h2 class="text-2xl font-bold text-white">Créer un groupe</h2>
+</div>
+<div>
+<span class="text-xs text-slate-500 font-mono mb-1 block">Body Large / Inter Medium</span>
+<p class="text-lg font-medium text-slate-300">Synchronisez votre squad en un éclair.</p>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<span class="text-xs text-slate-500 font-mono mb-1 block">Label / Inter Bold</span>
+<span class="text-xs font-bold uppercase tracking-widest text-slate-500">Activity Type</span>
+</div>
+<div>
+<span class="text-xs text-slate-500 font-mono mb-1 block">Mono / Label</span>
+<span class="text-xs font-mono text-slate-400">#FF2E2E</span>
+</div>
+</div>
+</div>
+</section>
+<section>
+<div class="section-label">02. Palette</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="group">
+<div class="color-swatch bg-[var(--primary-black)] shadow-lg shadow-white/5"></div>
+<div class="flex justify-between items-center">
+<span class="text-sm font-medium text-white">OLED Black</span>
+<span class="text-xs font-mono text-slate-500">#000000</span>
+</div>
+</div>
+<div class="group">
+<div class="color-swatch bg-white/10 backdrop-blur-md relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent"></div>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-sm font-medium text-white">Surface Glass</span>
+<span class="text-xs font-mono text-slate-500">10%</span>
+</div>
+</div>
+<div class="group">
+<div class="color-swatch bg-[var(--accent-red-gradient)] shadow-[0_0_20px_rgba(255,46,46,0.3)]"></div>
+<div class="flex justify-between items-center">
+<span class="text-sm font-medium text-white">En Personne</span>
+<span class="text-xs font-mono text-slate-500">Primary</span>
+</div>
+</div>
+<div class="group">
+<div class="color-swatch bg-[var(--accent-purple-gradient)] shadow-[0_0_20px_rgba(168,85,247,0.3)]"></div>
+<div class="flex justify-between items-center">
+<span class="text-sm font-medium text-white">En Ligne</span>
+<span class="text-xs font-mono text-slate-500">Online</span>
+</div>
+</div>
+<div class="group col-span-2">
+<div class="h-12 w-full rounded-lg bg-[var(--accent-success)] shadow-[0_0_20px_rgba(34,197,94,0.3)] border border-white/10 mb-3 flex items-center justify-center">
+<i class="text-black w-5 h-5" data-lucide="check"></i>
+</div>
+<div class="flex justify-between items-center px-1">
+<span class="text-sm font-medium text-white">Action Success</span>
+<span class="text-xs font-mono text-slate-500">#22C55E</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+<div class="xl:col-span-5 space-y-12">
+<section>
+<div class="section-label">03. Core Components</div>
+<div class="glass-panel p-8 rounded-2xl flex flex-col gap-10 items-center justify-center min-h-[400px]">
+<div class="relative w-48 h-48 flex items-center justify-center">
+<svg class="w-full h-full rotate-[-90deg]" viewBox="0 0 100 100">
+<circle cx="50" cy="50" fill="none" r="45" stroke="#1e1e1e" stroke-width="8"></circle>
+<circle class="drop-shadow-[0_0_10px_rgba(255,46,46,0.5)]" cx="50" cy="50" fill="none" r="45" stroke="url(#gradient)" stroke-dasharray="283" stroke-dashoffset="70" stroke-linecap="round" stroke-width="8"></circle>
+<defs>
+<linearGradient id="gradient" x1="0%" x2="100%" y1="0%" y2="0%">
+<stop offset="0%" style="stop-color:#ff2e2e"></stop>
+<stop offset="100%" style="stop-color:#ff6b6b"></stop>
+</linearGradient>
+</defs>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+<span class="text-4xl font-black text-white">3<span class="text-slate-600">/4</span></span>
+<span class="text-xs font-bold uppercase tracking-widest text-[var(--accent-red)] mt-1">Ready</span>
+</div>
+</div>
+<button class="w-full max-w-sm h-16 btn-massive text-white font-black text-xl rounded-2xl flex items-center justify-center gap-3 group relative overflow-hidden">
+<span class="relative z-10">I'M READY</span>
+<i class="w-5 h-5 relative z-10 group-hover:scale-110 transition-transform" data-lucide="zap"></i>
+<div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+</button>
+<div class="flex gap-3">
+<button class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all">
+<i class="w-5 h-5" data-lucide="clock"></i>
+</button>
+<button class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all">
+<i class="w-5 h-5" data-lucide="timer"></i>
+</button>
+<button class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all">
+<i class="w-5 h-5" data-lucide="settings-2"></i>
+</button>
+<button class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-[var(--accent-red)] shadow-[0_0_15px_-5px_var(--accent-red)] border-[var(--accent-red)]/30 transition-all">
+<i class="w-5 h-5" data-lucide="share-2"></i>
+</button>
+</div>
+</div>
+</section>
+<section>
+<div class="glass-panel p-4 rounded-xl flex items-center gap-4 relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-r from-[var(--accent-purple)]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 p-[2px] relative z-10 shadow-lg shadow-purple-500/20">
+<div class="w-full h-full rounded-full bg-black flex items-center justify-center text-sm font-bold overflow-hidden">
+<img alt="Avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOkRz8QdFOC_GixCQLDwb42ld3p0OrVT6aweKMTRTzrj_YwkSLW4sETILJR88_5nBGbVqngUf5gGXmiH2U91vbA6ca7_-B-Rg5BmxboN64LoHtGAJvzyK8x_8XC0Z94WAdR9EQo3t5PvJCO9tTn-EZOP3UbAOiP7QDQFlGD4NTqUtqRpSDhdgPk2WfJZjgBBVwgJbBKQ4rmPSRm7LhcbobO4cicjAid1lKiFEYzrZhdLkOpCj_PUnx_ezCyoQNlxl86Vg0p-IXvdgR"/>
+</div>
+<div class="absolute -bottom-1 -right-1 w-5 h-5 bg-[var(--accent-success)] rounded-full border-2 border-black flex items-center justify-center">
+<i class="w-3 h-3 text-black stroke-[3]" data-lucide="check"></i>
+</div>
+</div>
+<div class="flex-1 relative z-10">
+<div class="flex items-center gap-2">
+<h4 class="text-white font-bold text-sm">Alexandre</h4>
+<span class="px-1.5 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/20 text-[10px] font-bold text-yellow-500 uppercase tracking-wide">Chef</span>
+</div>
+<p class="text-slate-500 text-xs mt-0.5">En attente des autres...</p>
+</div>
+<div class="relative z-10">
+<div class="w-2 h-2 rounded-full bg-white/20 group-hover:bg-purple-400 transition-colors"></div>
+</div>
+</div>
+</section>
+</div>
+<div class="xl:col-span-3 space-y-12">
+<section>
+<div class="section-label">04. Visual FX</div>
+<div class="space-y-6">
+<div class="p-6 rounded-2xl bg-[#050505] border border-white/5 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-[var(--accent-red)]/20 rounded-full blur-[40px]"></div>
+<h3 class="text-sm font-bold text-slate-400 uppercase mb-4 relative z-10">Glow &amp; Lighting</h3>
+<div class="w-full h-12 rounded-lg border border-[var(--accent-red)]/50 shadow-[0_0_15px_rgba(255,46,46,0.3)] bg-[var(--accent-red)]/5 flex items-center justify-center text-[var(--accent-red)] text-sm font-medium">
+                            Primary Glow
+                        </div>
+<div class="w-full h-12 rounded-lg mt-3 border border-[var(--accent-purple)]/50 shadow-[0_0_15px_rgba(168,85,247,0.3)] bg-[var(--accent-purple)]/5 flex items-center justify-center text-[var(--accent-purple)] text-sm font-medium">
+                            Accent Glow
+                        </div>
+</div>
+<div class="p-6 rounded-2xl bg-[#050505] border border-white/5">
+<h3 class="text-sm font-bold text-slate-400 uppercase mb-4">Glass Borders</h3>
+<div class="space-y-3">
+<div class="h-10 border border-white/10 rounded-lg bg-white/5 flex items-center px-3 text-xs text-slate-500">
+                                1px Solid White/10
+                            </div>
+<div class="h-10 border border-white/5 rounded-lg bg-transparent flex items-center px-3 text-xs text-slate-600">
+                                1px Solid White/5
+                            </div>
+<div class="h-10 border border-dashed border-slate-700 rounded-lg bg-transparent flex items-center px-3 text-xs text-slate-600">
+                                1px Dashed Slate-700
+                            </div>
+</div>
+</div>
+<div class="p-6 rounded-2xl bg-[#050505] border border-white/5">
+<h3 class="text-sm font-bold text-slate-400 uppercase mb-4">Text Gradients</h3>
+<h2 class="text-2xl font-black bg-gradient-to-r from-[var(--accent-red)] to-orange-400 bg-clip-text text-transparent">
+                            "T'es prêt ?"
+                        </h2>
+<h2 class="text-2xl font-black bg-gradient-to-r from-[var(--accent-purple)] to-indigo-400 bg-clip-text text-transparent mt-2">
+                            Ready Check
+                        </h2>
+</div>
+</div>
+</section>
+</div>
+</div>
+<script>
+        lucide.createIcons();
+    </script>
+
+</body></html>

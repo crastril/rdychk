@@ -7,19 +7,20 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogDescription,
 } from '@/components/ui/dialog';
 import { supabase } from '@/lib/supabase';
-import { Loader2 } from 'lucide-react';
+import { Loader2, LogOut } from 'lucide-react';
 import { GroupTypeSelector } from '@/components/GroupTypeSelector';
+import { ModeToggle } from '@/components/mode-toggle';
 
 interface GroupSettingsModalProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
     groupId: string;
+    onLeaveGroup?: () => void;
 }
 
-export function GroupSettingsModal({ isOpen, onOpenChange, groupId }: GroupSettingsModalProps) {
+export function GroupSettingsModal({ isOpen, onOpenChange, groupId, onLeaveGroup }: GroupSettingsModalProps) {
     const [groupType, setGroupType] = useState<'remote' | 'in_person'>('remote');
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -42,13 +43,6 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId }: GroupSetti
     const handleSave = async () => {
         setSaving(true);
         try {
-            // Update group type. 
-            // Note: We do NOT clear location data immediately here to be safe, 
-            // but the UI will hide it if remote.
-            // However, the previous implementation DID clear location on save if remote. 
-            // Let's stick to the prompt: just select type. 
-            // If switching to remote, we might want to clear location to be clean, but let's just update type for now.
-
             const { error } = await supabase
                 .from('groups')
                 .update({ type: groupType })
@@ -66,37 +60,61 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId }: GroupSetti
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-md">
-                <DialogHeader>
-                    <DialogTitle>Paramètres du groupe</DialogTitle>
-                    <DialogDescription>
-                        Choisissez le mode de fonctionnement du groupe.
-                    </DialogDescription>
+            <DialogContent className="max-w-md glass-panel border-white/10 text-white p-6 rounded-3xl">
+                <DialogHeader className="mb-6">
+                    <DialogTitle className="text-xl font-bold flex items-center justify-between">
+                        Paramètres du groupe
+                        <ModeToggle />
+                    </DialogTitle>
                 </DialogHeader>
 
                 {loading ? (
                     <div className="flex justify-center py-8">
-                        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                        <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
                     </div>
                 ) : (
-                    <div className="space-y-6 py-4">
-                        <GroupTypeSelector
-                            value={groupType}
-                            onValueChange={(val) => setGroupType(val)}
-                            idPrefix="settings-"
-                        />
+                    <div className="space-y-8">
+                        <div>
+                            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3">
+                                Mode de fonctionnement
+                            </h3>
+                            <GroupTypeSelector
+                                value={groupType}
+                                onValueChange={(val) => setGroupType(val)}
+                                idPrefix="settings-"
+                            />
+                        </div>
 
-                        <div className="flex justify-end pt-4">
-                            <Button onClick={handleSave} disabled={saving}>
+                        <div className="flex flex-col gap-3 pt-6 border-t border-white/10">
+                            <Button
+                                onClick={handleSave}
+                                disabled={saving}
+                                className="w-full bg-[var(--v2-primary)] text-white hover:bg-[var(--v2-primary)]/80 font-bold h-12 rounded-xl transition-all shadow-neon-primary"
+                            >
                                 {saving ? (
                                     <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                         Enregistrement...
                                     </>
                                 ) : (
-                                    "Enregistrer"
+                                    "Enregistrer les paramètres"
                                 )}
                             </Button>
+
+                            {onLeaveGroup && (
+                                <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                        if (confirm("Voulez-vous vraiment quitter ce groupe ?")) {
+                                            onLeaveGroup();
+                                        }
+                                    }}
+                                    className="w-full bg-red-500/10 border-red-500/20 text-red-500 hover:bg-red-500/20 hover:text-red-400 font-bold h-12 rounded-xl transition-all"
+                                >
+                                    <LogOut className="mr-2 h-4 w-4" />
+                                    Quitter le groupe
+                                </Button>
+                            )}
                         </div>
                     </div>
                 )}

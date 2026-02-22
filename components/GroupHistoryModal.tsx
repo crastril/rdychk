@@ -136,24 +136,24 @@ export function GroupHistoryModal({ open, onOpenChange }: GroupHistoryModalProps
     return (
         <>
             <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogContent className="sm:max-w-[500px]">
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 text-2xl">
-                            <History className="w-6 h-6" />
+                <DialogContent className="sm:max-w-[500px] glass-panel border-white/10 text-white rounded-3xl p-6">
+                    <DialogHeader className="border-b border-white/10 pb-4 mb-2">
+                        <DialogTitle className="flex items-center gap-3 text-2xl font-bold">
+                            <History className="w-6 h-6 text-[var(--v2-primary)]" />
                             Historique des groupes
                         </DialogTitle>
-                        <DialogDescription>
+                        <DialogDescription className="text-slate-400">
                             Retrouvez tous les groupes que vous avez rejoints.
                         </DialogDescription>
                     </DialogHeader>
 
-                    <ScrollArea className="h-[300px] pr-4 mt-4">
+                    <ScrollArea className="h-[300px] pr-4 mt-2 custom-scrollbar">
                         {loading ? (
                             <div className="flex justify-center items-center h-full min-h-[100px]">
-                                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                                <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
                             </div>
                         ) : groups.length === 0 ? (
-                            <div className="text-center text-muted-foreground py-8">
+                            <div className="text-center text-slate-400 py-8">
                                 <p>Vous n&apos;avez rejoint aucun groupe pour le moment.</p>
                             </div>
                         ) : (
@@ -161,20 +161,20 @@ export function GroupHistoryModal({ open, onOpenChange }: GroupHistoryModalProps
                                 {groups.map((item) => (
                                     <div
                                         key={item.id}
-                                        className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors group"
+                                        className="flex items-center justify-between p-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors group"
                                     >
                                         <Link
                                             href={`/group/${item.groups.slug}`}
                                             className="flex-1 min-w-0 mr-4"
                                             onClick={() => onOpenChange(false)}
                                         >
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-medium truncate block">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="font-bold text-white truncate block">
                                                     {item.groups.name}
                                                 </span>
-                                                <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                <ExternalLink className="w-3.5 h-3.5 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                                             </div>
-                                            <span className="text-xs text-muted-foreground">
+                                            <span className="text-xs text-slate-400 font-medium">
                                                 Rejoint le {new Date(item.joined_at).toLocaleDateString()}
                                             </span>
                                         </Link>
@@ -182,14 +182,14 @@ export function GroupHistoryModal({ open, onOpenChange }: GroupHistoryModalProps
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                            className="text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl w-10 h-10 shrink-0"
                                             onClick={() => setConfirmLeaveId(item.group_id)}
                                             disabled={leavingId === item.group_id}
                                         >
                                             {leavingId === item.group_id ? (
-                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                <Loader2 className="w-5 h-5 animate-spin" />
                                             ) : (
-                                                <LogOut className="w-4 h-4" />
+                                                <LogOut className="w-5 h-5" />
                                             )}
                                         </Button>
                                     </div>
@@ -201,18 +201,18 @@ export function GroupHistoryModal({ open, onOpenChange }: GroupHistoryModalProps
             </Dialog>
 
             <AlertDialog open={!!confirmLeaveId} onOpenChange={(open) => !open && setConfirmLeaveId(null)}>
-                <AlertDialogContent>
+                <AlertDialogContent className="glass-panel border-white/10 text-white rounded-3xl p-6">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Quitter ce groupe ?</AlertDialogTitle>
-                        <AlertDialogDescription>
+                        <AlertDialogTitle className="text-xl font-bold">Quitter ce groupe ?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-400 text-sm mt-2">
                             Vous ne ferez plus partie de ce groupe. Vous pourrez toujours le rejoindre plus tard si vous avez le lien.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                    <AlertDialogFooter className="mt-6 border-t border-white/10 pt-4">
+                        <AlertDialogCancel className="rounded-xl bg-white/5 border-white/10 hover:bg-white/10 text-slate-300 hover:text-white">Annuler</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={(e) => { e.preventDefault(); handleLeaveGroup(); }}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            className="rounded-xl bg-red-500/20 border border-red-500/30 text-red-500 hover:bg-red-500/30 font-bold"
                         >
                             Quitter
                         </AlertDialogAction>

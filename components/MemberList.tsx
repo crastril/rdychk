@@ -1,9 +1,8 @@
 'use client';
 
 import type { Member } from '@/types/database';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Crown, Users as UsersIcon, Clock } from 'lucide-react';
+import { Crown, Users as UsersIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MemberStatus } from './MemberStatus';
 
@@ -51,7 +50,10 @@ export default function MemberList({ loading, currentMemberId, members }: Member
     }
 
     return (
-        <div className="space-y-3">
+        <div className="space-y-3 relative w-full mb-8">
+            <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest px-2 mb-4">
+                Membres ({members.length})
+            </h2>
             {members.map((member) => {
                 const isCurrentUser = member.id === currentMemberId;
                 const isAdmin = member.role === 'admin';
@@ -59,59 +61,47 @@ export default function MemberList({ loading, currentMemberId, members }: Member
                 return (
                     <div
                         key={member.id}
-                        className={cn(
-                            "flex items-center gap-4 p-4 rounded-xl border bg-card/50 backdrop-blur-sm hover:bg-accent/50 transition-all duration-300 animate-slide-up",
-                            isAdmin && "border-primary/50 shadow-[0_0_15px_-5px_hsl(var(--primary)/0.3)]"
-                        )}
+                        className="glass-panel p-3 rounded-2xl flex items-center gap-4 relative overflow-hidden group transition-transform hover:scale-[1.01] duration-300"
                         role="listitem"
                     >
+                        {/* Background gradient indicator for state */}
+                        <div className={cn(
+                            "absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l to-transparent opacity-0 group-hover:opacity-100 transition-opacity",
+                            member.is_ready ? "from-[var(--v2-secondary)]/20" : "from-white/5"
+                        )}></div>
+
                         {/* Avatar */}
                         <div
                             className={cn(
-                                "relative w-12 h-12 rounded-full flex items-center justify-center text-base font-bold shadow-sm transition-colors shrink-0",
+                                "relative w-12 h-12 rounded-xl flex items-center justify-center font-black shrink-0 transition-colors z-10",
                                 member.is_ready
-                                    ? 'bg-primary text-primary-foreground shadow-[0_0_15px_-3px_hsl(var(--primary)/0.4)]'
-                                    : 'bg-secondary text-secondary-foreground',
-                                isAdmin && !member.is_ready && "ring-2 ring-primary/30"
+                                    ? 'bg-[var(--v2-secondary)] text-[#121212] shadow-neon-secondary'
+                                    : 'bg-white/5 border border-white/10 text-slate-400'
                             )}
                         >
                             {getInitials(member.name)}
                             {/* Admin crown overlay */}
                             {isAdmin && (
-                                <span className="absolute -top-1.5 -right-1.5 bg-background rounded-full p-0.5 shadow-sm">
-                                    <Crown className="w-3 h-3 text-primary" />
+                                <span className={cn(
+                                    "absolute -bottom-2 -right-2 rounded-full p-1 shadow-sm",
+                                    member.is_ready ? "bg-[var(--v2-secondary)] text-white" : "bg-background text-[var(--v2-primary)]"
+                                )}>
+                                    <Crown className="w-3 h-3" />
                                 </span>
                             )}
                         </div>
 
-                        {/* Name + meta */}
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                                <p className="font-semibold text-base truncate">
-                                    {member.name}
-                                </p>
+                        {/* Info */}
+                        <div className="flex-grow z-10 min-w-0">
+                            <h3 className="font-bold text-white text-lg flex items-center gap-2 truncate">
+                                {member.name}
                                 {isCurrentUser && (
-                                    <Badge variant="secondary" className="text-xs font-normal shrink-0">
-                                        Vous
-                                    </Badge>
+                                    <span className="text-xs bg-white/10 px-2 py-0.5 rounded-full text-slate-300 font-medium shrink-0">
+                                        Toi
+                                    </span>
                                 )}
-                                {isAdmin && (
-                                    <Badge variant="outline" className="text-xs font-normal border-primary/60 text-primary shrink-0">
-                                        Admin
-                                    </Badge>
-                                )}
-                            </div>
-                            {/* Proposed time sub-line */}
-                            {member.proposed_time && !member.is_ready && (
-                                <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
-                                    <Clock className="w-3 h-3 shrink-0" />
-                                    Propose&nbsp;{member.proposed_time}
-                                </p>
-                            )}
-                        </div>
+                            </h3>
 
-                        {/* Status Badge */}
-                        <div className="text-right shrink-0">
                             <MemberStatus member={member} />
                         </div>
                     </div>

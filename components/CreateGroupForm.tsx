@@ -1,22 +1,31 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Loader2, ArrowRight } from 'lucide-react';
+import { Loader2, ArrowRight, Edit2 } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
 import { createSlug } from '@/lib/slug';
-import { GroupTypeSelector } from '@/components/GroupTypeSelector';
 
 export default function CreateGroupForm() {
     const { user } = useAuth();
     const [groupName, setGroupName] = useState('');
-    const [groupType, setGroupType] = useState<'remote' | 'in_person'>('remote');
+    const [groupType, setGroupType] = useState<'remote' | 'in_person'>('in_person');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+
+    // Dynamically toggle body theme class based on selection
+    useEffect(() => {
+        if (groupType === 'remote') {
+            document.body.classList.add('theme-online');
+        } else {
+            document.body.classList.remove('theme-online');
+        }
+        // Cleanup when component unmounts
+        return () => {
+            document.body.classList.remove('theme-online');
+        };
+    }, [groupType]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -55,56 +64,78 @@ export default function CreateGroupForm() {
         try {
             router.push(`/group/${uniqueSlug}`);
         } catch (error: unknown) {
-            // Only ignore navigation-related AbortErrors here
             const isAbortError = error instanceof Error && (error.message.includes('NEXT_REDIRECT') || error.name === 'AbortError');
             if (isAbortError) {
                 return;
             }
             console.error('Navigation failed:', error);
-            // Even if nav fails, we stop loading so user knows. 
-            // Ideally we might show a link "Click here to go to group" if auto-redirect dies.
             setLoading(false);
         }
-        // Note: We don't finally{setLoading(false)} because if router.push succeeds (and yields),
-        // we want the spinner to stay until the new page loads (or component unmounts).
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="groupName">Nom du groupe</Label>
-                    <Input
-                        id="groupName"
+        <form onSubmit={handleSubmit} className="space-y-5 relative">
+            <div>
+                <label className="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wide">Nom du groupe</label>
+                <div className="relative">
+                    <input
+                        className="w-full h-12 rounded-xl glass-input px-4 pl-11 text-base placeholder-slate-500 transition-all focus:border-[var(--v2-primary)]"
+                        placeholder="Ex: Raid WoW, Soirée Bar..."
                         type="text"
                         value={groupName}
                         onChange={(e) => setGroupName(e.target.value)}
-                        placeholder="Entrez le nom du groupe..."
-                        required
-                        className="h-12 text-lg"
                         disabled={loading}
+                        required
                     />
+                    <Edit2 className="w-5 h-5 absolute left-3.5 top-3.5 text-slate-500" />
                 </div>
-                <div className="space-y-4">
-                    <Label>Type de groupe</Label>
-                    <GroupTypeSelector value={groupType} onValueChange={(val) => setGroupType(val)} />
-                </div>
-
-                <Button
-                    type="submit"
-                    className="w-full h-12 text-lg font-semibold bg-primary hover:bg-primary/90 transition-all"
-                    disabled={loading || !groupName.trim()}
-                >
-                    {loading ? (
-                        <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                    ) : (
-                        <>
-                            Créer
-                            <ArrowRight className="w-5 h-5 ml-2" />
-                        </>
-                    )}
-                </Button>
             </div>
+            <div>
+                <label className="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wide">Type d'activité</label>
+                <div className="grid grid-cols-2 gap-2 p-1 bg-black/40 rounded-xl border border-white/5">
+                    <label className="cursor-pointer relative">
+                        <input
+                            className="peer sr-only"
+                            name="group-type"
+                            type="radio"
+                            checked={groupType === 'remote'}
+                            onChange={() => setGroupType('remote')}
+                            disabled={loading}
+                        />
+                        <div className="w-full py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-medium text-slate-400 peer-checked:bg-white/10 peer-checked:text-white transition-all">
+                            <span className="text-lg">🎮</span> En Ligne
+                        </div>
+                    </label>
+                    <label className="cursor-pointer relative">
+                        <input
+                            className="peer sr-only"
+                            name="group-type"
+                            type="radio"
+                            checked={groupType === 'in_person'}
+                            onChange={() => setGroupType('in_person')}
+                            disabled={loading}
+                        />
+                        <div className="w-full py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-medium text-slate-400 peer-checked:bg-white/10 peer-checked:text-white transition-all">
+                            <span className="text-lg">📍</span> En Personne
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <button
+                type="submit"
+                disabled={loading || !groupName.trim()}
+                className="w-full h-14 bg-[var(--v2-primary)] shadow-neon-primary text-white font-extrabold text-lg rounded-xl transition-all active:scale-[0.98] mt-2 flex items-center justify-center gap-2 group hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+                {loading ? (
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                ) : (
+                    <>
+                        C'est parti !
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </>
+                )}
+            </button>
         </form>
     );
 }

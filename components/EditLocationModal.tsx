@@ -113,49 +113,51 @@ export function EditLocationModal({ isOpen, onOpenChange, groupId, slug, existin
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-md">
-                <DialogHeader>
-                    <DialogTitle>Modifier le lieu</DialogTitle>
-                    <DialogDescription>
+            <DialogContent className="max-w-md glass-panel border-white/10 text-white rounded-3xl p-6">
+                <DialogHeader className="mb-2">
+                    <DialogTitle className="text-xl font-bold">Modifier le lieu</DialogTitle>
+                    <DialogDescription className="text-slate-400">
                         Indiquez où le groupe doit se retrouver.
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="space-y-4 py-4">
+                <div className="space-y-6 py-4">
                     <div className="space-y-2">
-                        <Label htmlFor="loc-name">Nom du lieu <span className="text-destructive">*</span></Label>
+                        <Label htmlFor="loc-name" className="text-slate-300 font-medium">Nom du lieu <span className="text-red-400">*</span></Label>
                         <Input
                             id="loc-name"
                             placeholder="Ex: Bar de la Plage, Chez Marco..."
                             value={name}
                             onChange={(e) => setName(e.target.value)}
+                            className="h-11 bg-black/20 border-white/10 text-white placeholder:text-slate-600 focus-visible:ring-[var(--v2-primary)] rounded-xl"
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="loc-link">Lien Google Maps (facultatif)</Label>
+                        <Label htmlFor="loc-link" className="text-slate-300 font-medium">Lien Google Maps (facultatif)</Label>
                         <Input
                             id="loc-link"
                             placeholder="https://maps.google.com/..."
                             value={link}
                             onChange={(e) => setLink(e.target.value)}
+                            className="h-11 bg-black/20 border-white/10 text-white placeholder:text-slate-600 focus-visible:ring-[var(--v2-primary)] rounded-xl"
                         />
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-slate-500">
                             Permet aux membres d&apos;ouvrir l&apos;itinéraire directement.
                         </p>
 
                         {/* Link Preview */}
                         {(isFetchingPreview || preview) && (
-                            <div className="mt-2 border rounded-md overflow-hidden bg-muted/30">
+                            <div className="mt-2 border border-white/10 rounded-xl overflow-hidden bg-white/5">
                                 {isFetchingPreview ? (
-                                    <div className="p-3 flex items-center gap-2 text-muted-foreground text-sm">
-                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                    <div className="p-3 flex items-center gap-2 text-slate-400 text-sm">
+                                        <Loader2 className="w-4 h-4 animate-spin" />
                                         Chargement de l&apos;aperçu...
                                     </div>
                                 ) : preview && (
-                                    <div className="flex h-16">
+                                    <div className="flex h-20">
                                         {preview.image && (
-                                            <div className="w-20 h-full shrink-0 relative border-r">
+                                            <div className="w-24 h-full shrink-0 relative border-r border-white/10">
                                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                                 <img
                                                     src={preview.image}
@@ -165,10 +167,10 @@ export function EditLocationModal({ isOpen, onOpenChange, groupId, slug, existin
                                                 />
                                             </div>
                                         )}
-                                        <div className="p-2 flex-1 min-w-0 flex flex-col justify-center">
-                                            <div className="font-semibold text-xs line-clamp-1">{preview.title}</div>
+                                        <div className="p-3 flex-1 min-w-0 flex flex-col justify-center">
+                                            <div className="font-bold text-sm text-white line-clamp-1">{preview.title}</div>
                                             {preview.description && (
-                                                <div className="text-[10px] text-muted-foreground line-clamp-2 leading-tight mt-0.5">
+                                                <div className="text-[11px] text-slate-400 line-clamp-2 leading-tight mt-1">
                                                     {preview.description}
                                                 </div>
                                             )}
@@ -179,11 +181,15 @@ export function EditLocationModal({ isOpen, onOpenChange, groupId, slug, existin
                         )}
                     </div>
 
-                    <div className="flex justify-end pt-4">
-                        <Button onClick={handleSave} disabled={saving || !name.trim() || isFetchingPreview}>
+                    <div className="flex justify-end pt-4 mt-2 border-t border-white/10">
+                        <Button
+                            onClick={handleSave}
+                            disabled={saving || !name.trim() || isFetchingPreview}
+                            className="w-full bg-[var(--v2-primary)] text-white hover:bg-[var(--v2-primary)]/80 font-bold h-12 rounded-xl transition-all shadow-neon-primary"
+                        >
                             {saving ? (
                                 <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                     Enregistrement...
                                 </>
                             ) : (
@@ -193,6 +199,6 @@ export function EditLocationModal({ isOpen, onOpenChange, groupId, slug, existin
                     </div>
                 </div>
             </DialogContent>
-        </Dialog>
+        </Dialog >
     );
 }

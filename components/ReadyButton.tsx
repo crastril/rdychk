@@ -82,45 +82,43 @@ export default function ReadyButton({ slug, memberId, isReady, timerEndTime }: R
     };
 
     return (
-        <Button
+        <button
             onClick={toggleReady}
-            variant={optimisticIsReady ? "default" : "outline"}
-            size="lg"
-            className={`
-                w-full h-24 text-xl font-bold tracking-wide transition-all duration-500
-                ${optimisticIsReady
-                    ? 'bg-primary hover:bg-primary/90 shadow-[0_0_30px_-5px_hsl(var(--primary)/0.6)] scale-[1.02] border-primary'
-                    : isSoonReady || timeLeft
-                        ? 'bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/50 text-amber-500'
-                        : 'bg-background hover:bg-accent hover:text-accent-foreground border-2'
-                }
-            `}
             aria-label={optimisticIsReady ? "Marquer comme pas prêt" : "Marquer comme prêt"}
             aria-pressed={optimisticIsReady}
+            className={`
+                group relative w-full h-16 flex items-center justify-center rounded-xl font-extrabold text-lg tracking-wide transition-all duration-300 active:scale-[0.98] overflow-hidden
+                ${optimisticIsReady
+                    ? 'bg-[var(--v2-secondary)] hover:bg-[#3bf183] text-black shadow-neon-secondary'
+                    : isSoonReady || timeLeft
+                        ? 'bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-500 shadow-[0_0_15px_-5px_rgba(245,158,11,0.4)]'
+                        : 'glass-panel text-slate-400 hover:bg-white/5 hover:text-white'
+                }
+            `}
         >
+            <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors"></div>
+
             {optimisticIsReady ? (
-                <div className="flex items-center gap-3 animate-slide-up">
-                    <div className="p-1 rounded-full bg-primary-foreground/20">
-                        <Check className="w-6 h-6" />
-                    </div>
-                    JE SUIS PRÊT !
+                <div className="flex items-center gap-2 relative z-10 animate-in slide-in-from-bottom-2">
+                    <Check className="w-6 h-6 group-hover:rotate-12 transition-transform" />
+                    JE SUIS PRÊT
                 </div>
             ) : isSoonReady ? (
-                <div className="flex items-center gap-3 text-amber-500 animate-pulse">
+                <div className="flex items-center gap-2 relative z-10 animate-pulse text-amber-500">
                     <AlertTriangle className="w-6 h-6" />
-                    <span>BIENTÔT PRÊT - CLIQUEZ POUR VALIDER</span>
+                    BIENTÔT PRÊT !
                 </div>
             ) : timeLeft ? (
-                <div className="flex items-center gap-3 text-amber-500">
+                <div className="flex items-center gap-2 relative z-10">
                     <Timer className="w-6 h-6 animate-pulse" />
                     <span className="tabular-nums">PRÊT DANS {timeLeft}</span>
                 </div>
             ) : (
-                <div className="flex items-center gap-3 text-muted-foreground group">
-                    <Clock className="w-6 h-6 group-hover:text-foreground transition-colors" />
-                    <span>PAS PRÊT</span>
+                <div className="flex items-center gap-2 relative z-10">
+                    <Clock className="w-6 h-6" />
+                    PAS PRÊT
                 </div>
             )}
-        </Button >
+        </button>
     );
 }

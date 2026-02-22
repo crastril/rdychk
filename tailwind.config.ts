@@ -53,11 +53,20 @@ const config: Config = {
                     DEFAULT: "hsl(var(--card))",
                     foreground: "hsl(var(--card-foreground))",
                 },
+                "background-dark": "#050505",
+                "surface-dark": "#121212",
+                "v2-primary": "var(--v2-primary)",
+                "v2-secondary": "var(--v2-secondary)",
+                "v2-accent": "var(--v2-accent)"
             },
             borderRadius: {
                 lg: "var(--radius)",
                 md: "calc(var(--radius) - 2px)",
                 sm: "calc(var(--radius) - 4px)",
+            },
+            boxShadow: {
+                "neon-primary": "0 0 20px -5px rgba(var(--v2-primary-rgb), 0.4)",
+                "neon-secondary": "0 0 25px -5px rgba(42, 232, 118, 0.5)",
             },
             keyframes: {
                 "accordion-down": {
@@ -68,10 +77,15 @@ const config: Config = {
                     from: { height: "var(--radix-accordion-content-height)" },
                     to: { height: "0" },
                 },
+                "pulse-ring": {
+                    "0%": { transform: "scale(0.8)", opacity: "0.8" },
+                    "100%": { transform: "scale(2.2)", opacity: "0" },
+                }
             },
             animation: {
                 "accordion-down": "accordion-down 0.2s ease-out",
                 "accordion-up": "accordion-up 0.2s ease-out",
+                "pulse-ring": "pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite"
             },
         },
     },

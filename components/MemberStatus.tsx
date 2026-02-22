@@ -17,14 +17,14 @@ export function MemberStatus({ member }: { member: Member }) {
 
     return (
         <span className={cn(
-            "inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1 rounded-full border transition-colors",
+            "flex items-center gap-1 text-sm transition-colors",
             member.is_ready
-                ? "bg-green-500/10 text-green-500 border-green-500/20"
+                ? "text-[var(--v2-secondary)] font-bold"
                 : member.proposed_time
-                    ? "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                    ? "text-blue-400 font-medium"
                     : member.timer_end_time
-                        ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                        : "bg-red-500/10 text-red-500 border-red-500/20"
+                        ? "text-amber-500 font-medium"
+                        : "text-slate-500 font-medium"
         )}>
             {(() => {
                 if (member.is_ready) {
