@@ -66,11 +66,15 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
     const fetchMembers = async () => {
         if (!group?.id) return;
         setLoadingMembers(true);
-        const { data } = await supabase
+        const { data, error } = await supabase
             .from('members')
             .select('*, profiles(avatar_url)')
             .eq('group_id', group.id)
             .order('joined_at', { ascending: true });
+
+        if (error) {
+            console.error("Error fetching members:", error);
+        }
 
         if (data) {
             const membersWithAvatars = data.map((m: any) => ({
