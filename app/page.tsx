@@ -44,7 +44,7 @@ export default function Home() {
         .from('members')
         .select(`
           joined_at,
-          groups (
+          groups!members_group_id_fkey (
             name,
             slug,
             type
@@ -57,7 +57,8 @@ export default function Home() {
       if (data && data.length > 0) {
         const transformedGroups = (data as any[])
           .map((member) => {
-            const groupData = member.groups;
+            // Support both singular and plural keys returned by Supabase
+            const groupData = member.groups || member.group;
             const group = Array.isArray(groupData) ? groupData[0] : groupData;
             if (!group) return null;
 
