@@ -62,9 +62,9 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
         <Dialog open={open} onOpenChange={setOpen}>
             <div className="w-full relative group/modal">
                 <DialogTrigger asChild>
-                    <button className="flex w-full items-center justify-center py-4 px-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-slate-200 text-xs sm:text-sm font-medium transition-colors hover:text-white group">
-                        <Clock className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 text-[var(--v2-primary)] group-hover:scale-110 transition-transform shrink-0" />
-                        <span className="truncate">{currentProposedTime ? `Proposé : ${currentProposedTime}` : 'Proposer un horaire'}</span>
+                    <button className="flex w-full items-center justify-center py-4 px-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black transition-all group">
+                        <Clock className="w-4 h-4 mr-2 text-[var(--v2-primary)] group-hover:rotate-12 transition-transform shrink-0" />
+                        <span className="truncate">{currentProposedTime ? `HORAIRE : ${currentProposedTime}` : 'PROPOSER UN HORAIRE'}</span>
                     </button>
                 </DialogTrigger>
                 {currentProposedTime && (
@@ -79,11 +79,11 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
                     </Button>
                 )}
             </div>
-            <DialogContent className="sm:max-w-md glass-panel border-white/10 text-white rounded-3xl p-6">
-                <DialogHeader className="mb-2">
-                    <DialogTitle className="text-xl font-bold">Proposer un horaire</DialogTitle>
-                    <DialogDescription className="text-slate-400">
-                        Indiquez à quelle heure vous pensez être prêt ou à quelle heure on se retrouve.
+            <DialogContent className="sm:max-w-md glass-panel border-white/10 text-white rounded-3xl p-8 backdrop-blur-2xl">
+                <DialogHeader className="mb-4">
+                    <DialogTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Proposer un horaire</DialogTitle>
+                    <DialogDescription className="text-[11px] text-slate-400 leading-relaxed">
+                        Indiquez l'heure à laquelle vous pensez être présent.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="flex items-center justify-center py-4">

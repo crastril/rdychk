@@ -557,10 +557,10 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                                                             setShowLocationProposal(true);
                                                             setIsOptionsOpen(false);
                                                         }}
-                                                        className="flex items-center justify-center w-full py-3 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-slate-200 text-sm font-medium transition-all group"
+                                                        className="flex items-center justify-center w-full py-4 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black transition-all group"
                                                     >
-                                                        <MapPin className="w-4 h-4 mr-2 text-[var(--v2-primary)] group-hover:scale-110 transition-transform" />
-                                                        Rajouter un lieu
+                                                        <MapPin className="w-4 h-4 mr-2 text-[var(--v2-primary)] group-hover:rotate-12 transition-transform" />
+                                                        RAJOUTER UN LIEU
                                                     </button>
                                                 ) : isAdmin && (
                                                     <button

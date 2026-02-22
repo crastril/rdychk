@@ -17,21 +17,21 @@ export function MemberStatus({ member }: { member: Member }) {
 
     return (
         <span className={cn(
-            "flex items-center gap-1 text-sm transition-colors",
+            "flex items-center gap-1.5 text-[10px] uppercase font-black tracking-wider transition-colors",
             member.is_ready
-                ? "text-[var(--v2-secondary)] font-bold"
+                ? "text-[var(--v2-secondary)] shadow-neon-secondary-sm"
                 : member.proposed_time
-                    ? "text-blue-400 font-medium"
+                    ? "text-[var(--v2-primary)]"
                     : member.timer_end_time
-                        ? "text-amber-500 font-medium"
-                        : "text-slate-500 font-medium"
+                        ? "text-amber-500"
+                        : "text-slate-500"
         )}>
             {(() => {
                 if (member.is_ready) {
                     return (
                         <>
                             <Check className="w-3.5 h-3.5" />
-                            <span>Prêt</span>
+                            <span>PRÊT</span>
                         </>
                     );
                 }
@@ -40,7 +40,7 @@ export function MemberStatus({ member }: { member: Member }) {
                     return (
                         <>
                             <Clock className="w-3.5 h-3.5" />
-                            <span>à {member.proposed_time}</span>
+                            <span>À {member.proposed_time}</span>
                         </>
                     );
                 }
@@ -53,7 +53,7 @@ export function MemberStatus({ member }: { member: Member }) {
                         return (
                             <>
                                 <AlertTriangle className="w-3.5 h-3.5 animate-pulse" />
-                                <span>Bientôt prêt</span>
+                                <span>BIENTÔT PRÊT</span>
                             </>
                         );
                     }
@@ -73,7 +73,7 @@ export function MemberStatus({ member }: { member: Member }) {
                 return (
                     <>
                         <Clock className="w-3.5 h-3.5" />
-                        <span>Pas prêt</span>
+                        <span>PAS PRÊT</span>
                     </>
                 );
             })()}

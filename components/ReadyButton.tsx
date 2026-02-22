@@ -99,23 +99,23 @@ export default function ReadyButton({ slug, memberId, isReady, timerEndTime }: R
             <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors"></div>
 
             {optimisticIsReady ? (
-                <div className="flex items-center gap-2 relative z-10 animate-in slide-in-from-bottom-2">
-                    <Check className="w-6 h-6 group-hover:rotate-12 transition-transform" />
+                <div className="flex items-center gap-2 relative z-10 animate-in slide-in-from-bottom-2 text-[14px] font-black uppercase tracking-[0.2em]">
+                    <Check className="w-5 h-5 group-hover:rotate-12 transition-transform" />
                     JE SUIS PRÊT
                 </div>
             ) : isSoonReady ? (
-                <div className="flex items-center gap-2 relative z-10 animate-pulse text-amber-500">
-                    <AlertTriangle className="w-6 h-6" />
+                <div className="flex items-center gap-2 relative z-10 animate-pulse text-amber-500 text-[10px] font-black uppercase tracking-[0.2em]">
+                    <AlertTriangle className="w-4 h-4" />
                     BIENTÔT PRÊT !
                 </div>
             ) : timeLeft ? (
-                <div className="flex items-center gap-2 relative z-10">
-                    <Timer className="w-6 h-6 animate-pulse" />
+                <div className="flex items-center gap-2 relative z-10 text-[10px] font-black uppercase tracking-[0.2em]">
+                    <Timer className="w-4 h-4 animate-pulse text-[var(--v2-primary)]" />
                     <span className="tabular-nums">PRÊT DANS {timeLeft}</span>
                 </div>
             ) : (
-                <div className="flex items-center gap-2 relative z-10">
-                    <Clock className="w-6 h-6" />
+                <div className="flex items-center gap-2 relative z-10 text-[10px] font-black uppercase tracking-[0.2em]">
+                    <Clock className="w-4 h-4 text-[var(--v2-primary)]" />
                     PAS PRÊT
                 </div>
             )}
