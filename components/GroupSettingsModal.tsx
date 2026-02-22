@@ -11,7 +11,6 @@ import {
 import { supabase } from '@/lib/supabase';
 import { Loader2, LogOut } from 'lucide-react';
 import { GroupTypeSelector } from '@/components/GroupTypeSelector';
-import { ModeToggle } from '@/components/mode-toggle';
 
 interface GroupSettingsModalProps {
     isOpen: boolean;
@@ -62,9 +61,8 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, onLeaveGroup
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-md glass-panel border-white/10 text-white p-6 rounded-3xl">
                 <DialogHeader className="mb-6">
-                    <DialogTitle className="text-xl font-bold flex items-center justify-between">
+                    <DialogTitle className="text-xl font-bold">
                         Paramètres du groupe
-                        <ModeToggle />
                     </DialogTitle>
                 </DialogHeader>
 
