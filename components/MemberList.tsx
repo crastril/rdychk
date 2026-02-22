@@ -80,20 +80,14 @@ export default function MemberList({ loading, currentMemberId, members }: Member
                             )}
                         >
                             {getInitials(member.name)}
-                            {/* Admin crown overlay */}
-                            {isAdmin && (
-                                <span className={cn(
-                                    "absolute -bottom-2 -right-2 rounded-full p-1 shadow-sm",
-                                    member.is_ready ? "bg-[var(--v2-secondary)] text-white" : "bg-background text-[var(--v2-primary)]"
-                                )}>
-                                    <Crown className="w-3 h-3" />
-                                </span>
-                            )}
                         </div>
 
                         {/* Info */}
                         <div className="flex-grow z-10 min-w-0">
-                            <h3 className="font-bold text-white text-lg flex items-center gap-2 truncate">
+                            <h3 className={cn(
+                                "font-bold text-lg flex items-center gap-2 truncate",
+                                isAdmin ? "liquid-glow-text" : "text-white"
+                            )}>
                                 {member.name}
                                 {isCurrentUser && (
                                     <span className="text-xs bg-white/10 px-2 py-0.5 rounded-full text-slate-300 font-medium shrink-0">

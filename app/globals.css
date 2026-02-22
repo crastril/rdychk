@@ -154,6 +154,32 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
+
+  /* Liquid Glow for Admin */
+  .liquid-glow-text {
+    background: linear-gradient(to right,
+        var(--v2-primary),
+        var(--v2-accent),
+        #fff,
+        var(--v2-accent),
+        var(--v2-primary));
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: liquid-flow 3s linear infinite;
+    filter: drop-shadow(0 0 5px rgba(var(--v2-primary-rgb), 0.5));
+  }
+
+  @keyframes liquid-flow {
+    0% {
+      background-position: 0% center;
+    }
+
+    100% {
+      background-position: 200% center;
+    }
+  }
 }
 
 @layer base {
