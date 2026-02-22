@@ -65,20 +65,17 @@ export default function ReadyButton({ slug, memberId, isReady, timerEndTime }: R
             }
         }
 
-        startTransition(() => {
+        startTransition(async () => {
             addOptimisticIsReady(nextState);
-        });
-
-        try {
-            const result = await toggleReadyAction(slug, memberId, nextState);
-            if (!result.success) {
-                console.error("Action failed:", result.error);
-                // Optionally revert the optimistic update here if needed
-                // startTransition(() => addOptimisticIsReady(!nextState)); 
+            try {
+                const result = await toggleReadyAction(slug, memberId, nextState);
+                if (!result.success) {
+                    console.error("Action failed:", result.error);
+                }
+            } catch (error) {
+                console.error('Error updating status context:', error);
             }
-        } catch (error) {
-            console.error('Error updating status context:', error);
-        }
+        });
     };
 
     return (
