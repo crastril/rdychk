@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { notFound, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/auth-provider';
 import { joinGroupAction, reclaimSessionAction, leaveGroupAction, updateMemberAction, promoteToAdminAction, linkGuestToUserAction } from '@/app/actions/member';
@@ -17,7 +18,7 @@ import { ManageGroupModal } from '@/components/ManageGroupModal';
 import { TimeProposalModal } from '@/components/TimeProposalModal';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Copy, Check, Target, Users, Loader2, LogOut, Settings } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Target, Users, Loader2, LogOut, Settings, ChevronDown } from 'lucide-react';
 import { ModeToggle } from '@/components/mode-toggle';
 import { AuthButton } from '@/components/auth-button';
 import type { Group, Member } from '@/types/database';
@@ -36,6 +37,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
     const [loadingMembers, setLoadingMembers] = useState(false);
     const [isManageModalOpen, setIsManageModalOpen] = useState(false);
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+    const [isOptionsOpen, setIsOptionsOpen] = useState(false);
 
     const fetchGroup = async () => {
         try {
@@ -460,27 +462,45 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                                 isReady={isReady}
                                 timerEndTime={timerEndTime}
                             />
-                            <div className="flex gap-2">
-                                <div className="flex-1">
-                                    <TimerPicker
-                                        currentTimerEnd={timerEndTime}
-                                        onUpdate={async (updates) => {
-                                            if (!memberId) return;
-                                            await updateMemberAction(slug, memberId, updates);
-                                        }}
-                                    />
-                                </div>
-                                {group.type === 'in_person' && (
-                                    <div className="flex-1">
-                                        <TimeProposalModal
-                                            currentProposedTime={currentMember?.proposed_time ?? null}
-                                            onUpdate={async (updates) => {
-                                                if (!memberId) return;
-                                                await updateMemberAction(slug, memberId, updates);
-                                            }}
-                                        />
+                            {/* Additional Options Collapsible */}
+                            <div className="flex flex-col gap-2">
+                                <button
+                                    onClick={() => setIsOptionsOpen(!isOptionsOpen)}
+                                    className="flex items-center justify-between w-full px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 text-slate-400 hover:text-white transition-all text-sm font-medium group"
+                                >
+                                    <span>Plus d'options</span>
+                                    <ChevronDown className={cn("w-4 h-4 transition-transform duration-300", isOptionsOpen ? "rotate-180" : "")} />
+                                </button>
+
+                                <div className={cn(
+                                    "grid transition-all duration-300 ease-in-out",
+                                    isOptionsOpen ? "grid-rows-[1fr] opacity-100 mt-1" : "grid-rows-[0fr] opacity-0"
+                                )}>
+                                    <div className="overflow-hidden">
+                                        <div className="flex gap-2 pb-1">
+                                            <div className="flex-1">
+                                                <TimerPicker
+                                                    currentTimerEnd={timerEndTime}
+                                                    onUpdate={async (updates) => {
+                                                        if (!memberId) return;
+                                                        await updateMemberAction(slug, memberId, updates);
+                                                    }}
+                                                />
+                                            </div>
+                                            {group.type === 'in_person' && (
+                                                <div className="flex-1">
+                                                    <TimeProposalModal
+                                                        currentProposedTime={currentMember?.proposed_time ?? null}
+                                                        onUpdate={async (updates) => {
+                                                            if (!memberId) return;
+                                                            await updateMemberAction(slug, memberId, updates);
+                                                        }}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                )}
+                                </div>
                             </div>
                         </div>
 
