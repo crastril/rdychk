@@ -405,7 +405,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
 
             {/* Sticky Navigation */}
             <nav className="w-full border-b border-white/5 bg-black/50 backdrop-blur-md sticky top-0 z-50">
-                <div className="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
+                <div className="max-w-xl mx-auto px-4 h-16 flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                         <span className="text-2xl font-black tracking-tighter text-white">
                             rdychk<span className="text-[var(--v2-primary)]">.</span>
@@ -428,7 +428,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                 </div>
             </nav>
 
-            <div className="w-full max-w-md mx-auto flex flex-col gap-6 relative z-10 p-4 mt-2">
+            <div className="w-full max-w-xl mx-auto flex flex-col gap-6 relative z-10 p-4 mt-2">
                 {/* Group Details & Share Button (Below Header) */}
                 <div className="flex items-center justify-between -mb-2">
                     <div>
