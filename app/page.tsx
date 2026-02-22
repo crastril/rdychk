@@ -9,10 +9,32 @@ import { GroupHistoryModal } from '@/components/GroupHistoryModal';
 import { ChevronRight, Clock, Gamepad2, MapPin } from 'lucide-react';
 import { AuthButton } from '@/components/auth-button';
 
+const HERO_MESSAGES = [
+  "Go ?",
+  "On y va à quelle heure ?",
+  "T'es déjà parti ?",
+  "On se retrouve à quelle heure ?",
+  "On avait pas dit 19h ?",
+  "T'es où ?",
+  "T'as vu mon message ?",
+  "Je peux partir ?",
+  "T'as lu les message sur le groupe ?",
+  "T'es loin ?",
+  "T'arrives à quelle heure ?",
+  "T'es en route ?",
+];
+
 export default function Home() {
   const { user } = useAuth();
   const [lastGroup, setLastGroup] = useState<{ name: string; slug: string; joined_at: string; type: string } | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [heroText, setHeroText] = useState("T'es prêt ?");
+
+  useEffect(() => {
+    // Randomize hero text on mount to avoid hydration mismatch
+    const randomMessage = HERO_MESSAGES[Math.floor(Math.random() * HERO_MESSAGES.length)];
+    setHeroText(randomMessage);
+  }, []);
 
   useEffect(() => {
     async function fetchLastGroup() {
@@ -75,7 +97,7 @@ export default function Home() {
           </div>
           <h1 className="text-5xl md:text-7xl font-black text-white leading-[1.1] mb-6 tracking-tight">
             Arrêtez de demander<br />
-            <span className="text-theme-gradient">"T'es prêt ?"</span>
+            <span className="text-theme-gradient">"{heroText}"</span>
           </h1>
         </div>
 
