@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/components/auth-provider";
 import { supabase } from "@/lib/supabase";
 import { Sparkles, Loader2 } from "lucide-react";
+import { AvatarUpload } from "./AvatarUpload";
 
 interface ProfileModalProps {
     open?: boolean;
@@ -18,6 +19,7 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
     const { user, profile, refreshProfile } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [name, setName] = useState("");
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     // Pre-fill name from profile
@@ -26,6 +28,7 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
             if (profile?.display_name) {
                 setName(profile.display_name);
             }
+            setAvatarUrl(profile?.avatar_url || null);
             setError(null);
         }
     }, [open, profile]);
@@ -42,7 +45,7 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
                 .upsert({
                     id: user.id,
                     display_name: name.trim(),
-                    avatar_url: profile?.avatar_url,
+                    avatar_url: avatarUrl,
                     updated_at: new Date().toISOString(),
                 });
 
@@ -76,6 +79,14 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
                     </DialogHeader>
 
                     <form onSubmit={handleSubmit} className="space-y-6 py-2">
+                        {user && (
+                            <AvatarUpload
+                                uid={user.id}
+                                url={avatarUrl}
+                                onUpload={(url) => setAvatarUrl(url)}
+                            />
+                        )}
+
                         <div className="space-y-2">
                             <Label htmlFor="display-name" className="text-xs font-bold uppercase tracking-widest text-slate-500 ml-1">Votre Prénom</Label>
                             <Input

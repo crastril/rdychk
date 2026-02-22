@@ -73,13 +73,21 @@ export default function MemberList({ loading, currentMemberId, members }: Member
                         {/* Avatar */}
                         <div
                             className={cn(
-                                "relative w-12 h-12 rounded-xl flex items-center justify-center font-black shrink-0 transition-colors z-10",
+                                "relative w-12 h-12 rounded-xl flex items-center justify-center font-black shrink-0 transition-colors z-10 overflow-hidden",
                                 member.is_ready
                                     ? 'bg-[var(--v2-secondary)] text-[#121212] shadow-neon-secondary'
                                     : 'bg-white/5 border border-white/10 text-slate-400'
                             )}
                         >
-                            {getInitials(member.name)}
+                            {member.avatar_url ? (
+                                <img
+                                    src={member.avatar_url}
+                                    alt={member.name}
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                getInitials(member.name)
+                            )}
                         </div>
 
                         {/* Info */}

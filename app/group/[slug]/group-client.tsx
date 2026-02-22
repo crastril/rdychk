@@ -68,11 +68,17 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
         setLoadingMembers(true);
         const { data } = await supabase
             .from('members')
-            .select('*')
+            .select('*, profiles(avatar_url)')
             .eq('group_id', group.id)
             .order('joined_at', { ascending: true });
 
-        if (data) setMembers(data);
+        if (data) {
+            const membersWithAvatars = data.map((m: any) => ({
+                ...m,
+                avatar_url: m.profiles?.avatar_url
+            }));
+            setMembers(membersWithAvatars);
+        }
         setLoadingMembers(false);
     };
 
