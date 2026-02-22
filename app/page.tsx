@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { GroupHistoryModal } from '@/components/GroupHistoryModal';
 import { ChevronRight, Clock, Gamepad2, MapPin } from 'lucide-react';
 import { AuthButton } from '@/components/auth-button';
+import { cn } from '@/lib/utils';
 
 const HERO_MESSAGES = [
   "Go ?",
@@ -26,7 +27,7 @@ const HERO_MESSAGES = [
 
 export default function Home() {
   const { user } = useAuth();
-  const [lastGroup, setLastGroup] = useState<{ name: string; slug: string; joined_at: string; type: string } | null>(null);
+  const [recentGroups, setRecentGroups] = useState<{ name: string; slug: string; joined_at: string; type: string }[]>([]);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [heroText, setHeroText] = useState("T'es prêt ?");
 
@@ -51,19 +52,25 @@ export default function Home() {
         `)
         .eq('user_id', user.id)
         .order('joined_at', { ascending: false })
-        .limit(1)
-        .single();
+        .limit(3);
 
-      if (data && data.groups) {
-        const groupData = Array.isArray(data.groups) ? data.groups[0] : data.groups;
-        if (groupData) {
-          setLastGroup({
-            name: groupData.name,
-            slug: groupData.slug,
-            type: groupData.type,
-            joined_at: data.joined_at
-          });
-        }
+      if (data && data.length > 0) {
+        const transformedGroups = (data as any[])
+          .map((member) => {
+            const groupData = member.groups;
+            const group = Array.isArray(groupData) ? groupData[0] : groupData;
+            if (!group) return null;
+
+            return {
+              name: group.name,
+              slug: group.slug,
+              type: group.type,
+              joined_at: member.joined_at
+            };
+          })
+          .filter((g): g is { name: string; slug: string; joined_at: string; type: string } => g !== null);
+
+        setRecentGroups(transformedGroups);
       }
     }
     fetchLastGroup();
@@ -119,22 +126,30 @@ export default function Home() {
               <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest">Groupes Récents</h3>
               <button onClick={() => setHistoryOpen(true)} className="text-xs text-slate-400 hover:text-white transition-colors">Tout voir</button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {lastGroup ? (
-                <Link href={`/group/${lastGroup.slug}`} className="block">
-                  <div className="glass-panel p-4 rounded-xl flex items-center gap-4 group cursor-pointer hover:bg-white/5 transition-colors border-l-4 border-l-transparent hover:border-l-[var(--v2-primary)]">
-                    <div className="w-12 h-12 rounded-lg bg-white/5 flex items-center justify-center text-slate-300 ring-1 ring-white/10 group-hover:ring-[var(--v2-primary)] transition-all">
-                      {lastGroup.type === 'remote' ? <Gamepad2 className="w-5 h-5" /> : <MapPin className="w-5 h-5" />}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {recentGroups.length > 0 ? (
+                recentGroups.map((group) => (
+                  <Link key={group.slug} href={`/group/${group.slug}`} className="block">
+                    <div className={cn(
+                      "glass-panel p-4 rounded-xl flex items-center gap-4 group cursor-pointer hover:bg-white/5 transition-all border-l-4 border-l-transparent h-full",
+                      group.type === 'remote' ? "hover:border-l-[#d946ef] hover:shadow-[0_0_20px_-5px_rgba(217,70,239,0.3)]" : "hover:border-l-[#ef4444] hover:shadow-[0_0_20px_-5px_rgba(239,68,68,0.3)]"
+                    )}>
+                      <div className={cn(
+                        "w-12 h-12 rounded-lg bg-white/5 flex items-center justify-center text-slate-300 ring-1 ring-white/10 transition-all",
+                        group.type === 'remote' ? "group-hover:ring-[#d946ef] group-hover:text-[#d946ef]" : "group-hover:ring-[#ef4444] group-hover:text-[#ef4444]"
+                      )}>
+                        {group.type === 'remote' ? <Gamepad2 className="w-5 h-5" /> : <MapPin className="w-5 h-5" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-white font-semibold text-sm truncate group-hover:text-white transition-colors">{group.name}</h4>
+                        <p className="text-slate-500 text-xs text-nowrap">Rejoint le {new Date(group.joined_at).toLocaleDateString()}</p>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-white transition-all shrink-0" />
                     </div>
-                    <div className="flex-1">
-                      <h4 className="text-white font-semibold text-sm group-hover:text-white transition-colors">{lastGroup.name}</h4>
-                      <p className="text-slate-500 text-xs">Rejoint le {new Date(lastGroup.joined_at).toLocaleDateString()}</p>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-white transition-all" />
-                  </div>
-                </Link>
+                  </Link>
+                ))
               ) : (
-                <div className="text-slate-500 text-sm px-2">Aucun groupe récent.</div>
+                <div className="text-slate-500 text-sm px-2 col-span-full">Aucun groupe récent.</div>
               )}
             </div>
           </div>
