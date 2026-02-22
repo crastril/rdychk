@@ -72,6 +72,7 @@
     --v2-primary-rgb: 239, 68, 68;
     --v2-secondary: #2ae876;
     --v2-accent: #ef4444;
+    --v2-glow: #fbbf24;
   }
 
   .theme-online {
@@ -79,6 +80,7 @@
     --v2-primary-rgb: 217, 70, 239;
     --v2-secondary: #2ae876;
     --v2-accent: #8b5cf6;
+    --v2-glow: #00f5ff;
   }
 }
 
@@ -160,15 +162,15 @@
     background: linear-gradient(to right,
         var(--v2-primary),
         var(--v2-accent),
-        #fff,
+        var(--v2-glow),
         var(--v2-accent),
         var(--v2-primary));
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    animation: liquid-flow 3s linear infinite;
-    filter: drop-shadow(0 0 5px rgba(var(--v2-primary-rgb), 0.5));
+    animation: liquid-flow 6s linear infinite;
+    filter: drop-shadow(0 0 5px rgba(var(--v2-primary-rgb), 0.3));
   }
 
   @keyframes liquid-flow {
