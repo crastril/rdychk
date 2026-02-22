@@ -41,87 +41,92 @@ export function AuthModal({ trigger, open: controlledOpen, onOpenChange: setCont
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-            <DialogContent className="sm:max-w-[400px]">
-                <DialogHeader>
-                    <DialogTitle className="text-2xl text-center">Connexion</DialogTitle>
-                    <VisuallyHidden>
-                        <DialogDescription>
-                            Connectez-vous à votre compte rdychk
-                        </DialogDescription>
-                    </VisuallyHidden>
-                </DialogHeader>
-                <div className="mt-4">
-                    <Auth
-                        supabaseClient={supabase}
-                        appearance={{
-                            theme: ThemeSupa,
-                            variables: {
-                                default: {
-                                    colors: {
-                                        brand: 'hsl(var(--primary))',
-                                        brandAccent: 'hsl(var(--primary) / 0.9)',
-                                        brandButtonText: 'hsl(var(--primary-foreground))',
-                                        defaultButtonBackground: 'hsl(var(--secondary))',
-                                        defaultButtonBackgroundHover: 'hsl(var(--secondary) / 0.8)',
-                                        defaultButtonBorder: 'hsl(var(--border))',
-                                        defaultButtonText: 'hsl(var(--foreground))',
-                                        dividerBackground: 'hsl(var(--border))',
-                                        inputBackground: 'transparent',
-                                        inputBorder: 'hsl(var(--input))',
-                                        inputBorderHover: 'hsl(var(--ring))',
-                                        inputBorderFocus: 'hsl(var(--ring))',
-                                        inputText: 'hsl(var(--foreground))',
-                                        inputLabelText: 'hsl(var(--muted-foreground))',
-                                        inputPlaceholder: 'hsl(var(--muted-foreground))',
-                                        messageText: 'hsl(var(--muted-foreground))',
-                                        messageTextDanger: 'hsl(var(--destructive))',
-                                        anchorTextColor: 'hsl(var(--primary))',
-                                        anchorTextHoverColor: 'hsl(var(--primary) / 0.8)',
+            <DialogContent className="sm:max-w-[400px] glass-panel border-white/10 text-white rounded-3xl p-0 overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--v2-primary)] to-[var(--v2-accent)]"></div>
+                <div className="p-6">
+                    <DialogHeader className="mb-4">
+                        <DialogTitle className="text-2xl font-black text-center tracking-tight">Connexion</DialogTitle>
+                        <VisuallyHidden>
+                            <DialogDescription>
+                                Connectez-vous à votre compte rdychk
+                            </DialogDescription>
+                        </VisuallyHidden>
+                    </DialogHeader>
+                    <div className="mt-2">
+                        <Auth
+                            supabaseClient={supabase}
+                            appearance={{
+                                theme: ThemeSupa,
+                                variables: {
+                                    default: {
+                                        colors: {
+                                            brand: 'var(--v2-primary)',
+                                            brandAccent: 'var(--v2-accent)',
+                                            brandButtonText: 'white',
+                                            defaultButtonBackground: 'rgba(255, 255, 255, 0.05)',
+                                            defaultButtonBackgroundHover: 'rgba(255, 255, 255, 0.1)',
+                                            defaultButtonBorder: 'rgba(255, 255, 255, 0.1)',
+                                            defaultButtonText: 'white',
+                                            dividerBackground: 'rgba(255, 255, 255, 0.1)',
+                                            inputBackground: 'rgba(0, 0, 0, 0.2)',
+                                            inputBorder: 'rgba(255, 255, 255, 0.1)',
+                                            inputBorderHover: 'var(--v2-primary)',
+                                            inputBorderFocus: 'var(--v2-primary)',
+                                            inputText: 'white',
+                                            inputLabelText: '#94a3b8',
+                                            inputPlaceholder: '#475569',
+                                            messageText: '#94a3b8',
+                                            messageTextDanger: '#ef4444',
+                                            anchorTextColor: 'var(--v2-primary)',
+                                            anchorTextHoverColor: 'var(--v2-accent)',
+                                        },
+                                        radii: {
+                                            borderRadiusButton: '0.75rem',
+                                            buttonBorderRadius: '0.75rem',
+                                            inputBorderRadius: '0.75rem',
+                                        },
                                     },
-                                    radii: {
-                                        borderRadiusButton: '0.5rem',
-                                        buttonBorderRadius: '0.5rem',
-                                        inputBorderRadius: '0.5rem',
+                                },
+                                className: {
+                                    container: 'w-full space-y-4',
+                                    button: 'w-full flex justify-center items-center rounded-xl text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--v2-primary)] h-11 px-4 py-2 hover:scale-[1.02] active:scale-[0.98]',
+                                    input: 'flex h-11 w-full rounded-xl border border-white/10 bg-black/20 px-4 py-1 text-sm shadow-sm transition-all placeholder:text-slate-600 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--v2-primary)]',
+                                    label: 'text-sm font-semibold text-slate-400 mb-1.5 block ml-1',
+                                    loader: 'animate-spin text-[var(--v2-primary)]',
+                                    anchor: 'text-sm font-medium transition-colors hover:text-white',
+                                    divider: 'bg-white/10',
+                                    message: 'text-xs font-medium text-center py-2',
+                                },
+                            }}
+                            theme="dark"
+                            providers={['google']}
+                            redirectTo={`${origin}/auth/callback`}
+                            localization={{
+                                variables: {
+                                    sign_in: {
+                                        email_label: 'Adresse email',
+                                        password_label: 'Mot de passe',
+                                        button_label: 'Se connecter',
+                                        loading_button_label: 'Connexion en cours...',
+                                        link_text: "Pas encore de compte ? S'inscrire",
+                                    },
+                                    sign_up: {
+                                        email_label: 'Adresse email',
+                                        password_label: 'Mot de passe',
+                                        button_label: "S'inscrire",
+                                        loading_button_label: 'Inscription en cours...',
+                                        link_text: "Déjà un compte ? Se connecter",
+                                    },
+                                    forgotten_password: {
+                                        link_text: 'Mot de passe oublié ?',
+                                        button_label: 'Envoyer les instructions',
+                                        loading_button_label: 'Envoi en cours...',
+                                        email_label: 'Adresse email',
                                     },
                                 },
-                            },
-                            className: {
-                                container: 'w-full',
-                                button: 'w-full flex justify-center items-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-9 px-4 py-2 my-2',
-                                input: 'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
-                                label: 'text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mb-2 block',
-                                loader: 'animate-spin',
-                                anchor: 'underline hover:text-primary transition-colors',
-                            },
-                        }}
-                        theme={theme === 'dark' ? 'dark' : 'default'}
-                        providers={['google']}
-                        redirectTo={`${origin}/auth/callback`}
-                        localization={{
-                            variables: {
-                                sign_in: {
-                                    email_label: 'Adresse email',
-                                    password_label: 'Mot de passe',
-                                    button_label: 'Se connecter',
-                                    loading_button_label: 'Connexion en cours...',
-                                    link_text: "Vous n'avez pas de compte ? Inscrivez-vous",
-                                },
-                                sign_up: {
-                                    email_label: 'Adresse email',
-                                    password_label: 'Mot de passe',
-                                    button_label: "S'inscrire",
-                                    loading_button_label: 'Inscription en cours...',
-                                    link_text: "Vous avez déjà un compte ? Connectez-vous",
-                                },
-                                forgotten_password: {
-                                    link_text: 'Mot de passe oublié ?',
-                                    button_label: 'Envoyer les instructions',
-                                    loading_button_label: 'Envoi en cours...',
-                                    email_label: 'Adresse email',
-                                },
-                            },
-                        }}
-                    />
+                            }}
+                        />
+                    </div>
                 </div>
             </DialogContent>
         </Dialog>

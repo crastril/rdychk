@@ -98,45 +98,50 @@ export default function JoinModal({ onJoin, onReclaim, groupName, existingGuests
 
     return (
         <Dialog open={true}>
-            <DialogContent className="sm:max-w-[425px] glass-panel border-white/10 text-white p-6 rounded-3xl">
+            <DialogContent className="sm:max-w-[425px] glass-panel border-white/10 text-white rounded-3xl p-0 overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--v2-primary)] to-[var(--v2-accent)]"></div>
+
                 {view === 'create' ? (
-                    <>
-                        <DialogHeader>
-                            <DialogTitle className="text-2xl font-bold">Rejoindre le groupe {groupName}</DialogTitle>
-                            <DialogDescription className="text-base text-slate-400">
+                    <div className="p-6">
+                        <DialogHeader className="mb-6">
+                            <DialogTitle className="text-2xl font-black tracking-tight leading-tight">
+                                Rejoindre le groupe <span className="text-theme-gradient">{groupName}</span>
+                            </DialogTitle>
+                            <DialogDescription className="text-slate-400 text-base mt-2">
                                 Entrez votre nom pour rejoindre la session.
                             </DialogDescription>
                         </DialogHeader>
 
-                        <form onSubmit={handleSubmitCreate} className="space-y-6 py-4">
+                        <form onSubmit={handleSubmitCreate} className="space-y-6">
                             <div className="space-y-2">
-                                <Label htmlFor="name" className="text-slate-300 font-medium">Votre Nom</Label>
+                                <Label htmlFor="name" className="text-xs font-bold uppercase tracking-widest text-slate-500 ml-1">Votre Nom</Label>
                                 <div className="relative">
                                     <Input
                                         id="name"
                                         type="text"
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
-                                        placeholder="Entrez votre nom..."
+                                        placeholder="Comment tu t'appelles ?"
                                         autoFocus
                                         maxLength={20}
                                         required
-                                        className="h-11 bg-black/20 border-white/10 text-white placeholder:text-slate-600 focus-visible:ring-[var(--v2-primary)] rounded-xl"
+                                        className="h-12 bg-black/20 border-white/10 text-white placeholder:text-slate-600 focus-visible:ring-[var(--v2-primary)] rounded-xl px-4 pl-11"
                                         disabled={isLoading}
                                     />
+                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                                     {user && !name && (
-                                        <span className="absolute right-3 top-2.5 text-xs text-slate-500 animate-pulse">
-                                            Utilisation du profil...
+                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase tracking-tighter text-[var(--v2-primary)] animate-pulse">
+                                            Profil détecté
                                         </span>
                                     )}
                                 </div>
                             </div>
 
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                                 <Button
                                     type="submit"
                                     disabled={!name.trim() || isLoading}
-                                    className="w-full h-12 text-lg font-bold bg-[var(--v2-primary)] hover:bg-[var(--v2-primary)]/80 text-white shadow-neon-primary rounded-xl transition-all duration-300 hover:scale-[1.02]"
+                                    className="w-full h-12 text-lg font-bold bg-[var(--v2-primary)] hover:bg-[var(--v2-primary)]/80 text-white shadow-neon-primary rounded-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
                                     size="lg"
                                 >
                                     {isLoading ? (
@@ -153,47 +158,63 @@ export default function JoinModal({ onJoin, onReclaim, groupName, existingGuests
                                 </Button>
 
                                 {existingGuests.length > 0 && (
-                                    <Button
+                                    <button
                                         type="button"
-                                        variant="outline"
-                                        className="w-full h-11 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 text-slate-300 hover:text-white"
+                                        className="w-full text-center text-sm font-medium text-slate-400 hover:text-white transition-colors py-2"
                                         onClick={() => setView('reclaim')}
                                         disabled={isLoading}
                                     >
                                         Je fais déjà partie de ce groupe
-                                    </Button>
+                                    </button>
                                 )}
                             </div>
                         </form>
-                    </>
+                    </div>
                 ) : (
-                    <>
-                        <DialogHeader>
-                            <div className="flex items-center gap-2">
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="-ml-2 h-8 w-8 text-slate-400 hover:text-white"
+                    <div className="p-6">
+                        <DialogHeader className="mb-6">
+                            <div className="flex items-center gap-3">
+                                <button
+                                    className="h-9 w-9 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all"
                                     onClick={() => setView('create')}
                                 >
                                     <ArrowLeft className="w-4 h-4" />
-                                </Button>
-                                <DialogTitle className="text-xl font-bold">Qui êtes-vous ?</DialogTitle>
+                                </button>
+                                <DialogTitle className="text-xl font-black tracking-tight">Qui êtes-vous ?</DialogTitle>
                             </div>
-                            <DialogDescription className="text-slate-400 pt-2 border-t border-white/10">
+                            <DialogDescription className="text-slate-400 mt-2">
                                 Sélectionnez votre profil existant dans la liste.
                             </DialogDescription>
                         </DialogHeader>
 
-                        <div className="py-4 space-y-4">
-                            <ScrollArea className="h-[200px] rounded-xl border border-white/10 bg-black/20 p-4">
-                                <RadioGroup value={selectedGuestId || ""} onValueChange={setSelectedGuestId}>
+                        <div className="space-y-6">
+                            <ScrollArea className="h-[240px] rounded-2xl border border-white/10 bg-black/20 p-2">
+                                <RadioGroup value={selectedGuestId || ""} onValueChange={setSelectedGuestId} className="gap-1">
                                     {existingGuests.map((guest) => (
-                                        <div key={guest.id} className="flex items-center space-x-2 py-3 border-b border-white/5 last:border-0">
-                                            <RadioGroupItem value={guest.id} id={guest.id} className="border-slate-500 text-[var(--v2-primary)] data-[state=checked]:border-[var(--v2-primary)]" />
-                                            <Label htmlFor={guest.id} className="flex items-center gap-2 cursor-pointer w-full text-slate-300">
-                                                <User className="w-4 h-4 text-[var(--v2-accent)]" />
-                                                <span className="font-medium text-white">{guest.name}</span>
+                                        <div key={guest.id} className="relative group">
+                                            <RadioGroupItem
+                                                value={guest.id}
+                                                id={guest.id}
+                                                className="sr-only"
+                                            />
+                                            <Label
+                                                htmlFor={guest.id}
+                                                className={`flex items-center gap-4 p-4 rounded-xl cursor-pointer transition-all border border-transparent ${selectedGuestId === guest.id
+                                                        ? "bg-[var(--v2-primary)]/10 border-[var(--v2-primary)]/30 text-white"
+                                                        : "hover:bg-white/5 text-slate-400 hover:text-slate-200"
+                                                    }`}
+                                            >
+                                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ring-1 transition-all ${selectedGuestId === guest.id
+                                                        ? "bg-[var(--v2-primary)]/20 ring-[var(--v2-primary)]/50"
+                                                        : "bg-white/5 ring-white/10"
+                                                    }`}>
+                                                    <User className={`w-5 h-5 ${selectedGuestId === guest.id ? "text-white" : "text-slate-500"
+                                                        }`} />
+                                                </div>
+                                                <span className="font-bold text-base flex-1">{guest.name}</span>
+                                                {selectedGuestId === guest.id && (
+                                                    <div className="w-2 h-2 rounded-full bg-[var(--v2-primary)] shadow-[0_0_10px_var(--v2-primary)]" />
+                                                )}
                                             </Label>
                                         </div>
                                     ))}
@@ -204,12 +225,12 @@ export default function JoinModal({ onJoin, onReclaim, groupName, existingGuests
                                 type="button"
                                 disabled={!selectedGuestId}
                                 onClick={handleReclaim}
-                                className="w-full h-12 text-lg font-bold bg-[var(--v2-primary)] hover:bg-[var(--v2-primary)]/80 text-white rounded-xl shadow-neon-primary transition-all"
+                                className="w-full h-12 text-lg font-bold bg-[var(--v2-primary)] hover:bg-[var(--v2-primary)]/80 text-white rounded-xl shadow-neon-primary transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
                             >
                                 Valider et Rejoindre
                             </Button>
                         </div>
-                    </>
+                    </div>
                 )}
             </DialogContent>
         </Dialog >
