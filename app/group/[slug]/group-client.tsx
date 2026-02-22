@@ -18,7 +18,7 @@ import { ManageGroupModal } from '@/components/ManageGroupModal';
 import { TimeProposalModal } from '@/components/TimeProposalModal';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Copy, Check, Target, Users, Loader2, LogOut, Settings, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Target, Users, Loader2, LogOut, Settings, ChevronDown, MapPin } from 'lucide-react';
 import { ModeToggle } from '@/components/mode-toggle';
 import { AuthButton } from '@/components/auth-button';
 import type { Group, Member } from '@/types/database';
@@ -38,6 +38,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
     const [isManageModalOpen, setIsManageModalOpen] = useState(false);
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+    const [showLocationProposal, setShowLocationProposal] = useState(false);
 
     const fetchGroup = async () => {
         try {
@@ -499,21 +500,38 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                                                 </div>
                                             )}
                                         </div>
+
+                                        {group.type === 'in_person' && !group.location?.name && (
+                                            <div className="mt-2 border-t border-white/5 pt-3">
+                                                <button
+                                                    onClick={() => {
+                                                        setShowLocationProposal(true);
+                                                        setIsOptionsOpen(false);
+                                                    }}
+                                                    className="flex items-center justify-center w-full py-3 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-slate-200 text-sm font-medium transition-all group"
+                                                >
+                                                    <MapPin className="w-4 h-4 mr-2 text-[var(--v2-primary)] group-hover:scale-110 transition-transform" />
+                                                    Rajouter un lieu
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Location Card (if In Person) */}
-                        {group.type === 'in_person' && (
+                        {/* Location Card (if In Person and has location or user wants to propose) */}
+                        {group.type === 'in_person' && (group.location?.name || showLocationProposal) && (
                             <LocationCard
                                 group={group}
                                 slug={slug}
                                 memberId={memberId}
                                 isAdmin={isAdmin}
                                 currentMemberName={memberName}
+                                initialEditMode={showLocationProposal && !group.location?.name ? 'edit' : null}
                                 onLocationUpdate={(newLocation) => {
                                     setGroup(prev => prev ? { ...prev, location: { ...newLocation, name: newLocation.name || '' } as unknown as NonNullable<typeof prev.location> } : null);
+                                    setShowLocationProposal(false);
                                     setTimeout(() => {
                                         router.refresh();
                                     }, 0);

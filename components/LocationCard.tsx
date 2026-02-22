@@ -13,17 +13,24 @@ interface LocationCardProps {
     memberId: string | null;
     isAdmin: boolean;
     currentMemberName: string | null;
+    initialEditMode?: 'edit' | 'counter' | null;
     onLocationUpdate: (location: { name?: string | null; address?: string | null; link?: string | null; image?: string | null;[key: string]: string | null | undefined }) => void;
 }
 
-export function LocationCard({ group, slug, memberId, isAdmin, currentMemberName, onLocationUpdate }: LocationCardProps) {
+export function LocationCard({ group, slug, memberId, isAdmin, currentMemberName, initialEditMode, onLocationUpdate }: LocationCardProps) {
     const [score, setScore] = useState(0);
     const [userVote, setUserVote] = useState<number>(0); // 0, 1, or -1
     const [loading, setLoading] = useState(false);
-    const [editMode, setEditMode] = useState<'edit' | 'counter' | null>(null);
+    const [editMode, setEditMode] = useState<'edit' | 'counter' | null>(initialEditMode || null);
     const [isCollapsed, setIsCollapsed] = useState(false);
 
     const hasLocation = !!(group.location as { name?: string })?.name;
+
+    useEffect(() => {
+        if (initialEditMode) {
+            setEditMode(initialEditMode);
+        }
+    }, [initialEditMode]);
 
     useEffect(() => {
         if (!group.id) return;
