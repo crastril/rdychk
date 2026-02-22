@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/auth-provider';
 import { joinGroupAction, reclaimSessionAction, leaveGroupAction, updateMemberAction, promoteToAdminAction, linkGuestToUserAction } from '@/app/actions/member';
+import { updateLocationAction } from '@/app/actions/group';
 import JoinModal from '@/components/JoinModal';
 import MemberList from '@/components/MemberList';
 import ReadyButton from '@/components/ReadyButton';
@@ -18,7 +19,7 @@ import { ManageGroupModal } from '@/components/ManageGroupModal';
 import { TimeProposalModal } from '@/components/TimeProposalModal';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Copy, Check, Target, Users, Loader2, LogOut, Settings, ChevronDown, MapPin } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Target, Users, Loader2, LogOut, Settings, ChevronDown, MapPin, X } from 'lucide-react';
 import { ModeToggle } from '@/components/mode-toggle';
 import { AuthButton } from '@/components/auth-button';
 import type { Group, Member } from '@/types/database';
@@ -73,6 +74,15 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
 
         if (data) setMembers(data);
         setLoadingMembers(false);
+    };
+
+    const handleLocationDelete = async () => {
+        if (!group?.id || !memberId) return;
+        const { success } = await updateLocationAction(slug, memberId, group.id, null);
+        if (success) {
+            setGroup(prev => prev ? { ...prev, location: null } : null);
+            router.refresh();
+        }
     };
 
     useEffect(() => {
@@ -501,18 +511,31 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                                             )}
                                         </div>
 
-                                        {group.type === 'in_person' && !group.location?.name && (
+                                        {group.type === 'in_person' && (
                                             <div className="mt-2 border-t border-white/5 pt-3">
-                                                <button
-                                                    onClick={() => {
-                                                        setShowLocationProposal(true);
-                                                        setIsOptionsOpen(false);
-                                                    }}
-                                                    className="flex items-center justify-center w-full py-3 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-slate-200 text-sm font-medium transition-all group"
-                                                >
-                                                    <MapPin className="w-4 h-4 mr-2 text-[var(--v2-primary)] group-hover:scale-110 transition-transform" />
-                                                    Rajouter un lieu
-                                                </button>
+                                                {!group.location?.name ? (
+                                                    <button
+                                                        onClick={() => {
+                                                            setShowLocationProposal(true);
+                                                            setIsOptionsOpen(false);
+                                                        }}
+                                                        className="flex items-center justify-center w-full py-3 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-slate-200 text-sm font-medium transition-all group"
+                                                    >
+                                                        <MapPin className="w-4 h-4 mr-2 text-[var(--v2-primary)] group-hover:scale-110 transition-transform" />
+                                                        Rajouter un lieu
+                                                    </button>
+                                                ) : isAdmin && (
+                                                    <button
+                                                        onClick={() => {
+                                                            handleLocationDelete();
+                                                            setIsOptionsOpen(false);
+                                                        }}
+                                                        className="flex items-center justify-center w-full py-3 px-4 rounded-xl bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 text-red-400 text-sm font-medium transition-all group"
+                                                    >
+                                                        <X className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                                                        Retirer le lieu
+                                                    </button>
+                                                )}
                                             </div>
                                         )}
                                     </div>
@@ -529,6 +552,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                                 isAdmin={isAdmin}
                                 currentMemberName={memberName}
                                 initialEditMode={showLocationProposal && !group.location?.name ? 'edit' : null}
+                                onRemove={handleLocationDelete}
                                 onLocationUpdate={(newLocation) => {
                                     setGroup(prev => prev ? { ...prev, location: { ...newLocation, name: newLocation.name || '' } as unknown as NonNullable<typeof prev.location> } : null);
                                     setShowLocationProposal(false);

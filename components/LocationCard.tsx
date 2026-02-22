@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowBigUp, ArrowBigDown, Target, ArrowLeft, Pencil, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowBigUp, ArrowBigDown, Target, ArrowLeft, Pencil, ChevronDown, ChevronUp, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import type { Group } from "@/types/database";
@@ -14,10 +14,11 @@ interface LocationCardProps {
     isAdmin: boolean;
     currentMemberName: string | null;
     initialEditMode?: 'edit' | 'counter' | null;
+    onRemove?: () => void;
     onLocationUpdate: (location: { name?: string | null; address?: string | null; link?: string | null; image?: string | null;[key: string]: string | null | undefined }) => void;
 }
 
-export function LocationCard({ group, slug, memberId, isAdmin, currentMemberName, initialEditMode, onLocationUpdate }: LocationCardProps) {
+export function LocationCard({ group, slug, memberId, isAdmin, currentMemberName, initialEditMode, onRemove, onLocationUpdate }: LocationCardProps) {
     const [score, setScore] = useState(0);
     const [userVote, setUserVote] = useState<number>(0); // 0, 1, or -1
     const [loading, setLoading] = useState(false);
@@ -138,7 +139,18 @@ export function LocationCard({ group, slug, memberId, isAdmin, currentMemberName
 
     return (
         <>
-            <div className="glass-panel rounded-2xl p-4 flex flex-col gap-3 relative">
+            <div className="glass-panel rounded-2xl p-4 flex flex-col gap-3 relative group/card">
+                {isAdmin && hasLocation && onRemove && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onRemove();
+                        }}
+                        className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-black/60 border border-white/10 text-slate-400 hover:text-red-400 hover:border-red-400/30 transition-all flex items-center justify-center z-30 opacity-0 group-hover/card:opacity-100"
+                    >
+                        <X className="h-4 w-4" />
+                    </button>
+                )}
                 <div className="flex gap-4 items-center">
                     {/* Left: Image or Icon */}
                     <div className="h-16 w-16 rounded-xl bg-white/10 shrink-0 border border-white/5 overflow-hidden relative flex items-center justify-center">
