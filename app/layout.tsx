@@ -51,13 +51,12 @@ export default function RootLayout({
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="dark"
+          forcedTheme="dark"
           disableTransitionOnChange
         >
           <AuthProvider>
-            <Navbar />
-            <main className="pt-14">
+            <main>
               {children}
             </main>
           </AuthProvider>
