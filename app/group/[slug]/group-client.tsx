@@ -404,11 +404,11 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
             {/* Sticky Navigation */}
             <nav className="w-full border-b border-white/5 bg-black/50 backdrop-blur-md sticky top-0 z-50">
                 <div className="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                    <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                         <span className="text-2xl font-black tracking-tighter text-white">
                             rdychk<span className="text-[var(--v2-primary)]">.</span>
                         </span>
-                    </div>
+                    </Link>
 
                     <div className="flex items-center gap-1">
                         {isAdmin && (
