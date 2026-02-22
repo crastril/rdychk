@@ -60,9 +60,9 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <div className="flex gap-2 w-full">
+            <div className="w-full relative group/modal">
                 <DialogTrigger asChild>
-                    <button className="flex-1 flex w-full items-center justify-center py-4 px-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-slate-200 text-xs sm:text-sm font-medium transition-colors hover:text-white group">
+                    <button className="flex w-full items-center justify-center py-4 px-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-slate-200 text-xs sm:text-sm font-medium transition-colors hover:text-white group">
                         <Clock className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 text-[var(--v2-primary)] group-hover:scale-110 transition-transform shrink-0" />
                         <span className="truncate">{currentProposedTime ? `Proposé : ${currentProposedTime}` : 'Proposer un horaire'}</span>
                     </button>
@@ -71,11 +71,11 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="shrink-0 hover:bg-destructive/10 hover:text-destructive"
+                        className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-black/60 border border-white/10 hover:bg-destructive/20 hover:text-destructive hover:border-destructive/30 transition-all z-20"
                         onClick={handleClear}
                         disabled={loading}
                     >
-                        <X className="w-4 h-4" />
+                        <X className="h-3 w-3" />
                     </Button>
                 )}
             </div>
