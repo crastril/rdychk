@@ -14,18 +14,20 @@ import { Loader2 } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { updateLocationAction } from '@/app/actions/group';
 
 interface EditLocationModalProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
     groupId: string;
+    slug: string;
     existingLocation?: { name: string; address?: string; link?: string } | null;
     currentMemberName: string | null;
     currentMemberId: string | null;
     onLocationUpdate: (location: { name?: string | null; address?: string | null; link?: string | null; image?: string | null;[key: string]: string | null | undefined }) => void;
 }
 
-export function EditLocationModal({ isOpen, onOpenChange, groupId, existingLocation, currentMemberName, currentMemberId, onLocationUpdate }: EditLocationModalProps) {
+export function EditLocationModal({ isOpen, onOpenChange, groupId, slug, existingLocation, currentMemberName, currentMemberId, onLocationUpdate }: EditLocationModalProps) {
     const [name, setName] = useState('');
     const [link, setLink] = useState('');
     const [saving, setSaving] = useState(false);
@@ -94,15 +96,10 @@ export function EditLocationModal({ isOpen, onOpenChange, groupId, existingLocat
         };
 
         try {
-            const { error } = await supabase
-                .from('groups')
-                .update({ location: newLocation })
-                .eq('id', groupId);
+            if (!currentMemberId) throw new Error("Membre non identifié");
+            const result = await updateLocationAction(slug, currentMemberId, groupId, newLocation);
 
-            if (error) throw error;
-
-            // Reset votes when location changes
-            await supabase.from('location_votes').delete().eq('group_id', groupId);
+            if (!result.success) throw new Error(result.error);
 
             onLocationUpdate(newLocation);
             onOpenChange(false);

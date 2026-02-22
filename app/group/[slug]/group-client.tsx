@@ -493,6 +493,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                             {group.type === 'in_person' && (
                                 <LocationCard
                                     group={group}
+                                    slug={slug}
                                     memberId={memberId}
                                     isAdmin={isAdmin}
                                     currentMemberName={memberName}

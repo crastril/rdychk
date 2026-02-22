@@ -2,7 +2,8 @@
 
 import type { Member } from '@/types/database';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Users as UsersIcon, Loader2, Clock } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Crown, Users as UsersIcon, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MemberStatus } from './MemberStatus';
 
@@ -25,8 +26,17 @@ export default function MemberList({ loading, currentMemberId, members }: Member
 
     if (loading && members.length === 0) {
         return (
-            <div className="flex justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+            <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center gap-4 p-4 rounded-xl border bg-card/50 backdrop-blur-sm animate-pulse">
+                        <Skeleton className="w-12 h-12 rounded-full shrink-0" />
+                        <div className="flex-1 space-y-2">
+                            <Skeleton className="h-5 w-32" />
+                            <Skeleton className="h-3 w-20" />
+                        </div>
+                        <Skeleton className="h-6 w-20 shrink-0 rounded-full" />
+                    </div>
+                ))}
             </div>
         );
     }

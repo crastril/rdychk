@@ -10,7 +10,14 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Share2, Copy, Instagram, MessageCircle, Facebook } from 'lucide-react';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Share2, Copy, Instagram, MessageCircle, Facebook, QrCode } from 'lucide-react';
+import QRCode from 'react-qr-code';
 
 interface ShareMenuProps {
     groupName: string;
@@ -19,6 +26,7 @@ interface ShareMenuProps {
 
 export function ShareMenu({ groupName, url }: ShareMenuProps) {
     const [copied, setCopied] = useState(false);
+    const [qrOpen, setQrOpen] = useState(false);
 
     const handleCopy = async () => {
         try {
@@ -80,45 +88,66 @@ export function ShareMenu({ groupName, url }: ShareMenuProps) {
     };
 
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
-                    <Share2 className="w-4 h-4" />
-                    Partager
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>Inviter des amis</DropdownMenuLabel>
-                <DropdownMenuSeparator />
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2">
+                        <Share2 className="w-4 h-4" />
+                        Partager
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>Inviter des amis</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
 
-                <DropdownMenuItem onClick={handleCopy} className="cursor-pointer gap-2">
-                    <Copy className="w-4 h-4" />
-                    {copied ? 'Lien copié !' : 'Copier le lien'}
-                </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleCopy} className="cursor-pointer gap-2">
+                        <Copy className="w-4 h-4" />
+                        {copied ? 'Lien copié !' : 'Copier le lien'}
+                    </DropdownMenuItem>
 
-                {/* Native share for mobile users preference */}
-                <DropdownMenuItem onClick={handleNativeShare} className="cursor-pointer gap-2 sm:hidden">
-                    <Share2 className="w-4 h-4" />
-                    Autres options...
-                </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setQrOpen(true)} className="cursor-pointer gap-2">
+                        <QrCode className="w-4 h-4" />
+                        Code QR
+                    </DropdownMenuItem>
 
-                <DropdownMenuSeparator />
+                    {/* Native share for mobile users preference */}
+                    <DropdownMenuItem onClick={handleNativeShare} className="cursor-pointer gap-2 sm:hidden">
+                        <Share2 className="w-4 h-4" />
+                        Autres options...
+                    </DropdownMenuItem>
 
-                <DropdownMenuItem onClick={() => handleShare('whatsapp')} className="cursor-pointer gap-2">
-                    <MessageCircle className="w-4 h-4 text-green-500" />
-                    WhatsApp
-                </DropdownMenuItem>
+                    <DropdownMenuSeparator />
 
-                <DropdownMenuItem onClick={() => handleShare('messenger')} className="cursor-pointer gap-2">
-                    <Facebook className="w-4 h-4 text-blue-500" />
-                    Messenger
-                </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleShare('whatsapp')} className="cursor-pointer gap-2">
+                        <MessageCircle className="w-4 h-4 text-green-500" />
+                        WhatsApp
+                    </DropdownMenuItem>
 
-                <DropdownMenuItem onClick={() => handleShare('instagram')} className="cursor-pointer gap-2">
-                    <Instagram className="w-4 h-4 text-pink-500" />
-                    Instagram
-                </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
+                    <DropdownMenuItem onClick={() => handleShare('messenger')} className="cursor-pointer gap-2">
+                        <Facebook className="w-4 h-4 text-blue-500" />
+                        Messenger
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem onClick={() => handleShare('instagram')} className="cursor-pointer gap-2">
+                        <Instagram className="w-4 h-4 text-pink-500" />
+                        Instagram
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Dialog open={qrOpen} onOpenChange={setQrOpen}>
+                <DialogContent className="sm:max-w-md flex flex-col items-center justify-center p-8">
+                    <DialogHeader className="mb-4">
+                        <DialogTitle className="text-center">Scanner pour rejoindre</DialogTitle>
+                    </DialogHeader>
+                    <div className="bg-white p-4 rounded-xl shadow-sm">
+                        <QRCode value={url} size={200} />
+                    </div>
+                    <p className="mt-4 text-sm text-center text-muted-foreground w-full">
+                        {groupName}
+                    </p>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }

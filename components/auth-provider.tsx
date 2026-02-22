@@ -29,35 +29,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchSession = async () => {
+        let isMounted = true;
+
+        const initSession = async () => {
             try {
-                const { data: { session } } = await supabase.auth.getSession();
-                setSession(session);
-                setUser(session?.user ?? null);
-                if (session?.user) {
-                    await fetchProfile(session.user.id);
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (error) {
+                    console.error("getSession error:", error);
+                }
+                if (isMounted) {
+                    setSession(session);
+                    setUser(session?.user ?? null);
+                    // Important: DO NOT await fetchProfile before clearing loading state.
+                    setLoading(false);
+                    if (session?.user) {
+                        // Fire and forget
+                        fetchProfile(session.user);
+                    }
                 }
             } catch (error) {
                 console.error("Auth initialization error:", error);
             } finally {
-                setLoading(false);
+                if (isMounted) {
+                    setLoading(false);
+                }
             }
         };
 
-        fetchSession();
+        initSession();
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             try {
                 setSession(session);
                 setUser(session?.user ?? null);
+                // Important: DO NOT await fetchProfile before clearing loading state, because fetch can hang on OS wake up!
+                setLoading(false);
+
                 if (session?.user) {
-                    await fetchProfile(session.user.id);
+                    // Fire and forget, don't block UI with await
+                    fetchProfile(session.user);
                 } else {
                     setProfile(null);
                 }
             } catch (error) {
                 console.error("Auth change error:", error);
-            } finally {
                 setLoading(false);
             }
         });
@@ -65,20 +80,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return () => subscription.unsubscribe();
     }, []);
 
-    const fetchProfile = async (userId: string) => {
+    const fetchProfile = async (currentUser: User) => {
         try {
             // 1. Try to get existing profile
             const { data: existingProfile, error: fetchError } = await supabase
                 .from('profiles')
                 .select('display_name, avatar_url')
-                .eq('id', userId)
+                .eq('id', currentUser.id)
                 .single();
 
             // 2. Identify if we need to sync from metadata
-            const { data: { user } } = await supabase.auth.getUser();
-            const meta = user?.user_metadata;
+            const meta = currentUser?.user_metadata;
 
-            const metaName = meta?.full_name || meta?.name || user?.email?.split('@')[0] || "Utilisateur";
+            const metaName = meta?.full_name || meta?.name || currentUser?.email?.split('@')[0] || "Utilisateur";
             const metaAvatar = meta?.avatar_url;
 
             // If profile exists and has a name, we're good
@@ -91,7 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             // If we have metadata but no profile (or profile has no name), upsert it
             if (metaName) {
                 const newProfile = {
-                    id: userId,
+                    id: currentUser.id,
                     display_name: metaName,
                     avatar_url: metaAvatar,
                     updated_at: new Date().toISOString()
@@ -118,7 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const refreshProfile = async () => {
         if (user) {
-            await fetchProfile(user.id);
+            await fetchProfile(user);
         }
     };
 

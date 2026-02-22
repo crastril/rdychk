@@ -9,13 +9,14 @@ import { EditLocationModal } from "./EditLocationModal";
 
 interface LocationCardProps {
     group: Group;
+    slug: string;
     memberId: string | null;
     isAdmin: boolean;
     currentMemberName: string | null;
     onLocationUpdate: (location: { name?: string | null; address?: string | null; link?: string | null; image?: string | null;[key: string]: string | null | undefined }) => void;
 }
 
-export function LocationCard({ group, memberId, isAdmin, currentMemberName, onLocationUpdate }: LocationCardProps) {
+export function LocationCard({ group, slug, memberId, isAdmin, currentMemberName, onLocationUpdate }: LocationCardProps) {
     const [score, setScore] = useState(0);
     const [userVote, setUserVote] = useState<number>(0); // 0, 1, or -1
     const [loading, setLoading] = useState(false);
@@ -291,6 +292,7 @@ export function LocationCard({ group, memberId, isAdmin, currentMemberName, onLo
                 isOpen={!!editMode}
                 onOpenChange={(open) => !open && setEditMode(null)}
                 groupId={group.id}
+                slug={slug}
                 existingLocation={editMode === 'edit' && group.location && (group.location as { name?: string | null })?.name ? (group.location as { name: string; address?: string; link?: string; image?: string }) : null}
                 currentMemberName={currentMemberName}
                 currentMemberId={memberId}
