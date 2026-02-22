@@ -78,9 +78,17 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
 
     const handleLocationDelete = async () => {
         if (!group?.id || !memberId) return;
+
+        // If we are just in proposal mode but no location is saved in DB
+        if (showLocationProposal && !group.location?.name) {
+            setShowLocationProposal(false);
+            return;
+        }
+
         const { success } = await updateLocationAction(slug, memberId, group.id, null);
         if (success) {
             setGroup(prev => prev ? { ...prev, location: null } : null);
+            setShowLocationProposal(false);
             router.refresh();
         }
     };
@@ -513,7 +521,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
 
                                         {group.type === 'in_person' && (
                                             <div className="mt-2 border-t border-white/5 pt-3">
-                                                {!group.location?.name ? (
+                                                {(!group.location?.name && !showLocationProposal) ? (
                                                     <button
                                                         onClick={() => {
                                                             setShowLocationProposal(true);

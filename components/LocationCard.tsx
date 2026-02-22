@@ -140,13 +140,13 @@ export function LocationCard({ group, slug, memberId, isAdmin, currentMemberName
     return (
         <>
             <div className="glass-panel rounded-2xl p-4 flex flex-col gap-3 relative group/card">
-                {isAdmin && hasLocation && onRemove && (
+                {isAdmin && onRemove && (
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
                             onRemove();
                         }}
-                        className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-black/60 border border-white/10 text-slate-400 hover:text-red-400 hover:border-red-400/30 transition-all flex items-center justify-center z-30 opacity-0 group-hover/card:opacity-100"
+                        className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-black/60 border border-white/10 text-slate-400 hover:text-red-400 hover:border-red-400/30 transition-all flex items-center justify-center z-30"
                     >
                         <X className="h-4 w-4" />
                     </button>
