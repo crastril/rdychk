@@ -62,10 +62,10 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
         <Dialog open={open} onOpenChange={setOpen}>
             <div className="flex gap-2 w-full">
                 <DialogTrigger asChild>
-                    <Button variant="outline" className="flex-1 gap-2">
-                        <Clock className="w-4 h-4" />
-                        {currentProposedTime ? `Proposé : ${currentProposedTime}` : 'Proposer un horaire'}
-                    </Button>
+                    <button className="flex-1 flex w-full items-center justify-center py-4 px-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-slate-200 text-xs sm:text-sm font-medium transition-colors hover:text-white group">
+                        <Clock className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 text-[var(--v2-primary)] group-hover:scale-110 transition-transform shrink-0" />
+                        <span className="truncate">{currentProposedTime ? `Proposé : ${currentProposedTime}` : 'Proposer un horaire'}</span>
+                    </button>
                 </DialogTrigger>
                 {currentProposedTime && (
                     <Button
@@ -79,10 +79,10 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
                     </Button>
                 )}
             </div>
-            <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                    <DialogTitle>Proposer un horaire</DialogTitle>
-                    <DialogDescription>
+            <DialogContent className="sm:max-w-md glass-panel border-white/10 text-white rounded-3xl p-6">
+                <DialogHeader className="mb-2">
+                    <DialogTitle className="text-xl font-bold">Proposer un horaire</DialogTitle>
+                    <DialogDescription className="text-slate-400">
                         Indiquez à quelle heure vous pensez être prêt ou à quelle heure on se retrouve.
                     </DialogDescription>
                 </DialogHeader>
@@ -91,16 +91,20 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
                         type="time"
                         value={time}
                         onChange={(e) => setTime(e.target.value)}
-                        className="text-2xl p-4 h-16 w-40 text-center"
+                        className="text-3xl font-bold p-4 h-20 w-48 text-center bg-black/20 border-white/10 text-white focus-visible:ring-[var(--v2-primary)] rounded-2xl"
                     />
                 </div>
                 <DialogFooter className="flex gap-2 sm:justify-between">
                     <DialogClose asChild>
-                        <Button type="button" variant="secondary">
+                        <Button type="button" variant="outline" className="w-full sm:w-auto h-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 text-slate-300 hover:text-white">
                             Annuler
                         </Button>
                     </DialogClose>
-                    <Button onClick={handleSave} disabled={loading}>
+                    <Button
+                        onClick={handleSave}
+                        disabled={loading}
+                        className="w-full sm:w-auto bg-[var(--v2-primary)] text-white hover:bg-[var(--v2-primary)]/80 font-bold h-12 rounded-xl transition-all shadow-neon-primary px-8"
+                    >
                         {loading ? 'Enregistrement...' : 'Valider'}
                     </Button>
                 </DialogFooter>

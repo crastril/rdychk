@@ -22,9 +22,10 @@ import QRCode from 'react-qr-code';
 interface ShareMenuProps {
     groupName: string;
     url: string;
+    variant?: 'icon' | 'button'; // Added variant prop
 }
 
-export function ShareMenu({ groupName, url }: ShareMenuProps) {
+export function ShareMenu({ groupName, url, variant = 'icon' }: ShareMenuProps) {
     const [copied, setCopied] = useState(false);
     const [qrOpen, setQrOpen] = useState(false);
 
@@ -32,7 +33,6 @@ export function ShareMenu({ groupName, url }: ShareMenuProps) {
         try {
             await navigator.clipboard.writeText(url);
             setCopied(true);
-            // We'll use a simple alert or toast if available, or just the state change
             setTimeout(() => setCopied(false), 2000);
         } catch (err) {
             console.error('Failed to copy', err);
@@ -51,19 +51,11 @@ export function ShareMenu({ groupName, url }: ShareMenuProps) {
                 shareUrl = `https://wa.me/?text=${encodedText}%20${encodedUrl}`;
                 break;
             case 'messenger':
-                // Messenger typically only allows sharing a link, not pre-filled text easily via web URL scheme without SDK
-                // FB Messenger sharing is tricky via URL, often just fb-messenger://share/?link=... on mobile
-                // or http://www.facebook.com/dialog/send?app_id=...&link=...&redirect_uri=...
-                // Simpler fallback might be just copying or using generic share API if on mobile.
-                // For now, we'll try a generic fb link or just copy for them if it's complex.
-                // Actually, mobile only: fb-messenger://share?link=${encodedUrl}
                 shareUrl = `fb-messenger://share?link=${encodedUrl}`;
                 break;
             case 'instagram':
-                // Instagram doesn't support web sharing URL directly to DMs easily.
-                // We'll copy the link and open Instagram.
                 handleCopy();
-                window.location.href = 'instagram://'; // Try to open app
+                window.location.href = 'instagram://';
                 return;
         }
 
@@ -72,7 +64,6 @@ export function ShareMenu({ groupName, url }: ShareMenuProps) {
         }
     };
 
-    // Use Web Share API if available (mobile mostly)
     const handleNativeShare = async () => {
         if (navigator.share) {
             try {
@@ -82,7 +73,7 @@ export function ShareMenu({ groupName, url }: ShareMenuProps) {
                     url: url,
                 });
             } catch {
-                // Ignore share errors (e.g. user cancelled)
+                // Ignore share errors
             }
         }
     };
@@ -91,10 +82,16 @@ export function ShareMenu({ groupName, url }: ShareMenuProps) {
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="gap-2">
-                        <Share2 className="w-4 h-4" />
-                        Partager
-                    </Button>
+                    {variant === 'icon' ? (
+                        <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
+                            <Share2 className="w-5 h-5" />
+                        </Button>
+                    ) : (
+                        <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white flex items-center gap-2 px-3 py-1.5 h-auto text-sm">
+                            <Share2 className="w-4 h-4" />
+                            <span>Partager</span>
+                        </Button>
+                    )}
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuLabel>Inviter des amis</DropdownMenuLabel>

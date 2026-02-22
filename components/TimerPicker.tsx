@@ -52,16 +52,17 @@ export function TimerPicker({ currentTimerEnd, onUpdate }: TimerPickerProps) {
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button
-                    variant={isActive ? "secondary" : "outline"}
+                <button
                     className={cn(
-                        "h-12 w-full px-4 border-2 transition-all duration-300 flex flex-row items-center justify-center gap-2",
-                        isActive && "border-amber-500 text-amber-500 animate-pulse bg-amber-500/10"
+                        "flex flex-1 items-center justify-center py-4 px-2 rounded-xl text-xs sm:text-sm font-medium transition-colors group",
+                        isActive
+                            ? "border-amber-500/50 text-amber-500 bg-amber-500/10 border-2"
+                            : "bg-white/5 hover:bg-white/10 border border-white/5 text-slate-200 hover:text-white"
                     )}
                 >
-                    <Timer className={cn("w-6 h-6", isActive && "animate-pulse")} />
-                    <span className="font-semibold">Bientôt prêt ?</span>
-                </Button>
+                    <Timer className={cn("w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 transition-transform shrink-0", isActive ? "animate-pulse" : "text-[var(--v2-primary)] group-hover:scale-110")} />
+                    <span className="truncate">{isActive ? "Bientôt prêt" : "Lancer un minuteur"}</span>
+                </button>
             </PopoverTrigger>
             <PopoverContent className="w-80 p-4" align="center">
                 <div className="space-y-4">

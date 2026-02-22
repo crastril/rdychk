@@ -264,6 +264,18 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user, group?.id, memberId, slug, members]);
 
+    // Apply theme based on group type
+    useEffect(() => {
+        if (group?.type === 'remote') {
+            document.body.classList.add('theme-online');
+        } else {
+            document.body.classList.remove('theme-online');
+        }
+        return () => {
+            document.body.classList.remove('theme-online');
+        };
+    }, [group?.type]);
+
     const handleJoin = async (name: string) => {
         if (!group) return;
 
@@ -372,7 +384,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
 
 
     return (
-        <div className="min-h-screen">
+        <div className="bg-background-dark text-slate-100 min-h-screen flex flex-col items-center selection:bg-[var(--v2-primary)]/30">
             <ConnectionStatus onRefresh={handleRefresh} />
             {!memberId && (
                 <JoinModal
@@ -389,100 +401,77 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                 groupName={group.name}
             />
 
-            <div className="max-w-2xl mx-auto p-6 space-y-6">
-                {/* Header */}
-                <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
+            {/* Sticky Navigation */}
+            <nav className="w-full border-b border-white/5 bg-black/50 backdrop-blur-md sticky top-0 z-50">
+                <div className="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <span className="text-2xl font-black tracking-tighter text-white">
+                            rdychk<span className="text-[var(--v2-primary)]">.</span>
+                        </span>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                        {isAdmin && (
                             <Button
-                                asChild
                                 variant="ghost"
                                 size="icon"
+                                className="text-slate-400 hover:text-white"
+                                onClick={() => setIsSettingsModalOpen(true)}
                             >
-                                <Link href="/">
-                                    <ArrowLeft className="w-5 h-5" />
-                                </Link>
+                                <Settings className="w-5 h-5" />
                             </Button>
-                            <div>
-                                <h1 className="text-2xl font-bold">
-                                    {group.name}
-                                </h1>
-                                <p className="text-sm text-muted-foreground">
-                                    {totalCount} {totalCount === 1 ? 'membre' : 'membres'}
-                                </p>
-                            </div>
-                        </div>
+                        )}
+                        <AuthButton view="icon" className="text-slate-400 hover:text-white" />
+                    </div>
+                </div>
+            </nav>
 
-                        <div className="flex items-center gap-2">
-                            {isAdmin && (
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="gap-2"
-                                    onClick={() => setIsSettingsModalOpen(true)}
-                                >
-                                    <Settings className="w-4 h-4" />
-                                    Paramètres
-                                </Button>
-                            )}
-                            <ShareMenu
-                                groupName={group.name}
-                                url={typeof window !== 'undefined' ? window.location.href : ''}
-                            />
+            <div className="w-full max-w-md mx-auto flex flex-col gap-6 relative z-10 p-4 mt-2">
+                {/* Group Details & Share Button (Below Header) */}
+                <div className="flex items-center justify-between -mb-2">
+                    <div>
+                        <h1 className="text-white font-bold text-2xl leading-tight truncate max-w-[200px] sm:max-w-[250px]">
+                            {group.name}
+                        </h1>
+                        <div className="flex items-center gap-1.5 text-sm text-slate-400 mt-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[var(--v2-primary)] animate-pulse shadow-neon-primary"></span>
+                            {totalCount} {totalCount === 1 ? 'membre' : 'membres'}
                         </div>
                     </div>
-
-                    {/* Progress Bar in Header */}
-                    <div className="bg-card/50 rounded-xl border p-4 backdrop-blur-sm">
-                        <ProgressCounter readyCount={readyCount} totalCount={totalCount} />
-                    </div>
-
+                    <ShareMenu
+                        groupName={group.name}
+                        url={typeof window !== 'undefined' ? window.location.href : ''}
+                        variant="button"
+                    />
                 </div>
 
-                {
-                    memberId && (
-                        <>
-                            {/* Your Status Card */}
+                {/* Progress Circle */}
+                <div className="flex justify-center mb-2">
+                    <ProgressCounter readyCount={readyCount} totalCount={totalCount} />
+                </div>
 
-                            {/* Your Status Card */}
-                            <Card>
-                                <CardHeader>
-                                    <div className="flex justify-between items-center">
-                                        <CardTitle className="text-lg">Votre statut</CardTitle>
-                                        <div className="flex gap-2">
-
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 -mr-2"
-                                                onClick={() => {
-                                                    if (confirm("Voulez-vous vraiment quitter ce groupe ?")) {
-                                                        handleLeaveGroup();
-                                                    }
-                                                }}
-                                            >
-                                                <LogOut className="w-4 h-4 mr-2" />
-                                                Quitter
-                                            </Button>
-                                        </div>
-                                    </div>
-                                    <CardDescription>{memberName}</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="flex flex-col gap-3">
-                                        <ReadyButton
-                                            slug={slug}
-                                            memberId={memberId}
-                                            isReady={isReady}
-                                            timerEndTime={timerEndTime}
-                                        />
-                                        <TimerPicker
-                                            currentTimerEnd={timerEndTime}
-                                            onUpdate={async (updates) => {
-                                                if (!memberId) return;
-                                                await updateMemberAction(slug, memberId, updates);
-                                            }}
-                                        />
+                {memberId && (
+                    <>
+                        {/* Actions / Status */}
+                        <div className="flex flex-col gap-3">
+                            <ReadyButton
+                                slug={slug}
+                                memberId={memberId}
+                                isReady={isReady}
+                                timerEndTime={timerEndTime}
+                            />
+                            <div className="flex gap-2">
+                                <div className="flex-1">
+                                    <TimerPicker
+                                        currentTimerEnd={timerEndTime}
+                                        onUpdate={async (updates) => {
+                                            if (!memberId) return;
+                                            await updateMemberAction(slug, memberId, updates);
+                                        }}
+                                    />
+                                </div>
+                                {group.type === 'in_person' && (
+                                    <div className="flex-1">
                                         <TimeProposalModal
                                             currentProposedTime={currentMember?.proposed_time ?? null}
                                             onUpdate={async (updates) => {
@@ -491,71 +480,72 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                                             }}
                                         />
                                     </div>
-                                </CardContent>
-                            </Card>
+                                )}
+                            </div>
+                        </div>
 
-                            {/* Location Card (if In Person) */}
-                            {group.type === 'in_person' && (
-                                <LocationCard
-                                    group={group}
-                                    slug={slug}
-                                    memberId={memberId}
-                                    isAdmin={isAdmin}
-                                    currentMemberName={memberName}
-                                    onLocationUpdate={(newLocation) => {
-                                        setGroup(prev => prev ? { ...prev, location: { ...newLocation, name: newLocation.name || '' } as unknown as NonNullable<typeof prev.location> } : null);
-                                        setTimeout(() => {
-                                            router.refresh();
-                                        }, 0);
-                                    }}
-                                />
-                            )}
-
-                            {/* Members Card */}
-                            <Card>
-                                <CardHeader>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <Users className="w-5 h-5 text-muted-foreground" />
-                                            <CardTitle className="text-lg">Membres</CardTitle>
-                                        </div>
-                                        {isAdmin && (
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="h-8"
-                                                onClick={() => setIsManageModalOpen(true)}
-                                            >
-                                                Gérer
-                                            </Button>
-                                        )}
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <MemberList members={members} loading={loadingMembers} currentMemberId={memberId} />
-                                </CardContent>
-                            </Card>
-
-                            <ManageGroupModal
-                                isOpen={isManageModalOpen}
-                                onOpenChange={setIsManageModalOpen}
-                                groupId={group.id}
+                        {/* Location Card (if In Person) */}
+                        {group.type === 'in_person' && (
+                            <LocationCard
+                                group={group}
                                 slug={slug}
-                                members={members}
-                                loading={loadingMembers}
-                                onRefresh={fetchMembers}
-                                currentMemberId={memberId}
+                                memberId={memberId}
+                                isAdmin={isAdmin}
+                                currentMemberName={memberName}
+                                onLocationUpdate={(newLocation) => {
+                                    setGroup(prev => prev ? { ...prev, location: { ...newLocation, name: newLocation.name || '' } as unknown as NonNullable<typeof prev.location> } : null);
+                                    setTimeout(() => {
+                                        router.refresh();
+                                    }, 0);
+                                }}
                             />
+                        )}
 
-                            <GroupSettingsModal
-                                isOpen={isSettingsModalOpen}
-                                onOpenChange={setIsSettingsModalOpen}
-                                groupId={group.id}
-                            />
-                        </>
-                    )
-                }
-            </div >
-        </div >
+                        {/* Members List */}
+                        <div className="flex flex-col items-end w-full mt-2">
+                            {isAdmin && (
+                                <button
+                                    onClick={() => setIsManageModalOpen(true)}
+                                    className="text-xs font-semibold text-[var(--v2-primary)] hover:text-white transition-colors uppercase tracking-wider mb-2 pr-2"
+                                >
+                                    Gérer le groupe
+                                </button>
+                            )}
+                            <div className="w-full">
+                                <MemberList members={members} loading={loadingMembers} currentMemberId={memberId} />
+                            </div>
+                        </div>
+                    </>
+                )}
+            </div>
+
+            {memberId && (
+                <>
+                    <ManageGroupModal
+                        isOpen={isManageModalOpen}
+                        onOpenChange={setIsManageModalOpen}
+                        groupId={group.id}
+                        slug={slug}
+                        members={members}
+                        loading={loadingMembers}
+                        onRefresh={fetchMembers}
+                        currentMemberId={memberId}
+                    />
+
+                    <GroupSettingsModal
+                        isOpen={isSettingsModalOpen}
+                        onOpenChange={setIsSettingsModalOpen}
+                        groupId={group.id}
+                        onLeaveGroup={handleLeaveGroup}
+                    />
+                </>
+            )}
+
+            {/* Background Glows */}
+            <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+                <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-[var(--v2-primary)] opacity-10 rounded-full blur-[120px]"></div>
+                <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-[var(--v2-accent)] opacity-10 rounded-full blur-[100px]"></div>
+            </div>
+        </div>
     );
 }
