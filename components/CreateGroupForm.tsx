@@ -80,7 +80,7 @@ export default function CreateGroupForm() {
                 <div className="relative">
                     <input
                         className="w-full h-12 rounded-xl glass-input px-4 pl-11 text-base placeholder-slate-500 transition-all focus:border-[var(--v2-primary)]"
-                        placeholder="Ex: Raid WoW, Soirée Bar..."
+                        placeholder={groupType === 'remote' ? "Ex: Raid WoW, Soirée Ranked..." : "Soirée au bar, restaurant viet..."}
                         type="text"
                         value={groupName}
                         onChange={(e) => setGroupName(e.target.value)}
