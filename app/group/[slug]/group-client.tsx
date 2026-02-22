@@ -78,13 +78,18 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
     }, [slug]);
 
     useEffect(() => {
-        const storedMemberId = localStorage.getItem(`member_${slug}`);
-        const storedMemberName = localStorage.getItem(`member_name_${slug}`);
+        const restoreSession = async () => {
+            const storedMemberId = localStorage.getItem(`member_${slug}`);
+            const storedMemberName = localStorage.getItem(`member_name_${slug}`);
 
-        if (storedMemberId) {
-            setMemberId(storedMemberId);
-            setMemberName(storedMemberName);
-        }
+            if (storedMemberId) {
+                // Ensure the secure cookie is set for this local session
+                await reclaimSessionAction(slug, storedMemberId);
+                setMemberId(storedMemberId);
+                setMemberName(storedMemberName);
+            }
+        };
+        restoreSession();
     }, [slug]);
 
     useEffect(() => {
@@ -244,6 +249,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                         .single();
 
                     if (data) {
+                        await reclaimSessionAction(slug, data.id);
                         setMemberId(data.id);
                         setMemberName(data.name);
                         setIsReady(data.is_ready);
@@ -254,7 +260,6 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                 }
             }
         };
-
         checkMembership();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user, group?.id, memberId, slug, members]);
