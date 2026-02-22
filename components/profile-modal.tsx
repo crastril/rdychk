@@ -49,8 +49,12 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
                     updated_at: new Date().toISOString(),
                 });
 
-            if (upsertError) throw upsertError;
+            if (upsertError) {
+                console.error("Upsert error in ProfileModal:", upsertError);
+                throw upsertError;
+            }
 
+            console.log("Profile updated successfully with avatar:", avatarUrl);
             await refreshProfile();
             onOpenChange?.(false);
         } catch (err: unknown) {

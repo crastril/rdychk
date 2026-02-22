@@ -77,10 +77,13 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
         }
 
         if (data) {
-            const membersWithAvatars = data.map((m: any) => ({
-                ...m,
-                avatar_url: m.profiles?.avatar_url
-            }));
+            const membersWithAvatars = data.map((m: any) => {
+                const profile = Array.isArray(m.profiles) ? m.profiles[0] : m.profiles;
+                return {
+                    ...m,
+                    avatar_url: profile?.avatar_url
+                };
+            });
             setMembers(membersWithAvatars);
         }
         setLoadingMembers(false);
@@ -128,8 +131,8 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
 
         fetchMembers();
 
-        const channel = supabase
-            .channel(`members_count:${group.id}`)
+        const membersChannel = supabase
+            .channel(`members_updates:${group.id}`)
             .on(
                 'postgres_changes',
                 {
@@ -144,8 +147,25 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
             )
             .subscribe();
 
+        // Also subscribe to profiles changes to update avatars real-time
+        const profilesChannel = supabase
+            .channel(`profiles_updates:${group.id}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'profiles',
+                },
+                () => {
+                    fetchMembers();
+                }
+            )
+            .subscribe();
+
         return () => {
-            supabase.removeChannel(channel);
+            supabase.removeChannel(membersChannel);
+            supabase.removeChannel(profilesChannel);
         };
     }, [group?.id]);
 
