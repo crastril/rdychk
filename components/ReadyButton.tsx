@@ -104,17 +104,17 @@ export default function ReadyButton({ slug, memberId, isReady, timerEndTime }: R
                     JE SUIS PRÊT
                 </div>
             ) : isSoonReady ? (
-                <div className="flex items-center gap-2 relative z-10 animate-pulse text-amber-500 text-[10px] font-black uppercase tracking-[0.2em]">
+                <div className="flex items-center gap-2 relative z-10 animate-pulse text-amber-500 text-[11px] font-black uppercase tracking-[0.2em]">
                     <AlertTriangle className="w-4 h-4" />
                     BIENTÔT PRÊT !
                 </div>
             ) : timeLeft ? (
-                <div className="flex items-center gap-2 relative z-10 text-[10px] font-black uppercase tracking-[0.2em]">
+                <div className="flex items-center gap-2 relative z-10 text-[11px] font-black uppercase tracking-[0.2em]">
                     <Timer className="w-4 h-4 animate-pulse text-[var(--v2-primary)]" />
                     <span className="tabular-nums">PRÊT DANS {timeLeft}</span>
                 </div>
             ) : (
-                <div className="flex items-center gap-2 relative z-10 text-[10px] font-black uppercase tracking-[0.2em]">
+                <div className="flex items-center gap-2 relative z-10 text-[11px] font-black uppercase tracking-[0.2em]">
                     <Clock className="w-4 h-4 text-[var(--v2-primary)]" />
                     PAS PRÊT
                 </div>

@@ -484,8 +484,8 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                         <h1 className="text-white font-bold text-2xl leading-tight truncate max-w-[200px] sm:max-w-[250px]">
                             {group.name}
                         </h1>
-                        <div className="flex items-center gap-1.5 text-sm text-slate-400 mt-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[var(--v2-primary)] animate-pulse shadow-neon-primary"></span>
+                        <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 mt-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[var(--v2-primary)] shadow-neon-primary"></span>
                             {totalCount} {totalCount === 1 ? 'membre' : 'membres'}
                         </div>
                     </div>
@@ -513,13 +513,17 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                             />
                             {/* Additional Options Collapsible */}
                             <div className="flex flex-col gap-2">
-                                <button
+                                <div
                                     onClick={() => setIsOptionsOpen(!isOptionsOpen)}
-                                    className="flex items-center justify-between w-full px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 text-slate-400 hover:text-white transition-all text-sm font-medium group"
+                                    className="flex items-center gap-4 cursor-pointer group py-2"
                                 >
-                                    <span>Plus d'options</span>
-                                    <ChevronDown className={cn("w-4 h-4 transition-transform duration-300", isOptionsOpen ? "rotate-180" : "")} />
-                                </button>
+                                    <div className="h-[1px] flex-1 bg-white/5 group-hover:bg-white/10 transition-colors" />
+                                    <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2 group-hover:text-slate-400 transition-colors shrink-0">
+                                        Plus d'options
+                                    </h4>
+                                    <div className="h-[1px] w-8 bg-white/5 group-hover:bg-white/10 transition-colors" />
+                                    <ChevronDown className={cn("w-4 h-4 text-slate-500 group-hover:text-slate-400 transition-all duration-300", isOptionsOpen ? "rotate-180" : "")} />
+                                </div>
 
                                 <div className={cn(
                                     "grid transition-all duration-300 ease-in-out",
@@ -557,7 +561,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                                                             setShowLocationProposal(true);
                                                             setIsOptionsOpen(false);
                                                         }}
-                                                        className="flex items-center justify-center w-full py-4 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black transition-all group"
+                                                        className="flex w-full items-center justify-center py-4 px-2 rounded-xl text-[11px] uppercase tracking-[0.2em] font-black transition-all duration-300 group"
                                                     >
                                                         <MapPin className="w-4 h-4 mr-2 text-[var(--v2-primary)] group-hover:rotate-12 transition-transform" />
                                                         RAJOUTER UN LIEU

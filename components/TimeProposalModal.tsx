@@ -62,7 +62,7 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
         <Dialog open={open} onOpenChange={setOpen}>
             <div className="w-full relative group/modal">
                 <DialogTrigger asChild>
-                    <button className="flex w-full items-center justify-center py-4 px-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black transition-all group">
+                    <button className="flex w-full items-center justify-center py-4 px-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 text-[11px] uppercase tracking-[0.2em] font-black transition-all group">
                         <Clock className="w-4 h-4 mr-2 text-[var(--v2-primary)] group-hover:rotate-12 transition-transform shrink-0" />
                         <span className="truncate">{currentProposedTime ? `HORAIRE : ${currentProposedTime}` : 'PROPOSER UN HORAIRE'}</span>
                     </button>
@@ -81,8 +81,8 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
             </div>
             <DialogContent className="sm:max-w-md glass-panel border-white/10 text-white rounded-3xl p-8 backdrop-blur-2xl">
                 <DialogHeader className="mb-4">
-                    <DialogTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Proposer un horaire</DialogTitle>
-                    <DialogDescription className="text-[11px] text-slate-400 leading-relaxed">
+                    <DialogTitle className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Proposer un horaire</DialogTitle>
+                    <DialogDescription className="text-[12px] text-slate-400 leading-relaxed">
                         Indiquez l'heure à laquelle vous pensez être présent.
                     </DialogDescription>
                 </DialogHeader>

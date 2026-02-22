@@ -17,7 +17,7 @@ export function MemberStatus({ member }: { member: Member }) {
 
     return (
         <span className={cn(
-            "flex items-center gap-1.5 text-[10px] uppercase font-black tracking-wider transition-colors",
+            "flex items-center gap-1.5 text-[11px] uppercase font-black tracking-wider transition-colors",
             member.is_ready
                 ? "text-[var(--v2-secondary)] shadow-neon-secondary-sm"
                 : member.proposed_time

@@ -54,7 +54,7 @@ export function TimerPicker({ currentTimerEnd, onUpdate }: TimerPickerProps) {
             <PopoverTrigger asChild>
                 <button
                     className={cn(
-                        "flex w-full items-center justify-center py-4 px-2 rounded-xl text-[10px] uppercase tracking-[0.2em] font-black transition-all duration-300 group",
+                        "flex w-full items-center justify-center py-4 px-2 rounded-xl text-[11px] uppercase tracking-[0.2em] font-black transition-all duration-300 group",
                         isActive
                             ? "bg-amber-500/10 border-amber-500/30 text-amber-500 shadow-neon-secondary/20 border-2"
                             : "bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white"
@@ -72,7 +72,7 @@ export function TimerPicker({ currentTimerEnd, onUpdate }: TimerPickerProps) {
                 <div className="space-y-6">
                     <div className="space-y-1">
                         <div className="flex items-center justify-between">
-                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2">
+                            <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2">
                                 <Clock className="w-3.5 h-3.5 text-[var(--v2-primary)]" />
                                 Temps estimé
                             </h4>
