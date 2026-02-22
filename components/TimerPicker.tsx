@@ -54,7 +54,7 @@ export function TimerPicker({ currentTimerEnd, onUpdate }: TimerPickerProps) {
             <PopoverTrigger asChild>
                 <button
                     className={cn(
-                        "flex flex-1 items-center justify-center py-4 px-2 rounded-xl text-xs sm:text-sm font-medium transition-colors group",
+                        "flex w-full items-center justify-center py-4 px-2 rounded-xl text-xs sm:text-sm font-medium transition-colors group",
                         isActive
                             ? "border-amber-500/50 text-amber-500 bg-amber-500/10 border-2"
                             : "bg-white/5 hover:bg-white/10 border border-white/5 text-slate-200 hover:text-white"
