@@ -299,7 +299,14 @@ export default function Home() {
                       const msgIndex = messageIndex - i;
                       if (msgIndex >= 0) {
                         const msg = PERSON_MESSAGES[msgIndex % PERSON_MESSAGES.length];
-                        messageShift += msg.length > 25 ? 115 : 75;
+                        const len = msg.length;
+                        if (len > 32) {
+                          messageShift += 150;
+                        } else if (len > 20) {
+                          messageShift += 115;
+                        } else {
+                          messageShift += 75;
+                        }
                       }
                     }
 
@@ -341,7 +348,7 @@ export default function Home() {
                   <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/notebook.png')] opacity-10 mix-blend-overlay"></div>
                   <form onSubmit={handleCreateGroup} className="flex flex-col gap-6 relative z-10 text-left md:text-center">
                     <div>
-                      <label className="block text-xs font-bold text-red-200 mb-2 uppercase tracking-wide">L'événement</label>
+                      <label className="block text-xs font-bold text-red-200 mb-2 uppercase tracking-wide">Nomme ton groupe</label>
                       <input
                         value={mode === 'in_person' ? groupName : ''}
                         onChange={(e) => setGroupName(e.target.value)}
@@ -453,7 +460,14 @@ export default function Home() {
                       const msgIndex = messageIndex - i;
                       if (msgIndex >= 0) {
                         const msg = ONLINE_MESSAGES[msgIndex % ONLINE_MESSAGES.length];
-                        messageShift += msg.length > 25 ? 120 : 85;
+                        const len = msg.length;
+                        if (len > 32) {
+                          messageShift += 155;
+                        } else if (len > 20) {
+                          messageShift += 120;
+                        } else {
+                          messageShift += 85;
+                        }
                       }
                     }
 
@@ -501,7 +515,7 @@ export default function Home() {
               <div className={cn("group relative w-full max-w-md flex flex-col gap-4", mode === 'in_person' && 'pointer-events-none')}>
                 <form onSubmit={handleCreateGroup} className="w-full flex flex-col gap-4 relative z-10">
                   <div className="w-full text-right md:text-center">
-                    <label className="block text-xs font-mono text-purple-400 mb-2 tracking-widest">NOM_DE_LA_SESSION_ &lt;</label>
+                    <label className="block text-xs font-mono text-purple-400 mb-2 tracking-widest">NOM_DU_GROUPE_ &lt;</label>
                     <input
                       value={mode === 'remote' ? groupName : ''}
                       onChange={(e) => setGroupName(e.target.value)}
