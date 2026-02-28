@@ -50,7 +50,8 @@ export function ManageGroupModal({ isOpen, onOpenChange, slug, members, loading,
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-md sm:max-w-lg h-[80vh] flex flex-col p-0 glass-panel border-white/10 text-white rounded-3xl overflow-hidden">
-                <DialogHeader className="p-6 pb-4 border-b border-white/10 bg-black/20">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--v2-primary)] to-[var(--v2-accent)] z-50"></div>
+                <DialogHeader className="p-6 pb-4 border-b border-white/10 bg-black/20 mt-1">
                     <DialogTitle className="text-xl font-bold">Gérer les membres</DialogTitle>
                     <DialogDescription className="text-slate-400">
                         Liste des membres du groupe.

@@ -101,7 +101,7 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
                                 autoFocus
                                 minLength={2}
                                 maxLength={30}
-                                className="h-12 bg-black/20 border-white/10 text-white placeholder:text-slate-600 focus-visible:ring-[var(--v2-primary)] rounded-xl px-4"
+                                className="input-rdychk"
                             />
                         </div>
 
@@ -117,7 +117,7 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
                             <Button
                                 type="submit"
                                 disabled={!name.trim() || isLoading}
-                                className="w-full h-12 text-lg font-bold bg-[var(--v2-primary)] hover:bg-[var(--v2-primary)]/80 text-white shadow-neon-primary rounded-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                                className="w-full btn-massive h-12 text-lg font-bold text-white rounded-xl"
                             >
                                 {isLoading ? (
                                     <>

@@ -89,10 +89,10 @@ export function AuthModal({ trigger, open: controlledOpen, onOpenChange: setCont
                                 },
                                 className: {
                                     container: 'w-full space-y-4',
-                                    button: 'w-full flex justify-center items-center rounded-xl text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--v2-primary)] h-11 px-4 py-2 hover:scale-[1.02] active:scale-[0.98]',
-                                    input: 'flex h-11 w-full rounded-xl border border-white/10 bg-black/20 px-4 py-1 text-sm shadow-sm transition-all placeholder:text-slate-600 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--v2-primary)]',
+                                    button: 'btn-massive w-full flex justify-center items-center rounded-xl text-md font-bold h-12 px-4 py-2 text-white',
+                                    input: 'input-rdychk',
                                     label: 'text-sm font-semibold text-slate-400 mb-1.5 block ml-1',
-                                    loader: 'animate-spin text-[var(--v2-primary)]',
+                                    loader: 'animate-spin text-white',
                                     anchor: 'text-sm font-medium transition-colors hover:text-white',
                                     divider: 'bg-white/10',
                                     message: 'text-xs font-medium text-center py-2',

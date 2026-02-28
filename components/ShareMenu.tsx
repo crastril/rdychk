@@ -93,39 +93,39 @@ export function ShareMenu({ groupName, url, variant = 'icon' }: ShareMenuProps) 
                         </Button>
                     )}
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel>Inviter des amis</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
+                <DropdownMenuContent align="end" className="w-56 glass-panel border-white/10 text-white rounded-2xl">
+                    <DropdownMenuLabel className="font-bold text-slate-300">Inviter des amis</DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-white/10" />
 
-                    <DropdownMenuItem onClick={handleCopy} className="cursor-pointer gap-2">
+                    <DropdownMenuItem onClick={handleCopy} className="cursor-pointer gap-2 focus:bg-white/10 focus:text-white dark:focus:bg-white/10">
                         <Copy className="w-4 h-4" />
                         {copied ? 'Lien copié !' : 'Copier le lien'}
                     </DropdownMenuItem>
 
-                    <DropdownMenuItem onClick={() => setQrOpen(true)} className="cursor-pointer gap-2">
+                    <DropdownMenuItem onClick={() => setQrOpen(true)} className="cursor-pointer gap-2 focus:bg-white/10 focus:text-white dark:focus:bg-white/10">
                         <QrCode className="w-4 h-4" />
                         Code QR
                     </DropdownMenuItem>
 
                     {/* Native share for mobile users preference */}
-                    <DropdownMenuItem onClick={handleNativeShare} className="cursor-pointer gap-2 sm:hidden">
+                    <DropdownMenuItem onClick={handleNativeShare} className="cursor-pointer gap-2 sm:hidden focus:bg-white/10 focus:text-white dark:focus:bg-white/10">
                         <Share2 className="w-4 h-4" />
                         Autres options...
                     </DropdownMenuItem>
 
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator className="bg-white/10" />
 
-                    <DropdownMenuItem onClick={() => handleShare('whatsapp')} className="cursor-pointer gap-2">
+                    <DropdownMenuItem onClick={() => handleShare('whatsapp')} className="cursor-pointer gap-2 focus:bg-white/10 focus:text-white dark:focus:bg-white/10">
                         <MessageCircle className="w-4 h-4 text-green-500" />
                         WhatsApp
                     </DropdownMenuItem>
 
-                    <DropdownMenuItem onClick={() => handleShare('messenger')} className="cursor-pointer gap-2">
+                    <DropdownMenuItem onClick={() => handleShare('messenger')} className="cursor-pointer gap-2 focus:bg-white/10 focus:text-white dark:focus:bg-white/10">
                         <Facebook className="w-4 h-4 text-blue-500" />
                         Messenger
                     </DropdownMenuItem>
 
-                    <DropdownMenuItem onClick={() => handleShare('instagram')} className="cursor-pointer gap-2">
+                    <DropdownMenuItem onClick={() => handleShare('instagram')} className="cursor-pointer gap-2 focus:bg-white/10 focus:text-white dark:focus:bg-white/10">
                         <Instagram className="w-4 h-4 text-pink-500" />
                         Instagram
                     </DropdownMenuItem>
@@ -133,16 +133,19 @@ export function ShareMenu({ groupName, url, variant = 'icon' }: ShareMenuProps) 
             </DropdownMenu>
 
             <Dialog open={qrOpen} onOpenChange={setQrOpen}>
-                <DialogContent className="sm:max-w-md flex flex-col items-center justify-center p-8">
-                    <DialogHeader className="mb-4">
-                        <DialogTitle className="text-center">Scanner pour rejoindre</DialogTitle>
-                    </DialogHeader>
-                    <div className="bg-white p-4 rounded-xl shadow-sm">
-                        <QRCode value={url} size={200} />
+                <DialogContent className="sm:max-w-md glass-panel border-white/10 text-white rounded-3xl p-0 overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--v2-primary)] to-[var(--v2-accent)]"></div>
+                    <div className="flex flex-col items-center justify-center p-8">
+                        <DialogHeader className="mb-4">
+                            <DialogTitle className="text-center">Scanner pour rejoindre</DialogTitle>
+                        </DialogHeader>
+                        <div className="bg-white p-4 rounded-2xl shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+                            <QRCode value={url} size={200} />
+                        </div>
+                        <p className="mt-6 text-sm text-center text-slate-400 w-full font-medium">
+                            {groupName}
+                        </p>
                     </div>
-                    <p className="mt-4 text-sm text-center text-muted-foreground w-full">
-                        {groupName}
-                    </p>
                 </DialogContent>
             </Dialog>
         </>

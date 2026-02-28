@@ -59,63 +59,66 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, onLeaveGroup
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-md glass-panel border-white/10 text-white p-6 rounded-3xl">
-                <DialogHeader className="mb-6">
-                    <DialogTitle className="text-xl font-bold">
-                        Paramètres du groupe
-                    </DialogTitle>
-                </DialogHeader>
+            <DialogContent className="max-w-md glass-panel border-white/10 text-white rounded-3xl p-0 overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--v2-primary)] to-[var(--v2-accent)]"></div>
+                <div className="p-6">
+                    <DialogHeader className="mb-6">
+                        <DialogTitle className="text-xl font-bold">
+                            Paramètres du groupe
+                        </DialogTitle>
+                    </DialogHeader>
 
-                {loading ? (
-                    <div className="flex justify-center py-8">
-                        <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
-                    </div>
-                ) : (
-                    <div className="space-y-8">
-                        <div>
-                            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3">
-                                Mode de fonctionnement
-                            </h3>
-                            <GroupTypeSelector
-                                value={groupType}
-                                onValueChange={(val) => setGroupType(val)}
-                                idPrefix="settings-"
-                            />
+                    {loading ? (
+                        <div className="flex justify-center py-8">
+                            <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
                         </div>
+                    ) : (
+                        <div className="space-y-8">
+                            <div>
+                                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3">
+                                    Mode de fonctionnement
+                                </h3>
+                                <GroupTypeSelector
+                                    value={groupType}
+                                    onValueChange={(val) => setGroupType(val)}
+                                    idPrefix="settings-"
+                                />
+                            </div>
 
-                        <div className="flex flex-col gap-3 pt-6 border-t border-white/10">
-                            <Button
-                                onClick={handleSave}
-                                disabled={saving}
-                                className="w-full bg-[var(--v2-primary)] text-white hover:bg-[var(--v2-primary)]/80 font-bold h-12 rounded-xl transition-all shadow-neon-primary"
-                            >
-                                {saving ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                        Enregistrement...
-                                    </>
-                                ) : (
-                                    "Enregistrer les paramètres"
-                                )}
-                            </Button>
-
-                            {onLeaveGroup && (
+                            <div className="flex flex-col gap-3 pt-6 border-t border-white/10">
                                 <Button
-                                    variant="outline"
-                                    onClick={() => {
-                                        if (confirm("Voulez-vous vraiment quitter ce groupe ?")) {
-                                            onLeaveGroup();
-                                        }
-                                    }}
-                                    className="w-full bg-red-500/10 border-red-500/20 text-red-500 hover:bg-red-500/20 hover:text-red-400 font-bold h-12 rounded-xl transition-all"
+                                    onClick={handleSave}
+                                    disabled={saving}
+                                    className="w-full btn-massive h-12 rounded-xl text-white font-bold"
                                 >
-                                    <LogOut className="mr-2 h-4 w-4" />
-                                    Quitter le groupe
+                                    {saving ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                            Enregistrement...
+                                        </>
+                                    ) : (
+                                        "Enregistrer les paramètres"
+                                    )}
                                 </Button>
-                            )}
+
+                                {onLeaveGroup && (
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => {
+                                            if (confirm("Voulez-vous vraiment quitter ce groupe ?")) {
+                                                onLeaveGroup();
+                                            }
+                                        }}
+                                        className="w-full bg-red-500/10 border-red-500/20 text-red-500 hover:bg-red-500/20 hover:text-red-400 font-bold h-12 rounded-xl transition-all"
+                                    >
+                                        <LogOut className="mr-2 h-4 w-4" />
+                                        Quitter le groupe
+                                    </Button>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </DialogContent>
         </Dialog>
     );

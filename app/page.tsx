@@ -57,7 +57,6 @@ export default function Home() {
       if (data && data.length > 0) {
         const transformedGroups = (data as any[])
           .map((member) => {
-            // Support both singular and plural keys returned by Supabase
             const groupData = member.groups || member.group;
             const group = Array.isArray(groupData) ? groupData[0] : groupData;
             if (!group) return null;
@@ -69,9 +68,12 @@ export default function Home() {
               joined_at: member.joined_at
             };
           })
-          .filter((g): g is { name: string; slug: string; joined_at: string; type: string } => g !== null);
+          .filter((g): g is { name: string; slug: string; joined_at: string; type: string } => g !== null)
+          .slice(0, 2);
 
         setRecentGroups(transformedGroups);
+      } else {
+        setRecentGroups([]);
       }
     }
     fetchLastGroup();

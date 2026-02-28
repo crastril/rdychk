@@ -79,35 +79,38 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
                     </Button>
                 )}
             </div>
-            <DialogContent className="sm:max-w-md glass-panel border-white/10 text-white rounded-3xl p-8 backdrop-blur-2xl">
-                <DialogHeader className="mb-4">
-                    <DialogTitle className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Proposer un horaire</DialogTitle>
-                    <DialogDescription className="text-[12px] text-slate-400 leading-relaxed">
-                        Indiquez l'heure à laquelle vous pensez être présent.
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="flex items-center justify-center py-4">
-                    <Input
-                        type="time"
-                        value={time}
-                        onChange={(e) => setTime(e.target.value)}
-                        className="text-3xl font-bold p-4 h-20 w-48 text-center bg-black/20 border-white/10 text-white focus-visible:ring-[var(--v2-primary)] rounded-2xl"
-                    />
-                </div>
-                <DialogFooter className="flex gap-2 sm:justify-between">
-                    <DialogClose asChild>
-                        <Button type="button" variant="outline" className="w-full sm:w-auto h-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 text-slate-300 hover:text-white">
-                            Annuler
+            <DialogContent className="sm:max-w-md glass-panel border-white/10 text-white rounded-3xl p-0 overflow-hidden backdrop-blur-2xl">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--v2-primary)] to-[var(--v2-accent)]"></div>
+                <div className="p-8">
+                    <DialogHeader className="mb-4">
+                        <DialogTitle className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Proposer un horaire</DialogTitle>
+                        <DialogDescription className="text-[12px] text-slate-400 leading-relaxed">
+                            Indiquez l'heure à laquelle vous pensez être présent.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex items-center justify-center py-4">
+                        <Input
+                            type="time"
+                            value={time}
+                            onChange={(e) => setTime(e.target.value)}
+                            className="text-3xl font-bold p-4 h-20 w-48 text-center input-rdychk"
+                        />
+                    </div>
+                    <DialogFooter className="flex gap-2 sm:justify-between mt-4">
+                        <DialogClose asChild>
+                            <Button type="button" variant="outline" className="w-full sm:w-auto h-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 text-slate-300 hover:text-white transition-all">
+                                Annuler
+                            </Button>
+                        </DialogClose>
+                        <Button
+                            onClick={handleSave}
+                            disabled={loading}
+                            className="w-full sm:w-auto btn-massive h-12 rounded-xl text-white font-bold px-8"
+                        >
+                            {loading ? 'Enregistrement...' : 'Valider'}
                         </Button>
-                    </DialogClose>
-                    <Button
-                        onClick={handleSave}
-                        disabled={loading}
-                        className="w-full sm:w-auto bg-[var(--v2-primary)] text-white hover:bg-[var(--v2-primary)]/80 font-bold h-12 rounded-xl transition-all shadow-neon-primary px-8"
-                    >
-                        {loading ? 'Enregistrement...' : 'Valider'}
-                    </Button>
-                </DialogFooter>
+                    </DialogFooter>
+                </div>
             </DialogContent>
         </Dialog>
     );

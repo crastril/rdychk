@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html class="dark" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ReadyCheck Dual-Theme Design System Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style type="text/tailwindcss">
+        :root {
+            --primary-black: #000000;
+            --surface-glass: rgba(255, 255, 255, 0.05);
+            --surface-glass-hover: rgba(255, 255, 255, 0.1);
+            --accent-red: #ff2e2e;
+            --accent-red-muted: #fda4af;
+            --accent-red-dark: #7f1d1d;
+            --accent-red-gradient: linear-gradient(135deg, #ff2e2e 0%, #ff6b6b 100%);
+            --accent-purple: #a855f7;
+            --accent-purple-vibrant: #6366f1;
+            --accent-purple-dark: #4c1d95;
+            --accent-purple-gradient: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+            --accent-success: #22c55e;
+            --border-subtle: rgba(255, 255, 255, 0.1);
+        }
+        body {
+            background-color: var(--primary-black);
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-panel {
+            background: var(--surface-glass);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border-subtle);
+        }
+        .section-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #64748b;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255,255,255,0.1);
+        }
+        .color-swatch {
+            width: 100%;
+            aspect-ratio: 16/9;
+            border-radius: 0.75rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .btn-massive {
+            background: var(--accent-red-gradient);
+            box-shadow: 0 0 40px -10px rgba(255, 46, 46, 0.5);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-massive:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 50px -10px rgba(255, 46, 46, 0.6);
+        }
+        .btn-massive:active {
+            transform: scale(0.98);
+        }
+        .btn-massive-purple {
+            background: var(--accent-purple-gradient);
+            box-shadow: 0 0 40px -10px rgba(168, 85, 247, 0.5);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-massive-purple:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 50px -10px rgba(168, 85, 247, 0.6);
+        }
+        .btn-massive-purple:active {
+            transform: scale(0.98);
+        }
+        .input-rdychk {
+            @apply bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-slate-500 w-full transition-all duration-200 outline-none;
+        }
+        .input-rdychk:focus {
+            @apply border-purple-500/50 bg-white/10 shadow-[0_0_15px_-5px_var(--accent-purple)];
+        }
+        .input-rdychk.error {
+            @apply border-red-500/50 text-red-100 bg-red-500/5 shadow-[0_0_15px_-5px_var(--accent-red)];
+        }.radio-custom:checked {
+            background-image: none;
+            background-color: var(--accent-purple);
+            border-color: var(--accent-purple);
+        }@keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite linear;
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen p-8 lg:p-12 overflow-x-hidden selection:bg-red-500/30">
+<div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-[-1]">
+<div class="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-purple-600/5 rounded-full blur-[120px]"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-red-600/5 rounded-full blur-[120px]"></div>
+</div>
+<header class="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<div class="flex items-center gap-2 mb-2">
+<span class="text-3xl font-black tracking-tighter text-white">rdychk</span>
+<div class="flex gap-1">
+<div class="w-2 h-2 rounded-full bg-[var(--accent-red)] animate-pulse"></div>
+<div class="w-2 h-2 rounded-full bg-[var(--accent-purple)] animate-pulse" style="animation-delay: 0.1s"></div>
+</div>
+</div>
+<h1 class="text-4xl font-bold text-white mb-2">Dual-Theme Design System</h1>
+<p class="text-slate-500 max-w-lg">
+                The visual language for the premium dark-mode experience. Featuring context-aware dual themes: 
+                <span class="text-[var(--accent-red)] font-semibold">En Personne</span> &amp; 
+                <span class="text-[var(--accent-purple)] font-semibold">En Ligne</span>.
+            </p>
+</div>
+<div class="flex items-center gap-4 text-xs font-mono text-slate-500 bg-white/5 px-4 py-2 rounded-full border border-white/5">
+<span>v2.6.0</span>
+<span class="w-px h-3 bg-white/10"></span>
+<span>Last updated: Nov 12</span>
+</div>
+</header>
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+<div class="xl:col-span-4 space-y-12">
+<section>
+<div class="section-label">01. Typography</div>
+<div class="glass-panel p-6 rounded-2xl space-y-6">
+<div>
+<span class="text-xs text-slate-500 font-mono mb-1 block">H1 Display / Inter Black</span>
+<h1 class="text-4xl font-black text-white leading-[1.1] tracking-tight">
+                            Arrêtez de<br/>demander
+                        </h1>
+</div>
+<div>
+<span class="text-xs text-slate-500 font-mono mb-1 block">H2 Heading / Inter Bold</span>
+<h2 class="text-2xl font-bold text-white">Créer un groupe</h2>
+</div>
+<div>
+<span class="text-xs text-slate-500 font-mono mb-1 block">Body Large / Inter Medium</span>
+<p class="text-lg font-medium text-slate-300">Synchronisez votre squad en un éclair.</p>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<span class="text-xs text-slate-500 font-mono mb-1 block">Label / Inter Bold</span>
+<span class="text-xs font-bold uppercase tracking-widest text-slate-500">Activity Type</span>
+</div>
+<div>
+<span class="text-xs text-slate-500 font-mono mb-1 block">Mono / Label</span>
+<span class="text-xs font-mono text-slate-400">#FF2E2E</span>
+</div>
+</div>
+</div>
+</section>
+<section>
+<div class="section-label">02. Palette</div>
+<div class="space-y-6">
+<div class="grid grid-cols-2 gap-4">
+<div class="group">
+<div class="color-swatch bg-[var(--primary-black)] shadow-lg shadow-white/5"></div>
+<div class="flex justify-between items-center">
+<span class="text-sm font-medium text-white">OLED Black</span>
+<span class="text-xs font-mono text-slate-500">#000000</span>
+</div>
+</div>
+<div class="group">
+<div class="color-swatch bg-white/10 backdrop-blur-md relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent"></div>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-sm font-medium text-white">Surface Glass</span>
+<span class="text-xs font-mono text-slate-500">10%</span>
+</div>
+</div>
+</div>
+<div>
+<div class="flex items-center gap-2 mb-3">
+<div class="w-1.5 h-1.5 rounded-full bg-[var(--accent-red)]"></div>
+<h4 class="text-xs font-bold uppercase tracking-widest text-slate-400">Theme: En Personne (Red)</h4>
+</div>
+<div class="grid grid-cols-3 gap-3">
+<div class="group">
+<div class="color-swatch bg-[var(--accent-red-gradient)] shadow-[0_0_20px_rgba(255,46,46,0.3)]"></div>
+<div class="flex flex-col">
+<span class="text-xs font-medium text-white">Primary</span>
+<span class="text-[10px] font-mono text-slate-500">#FF2E2E</span>
+</div>
+</div>
+<div class="group">
+<div class="color-swatch bg-[var(--accent-red-muted)]"></div>
+<div class="flex flex-col">
+<span class="text-xs font-medium text-white">Muted Rose</span>
+<span class="text-[10px] font-mono text-slate-500">#FDA4AF</span>
+</div>
+</div>
+<div class="group">
+<div class="color-swatch bg-[var(--accent-red-dark)]"></div>
+<div class="flex flex-col">
+<span class="text-xs font-medium text-white">Burgundy</span>
+<span class="text-[10px] font-mono text-slate-500">#7F1D1D</span>
+</div>
+</div>
+</div>
+</div>
+<div>
+<div class="flex items-center gap-2 mb-3">
+<div class="w-1.5 h-1.5 rounded-full bg-[var(--accent-purple)]"></div>
+<h4 class="text-xs font-bold uppercase tracking-widest text-slate-400">Theme: En Ligne (Purple)</h4>
+</div>
+<div class="grid grid-cols-3 gap-3">
+<div class="group">
+<div class="color-swatch bg-[var(--accent-purple-gradient)] shadow-[0_0_20px_rgba(168,85,247,0.3)]"></div>
+<div class="flex flex-col">
+<span class="text-xs font-medium text-white">Primary</span>
+<span class="text-[10px] font-mono text-slate-500">#A855F7</span>
+</div>
+</div>
+<div class="group">
+<div class="color-swatch bg-[var(--accent-purple-vibrant)]"></div>
+<div class="flex flex-col">
+<span class="text-xs font-medium text-white">Indigo</span>
+<span class="text-[10px] font-mono text-slate-500">#6366F1</span>
+</div>
+</div>
+<div class="group">
+<div class="color-swatch bg-[var(--accent-purple-dark)]"></div>
+<div class="flex flex-col">
+<span class="text-xs font-medium text-white">Deep Violet</span>
+<span class="text-[10px] font-mono text-slate-500">#4C1D95</span>
+</div>
+</div>
+</div>
+</div>
+<div class="group pt-2">
+<div class="h-10 w-full rounded-lg bg-[var(--accent-success)] shadow-[0_0_20px_rgba(34,197,94,0.3)] border border-white/10 mb-2 flex items-center justify-center">
+<i class="text-black w-4 h-4" data-lucide="check"></i>
+</div>
+<div class="flex justify-between items-center px-1">
+<span class="text-xs font-medium text-white">Global Success</span>
+<span class="text-[10px] font-mono text-slate-500">#22C55E</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+<div class="xl:col-span-4 space-y-12">
+<section>
+<div class="section-label">03. Core Components</div>
+<div class="glass-panel p-8 rounded-2xl flex flex-col gap-10 items-center justify-center min-h-[400px]">
+<div class="flex w-full gap-4 justify-center mb-4">
+<div class="flex flex-col items-center gap-2">
+<span class="text-[10px] uppercase font-bold text-slate-500">Theme A (Red)</span>
+<div class="relative w-32 h-32 flex items-center justify-center">
+<svg class="w-full h-full rotate-[-90deg]" viewBox="0 0 100 100">
+<circle cx="50" cy="50" fill="none" r="45" stroke="#1e1e1e" stroke-width="8"></circle>
+<circle class="drop-shadow-[0_0_10px_rgba(255,46,46,0.5)]" cx="50" cy="50" fill="none" r="45" stroke="url(#gradient-red)" stroke-dasharray="283" stroke-dashoffset="70" stroke-linecap="round" stroke-width="8"></circle>
+<defs>
+<linearGradient id="gradient-red" x1="0%" x2="100%" y1="0%" y2="0%">
+<stop offset="0%" style="stop-color:#ff2e2e"></stop>
+<stop offset="100%" style="stop-color:#ff6b6b"></stop>
+</linearGradient>
+</defs>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+<span class="text-xl font-black text-white">3<span class="text-slate-600 text-sm">/4</span></span>
+</div>
+</div>
+</div>
+<div class="w-px bg-white/10 self-stretch mx-2"></div>
+<div class="flex flex-col items-center gap-2">
+<span class="text-[10px] uppercase font-bold text-slate-500">Theme B (Purple)</span>
+<div class="relative w-32 h-32 flex items-center justify-center">
+<svg class="w-full h-full rotate-[-90deg]" viewBox="0 0 100 100">
+<circle cx="50" cy="50" fill="none" r="45" stroke="#1e1e1e" stroke-width="8"></circle>
+<circle class="drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]" cx="50" cy="50" fill="none" r="45" stroke="url(#gradient-purple)" stroke-dasharray="283" stroke-dashoffset="100" stroke-linecap="round" stroke-width="8"></circle>
+<defs>
+<linearGradient id="gradient-purple" x1="0%" x2="100%" y1="0%" y2="0%">
+<stop offset="0%" style="stop-color:#a855f7"></stop>
+<stop offset="100%" style="stop-color:#6366f1"></stop>
+</linearGradient>
+</defs>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+<span class="text-xl font-black text-white">2<span class="text-slate-600 text-sm">/4</span></span>
+</div>
+</div>
+</div>
+</div>
+<div class="w-full space-y-4">
+<button class="w-full h-14 btn-massive text-white font-black text-lg rounded-xl flex items-center justify-center gap-3 group relative overflow-hidden">
+<span class="relative z-10">READY (RED)</span>
+<i class="w-5 h-5 relative z-10" data-lucide="zap"></i>
+<div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+</button>
+<button class="w-full h-14 btn-massive-purple text-white font-black text-lg rounded-xl flex items-center justify-center gap-3 group relative overflow-hidden">
+<span class="relative z-10">ONLINE (PURPLE)</span>
+<i class="w-5 h-5 relative z-10" data-lucide="globe"></i>
+<div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+</button>
+</div>
+<div class="flex gap-3">
+<button class="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all">
+<i class="w-4 h-4" data-lucide="clock"></i>
+</button>
+<button class="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[var(--accent-red)] shadow-[0_0_15px_-5px_var(--accent-red)] border-[var(--accent-red)]/30 transition-all">
+<i class="w-4 h-4" data-lucide="share-2"></i>
+</button>
+<button class="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[var(--accent-purple)] shadow-[0_0_15px_-5px_var(--accent-purple)] border-[var(--accent-purple)]/30 transition-all">
+<i class="w-4 h-4" data-lucide="settings-2"></i>
+</button>
+</div>
+</div>
+</section>
+<section>
+<div class="section-label">04. Form Elements</div>
+<div class="glass-panel p-6 rounded-2xl space-y-8">
+<div class="space-y-4">
+<div>
+<label class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 block">Username</label>
+<input class="input-rdychk" placeholder="Entrez votre nom..." type="text"/>
+</div>
+<div>
+<label class="text-xs font-bold text-[var(--accent-purple)] uppercase tracking-wide mb-2 block">Email (Focused - Theme B)</label>
+<input class="input-rdychk border-purple-500/50 bg-white/10 shadow-[0_0_15px_-5px_var(--accent-purple)]" placeholder="email@exemple.com" type="email" value="contact@rdychk.gg"/>
+</div>
+<div>
+<label class="text-xs font-bold text-red-500 uppercase tracking-wide mb-2 block">Password (Error)</label>
+<input class="input-rdychk error" placeholder="Mot de passe" type="password" value="wrongpassword"/>
+<span class="text-xs text-red-400 mt-1 block flex items-center gap-1"><i class="w-3 h-3" data-lucide="alert-circle"></i> Invalid credentials</span>
+</div>
+</div>
+<div class="h-px bg-white/10 w-full"></div>
+<div class="space-y-3">
+<label class="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-2">Notification Preference</label>
+<label class="flex items-center p-3 rounded-lg border border-white/5 bg-white/[0.02] hover:bg-white/5 cursor-pointer transition-colors group">
+<input checked="" class="radio-custom w-4 h-4 bg-transparent border-slate-600 text-purple-600 focus:ring-0 focus:ring-offset-0" name="notif" type="radio"/>
+<span class="ml-3 text-sm text-slate-300 group-hover:text-white transition-colors">Push Notifications</span>
+</label>
+<label class="flex items-center p-3 rounded-lg border border-white/5 bg-white/[0.02] hover:bg-white/5 cursor-pointer transition-colors group">
+<input class="radio-custom w-4 h-4 bg-transparent border-slate-600 text-purple-600 focus:ring-0 focus:ring-offset-0" name="notif" type="radio"/>
+<span class="ml-3 text-sm text-slate-300 group-hover:text-white transition-colors">Email Digests</span>
+</label>
+</div>
+<div class="h-px bg-white/10 w-full"></div>
+<div>
+<label class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 block">Region Select</label>
+<div class="relative">
+<select class="input-rdychk appearance-none cursor-pointer">
+<option>Europe (West)</option>
+<option>North America</option>
+<option>Asia Pacific</option>
+</select>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+<i class="w-4 h-4" data-lucide="chevron-down"></i>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<div class="xl:col-span-4 space-y-12">
+<section>
+<div class="section-label">05. Status &amp; Feedback</div>
+<div class="glass-panel p-6 rounded-2xl space-y-6">
+<div>
+<span class="text-xs text-slate-500 font-mono mb-2 block">Loading State (Skeleton)</span>
+<div class="flex gap-4 items-center">
+<div class="w-12 h-12 rounded-full skeleton"></div>
+<div class="flex-1 space-y-2">
+<div class="h-4 w-3/4 rounded skeleton"></div>
+<div class="h-3 w-1/2 rounded skeleton"></div>
+</div>
+</div>
+</div>
+<div>
+<span class="text-xs text-slate-500 font-mono mb-2 block">Toast Notification</span>
+<div class="bg-[#0A0A0A] border border-white/10 rounded-lg p-4 shadow-2xl flex items-start gap-3 relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-[var(--accent-success)]"></div>
+<div class="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center shrink-0 text-green-500">
+<i class="w-5 h-5" data-lucide="check-circle-2"></i>
+</div>
+<div>
+<h4 class="text-sm font-bold text-white">Group Created</h4>
+<p class="text-xs text-slate-400 mt-0.5">Invite link copied to clipboard.</p>
+</div>
+<button class="ml-auto text-slate-500 hover:text-white transition-colors">
+<i class="w-4 h-4" data-lucide="x"></i>
+</button>
+</div>
+</div>
+<div>
+<span class="text-xs text-slate-500 font-mono mb-2 block">Tooltip</span>
+<div class="inline-block relative group">
+<button class="text-sm text-slate-400 border-b border-dashed border-slate-600 hover:text-white hover:border-white transition-colors">Hover me</button>
+<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-zinc-800 text-xs text-white rounded shadow-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none border border-white/10">
+                                 Detailed info here
+                                 <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-zinc-800"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section>
+<div class="section-label">06. Interactive States (Dual Theme)</div>
+<div class="glass-panel p-6 rounded-2xl overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr>
+<th class="pb-4 text-xs font-mono text-slate-500">State</th>
+<th class="pb-4 text-xs font-mono text-slate-500 px-2">Theme A (Red)</th>
+<th class="pb-4 text-xs font-mono text-slate-500 px-2">Theme B (Purple)</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-white/5 text-sm">
+<tr>
+<td class="py-4 text-slate-400 font-medium">Default</td>
+<td class="py-4 px-2"><button class="px-4 py-2 text-xs rounded border border-red-500/50 text-red-400 font-medium hover:bg-red-500/10 transition-colors">Cancel</button></td>
+<td class="py-4 px-2"><button class="px-4 py-2 text-xs rounded border border-purple-500/50 text-purple-400 font-medium hover:bg-purple-500/10 transition-colors">Cancel</button></td>
+</tr>
+<tr>
+<td class="py-4 text-slate-400 font-medium">Hover</td>
+<td class="py-4 px-2"><button class="px-4 py-2 text-xs rounded border border-red-500 text-red-300 bg-red-500/10 font-medium transition-colors">Cancel</button></td>
+<td class="py-4 px-2"><button class="px-4 py-2 text-xs rounded border border-purple-500 text-purple-300 bg-purple-500/10 font-medium transition-colors">Cancel</button></td>
+</tr>
+<tr>
+<td class="py-4 text-slate-400 font-medium">Active</td>
+<td class="py-4 px-2"><button class="px-4 py-2 text-xs rounded bg-red-500 text-white font-medium shadow-[0_0_15px_-5px_#ef4444] transition-colors">Confirm</button></td>
+<td class="py-4 px-2"><button class="px-4 py-2 text-xs rounded bg-purple-500 text-white font-medium shadow-[0_0_15px_-5px_#a855f7] transition-colors">Confirm</button></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section>
+<div class="section-label">07. Modals &amp; Overlays</div>
+<div class="relative h-64 rounded-2xl overflow-hidden border border-white/10 group">
+<div class="absolute inset-0 bg-black p-6 grid grid-cols-2 gap-4">
+<div class="h-24 bg-white/5 rounded-lg"></div>
+<div class="h-24 bg-white/5 rounded-lg"></div>
+<div class="h-24 bg-white/5 rounded-lg"></div>
+<div class="h-24 bg-white/5 rounded-lg"></div>
+</div>
+<div class="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+<div class="w-full max-w-xs bg-[#0F0F0F] border border-white/10 rounded-xl shadow-2xl overflow-hidden transform transition-all hover:scale-105">
+<div class="p-5 border-b border-white/5">
+<h3 class="text-lg font-bold text-white">Confirmation</h3>
+<p class="text-xs text-slate-400 mt-1">Are you ready to start?</p>
+</div>
+<div class="p-4 bg-white/[0.02] flex justify-end gap-3">
+<button class="px-3 py-1.5 text-xs font-bold text-slate-400 hover:text-white transition-colors">CANCEL</button>
+<button class="px-3 py-1.5 text-xs font-bold bg-[var(--accent-red)] text-white rounded hover:bg-red-500 transition-colors shadow-lg shadow-red-500/20">CONFIRM</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section>
+<div class="section-label">08. Visual FX</div>
+<div class="space-y-6">
+<div class="p-6 rounded-2xl bg-[#050505] border border-white/5 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-[var(--accent-red)]/20 rounded-full blur-[40px]"></div>
+<h3 class="text-sm font-bold text-slate-400 uppercase mb-4 relative z-10">Theme Propagation</h3>
+<p class="text-xs text-slate-500 mb-4 relative z-10">
+                            Components automatically inherit the selected theme's primary and complementary colors. Glow effects and borders adapt to the context (Red for En Personne, Purple for En Ligne).
+                        </p>
+<div class="w-full h-12 rounded-lg border border-[var(--accent-red)]/50 shadow-[0_0_15px_rgba(255,46,46,0.3)] bg-[var(--accent-red)]/5 flex items-center justify-center text-[var(--accent-red)] text-sm font-medium relative z-10">
+                            Red Context Glow
+                        </div>
+<div class="w-full h-12 rounded-lg mt-3 border border-[var(--accent-purple)]/50 shadow-[0_0_15px_rgba(168,85,247,0.3)] bg-[var(--accent-purple)]/5 flex items-center justify-center text-[var(--accent-purple)] text-sm font-medium relative z-10">
+                            Purple Context Glow
+                        </div>
+</div>
+</div>
+</section>
+</div>
+</div>
+<script>
+        lucide.createIcons();
+    </script>
+
+</body></html>

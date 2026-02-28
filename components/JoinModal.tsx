@@ -59,17 +59,70 @@ export default function JoinModal({ onJoin, onReclaim, groupName, existingGuests
 
     if (isAutoJoining) {
         return (
-            <Dialog open={true}>
-                <DialogContent>
-                    <VisuallyHidden>
-                        <DialogTitle>Rejoindre le groupe</DialogTitle>
-                    </VisuallyHidden>
-                    <div className="flex flex-col items-center justify-center p-6 space-y-4">
-                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                        <p className="text-muted-foreground">Rejoindre en tant que {profile?.display_name}...</p>
+            <div className="fixed inset-0 z-[100] bg-[#050505] text-slate-100 flex flex-col items-center overflow-y-auto">
+                {/* Background Glows */}
+                <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+                    <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-[var(--v2-primary)] opacity-10 rounded-full blur-[120px]"></div>
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-[var(--v2-accent)] opacity-10 rounded-full blur-[100px]"></div>
+                </div>
+
+                <nav className="w-full border-b border-white/5 bg-black/50 backdrop-blur-md sticky top-0 z-50">
+                    <div className="max-w-xl mx-auto px-4 h-16 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <span className="text-2xl font-black tracking-tighter text-white">
+                                rdychk<span className="text-[var(--v2-primary)]">.</span>
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <div className="w-10 h-10 rounded-md skeleton" />
+                        </div>
                     </div>
-                </DialogContent>
-            </Dialog>
+                </nav>
+
+                <div className="w-full max-w-xl mx-auto flex flex-col gap-6 relative z-10 p-4 mt-2">
+                    <div className="flex items-center justify-between -mb-2">
+                        <div className="flex-1 w-full">
+                            <div className="h-8 w-[200px] sm:w-[250px] rounded-lg skeleton mb-2" />
+                            <div className="flex items-center gap-2 mt-1">
+                                <span className="w-1.5 h-1.5 rounded-full skeleton"></span>
+                                <div className="h-3 w-20 rounded-lg skeleton" />
+                            </div>
+                        </div>
+                        <div className="w-10 h-10 rounded-xl skeleton" />
+                    </div>
+
+                    <div className="flex justify-center mb-2">
+                        <div className="relative w-48 h-48 flex items-center justify-center -my-2 overflow-visible">
+                            <svg className="w-full h-full transform -rotate-90 overflow-visible" viewBox="0 0 100 100">
+                                <circle className="text-white/5 stroke-current" cx="50" cy="50" r={45} fill="none" strokeWidth="8" />
+                            </svg>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                <div className="h-10 w-24 skeleton rounded-lg mb-2" />
+                                <div className="h-3 w-12 skeleton rounded-full" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col gap-3">
+                        <div className="h-16 w-full rounded-xl skeleton" />
+                    </div>
+
+                    <div className="flex flex-col items-end w-full mt-2">
+                        <div className="w-full space-y-3 relative mb-8">
+                            <h2 className="h-4 w-24 rounded skeleton mb-4" />
+                            {[1, 2, 3].map(i => (
+                                <div key={i} className="glass-panel p-3 rounded-2xl flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-xl skeleton shrink-0" />
+                                    <div className="flex-1 min-w-0">
+                                        <div className="h-5 w-32 rounded skeleton mb-2" />
+                                        <div className="h-3 w-20 rounded skeleton" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
         );
     }
 
@@ -125,10 +178,10 @@ export default function JoinModal({ onJoin, onReclaim, groupName, existingGuests
                                         autoFocus
                                         maxLength={20}
                                         required
-                                        className="h-12 bg-black/20 border-white/10 text-white placeholder:text-slate-600 focus-visible:ring-[var(--v2-primary)] rounded-xl px-4 pl-11"
+                                        className="h-12 input-rdychk !pl-10 !py-2"
                                         disabled={isLoading}
                                     />
-                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                                     {user && !name && (
                                         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase tracking-tighter text-[var(--v2-primary)] animate-pulse">
                                             Profil détecté
@@ -141,7 +194,7 @@ export default function JoinModal({ onJoin, onReclaim, groupName, existingGuests
                                 <Button
                                     type="submit"
                                     disabled={!name.trim() || isLoading}
-                                    className="w-full h-12 text-lg font-bold bg-[var(--v2-primary)] hover:bg-[var(--v2-primary)]/80 text-white shadow-neon-primary rounded-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                                    className="w-full h-14 btn-massive text-lg font-black text-white rounded-xl border-0"
                                     size="lg"
                                 >
                                     {isLoading ? (
@@ -200,13 +253,13 @@ export default function JoinModal({ onJoin, onReclaim, groupName, existingGuests
                                             <Label
                                                 htmlFor={guest.id}
                                                 className={`flex items-center gap-4 p-4 rounded-xl cursor-pointer transition-all border border-transparent ${selectedGuestId === guest.id
-                                                        ? "bg-[var(--v2-primary)]/10 border-[var(--v2-primary)]/30 text-white"
-                                                        : "hover:bg-white/5 text-slate-400 hover:text-slate-200"
+                                                    ? "bg-[var(--v2-primary)]/10 border-[var(--v2-primary)]/30 text-white"
+                                                    : "hover:bg-white/5 text-slate-400 hover:text-slate-200"
                                                     }`}
                                             >
                                                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ring-1 transition-all ${selectedGuestId === guest.id
-                                                        ? "bg-[var(--v2-primary)]/20 ring-[var(--v2-primary)]/50"
-                                                        : "bg-white/5 ring-white/10"
+                                                    ? "bg-[var(--v2-primary)]/20 ring-[var(--v2-primary)]/50"
+                                                    : "bg-white/5 ring-white/10"
                                                     }`}>
                                                     <User className={`w-5 h-5 ${selectedGuestId === guest.id ? "text-white" : "text-slate-500"
                                                         }`} />

@@ -66,7 +66,7 @@ const config: Config = {
             },
             boxShadow: {
                 "neon-primary": "0 0 20px -5px rgba(var(--v2-primary-rgb), 0.4)",
-                "neon-secondary": "0 0 25px -5px rgba(42, 232, 118, 0.5)",
+                "neon-secondary": "0 0 25px -5px rgba(34, 197, 94, 0.5)",
             },
             keyframes: {
                 "accordion-down": {

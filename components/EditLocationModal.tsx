@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { updateLocationAction } from '@/app/actions/group';
+import { usePlacesWidget } from 'react-google-autocomplete';
 
 interface EditLocationModalProps {
     isOpen: boolean;
@@ -30,55 +31,41 @@ interface EditLocationModalProps {
 export function EditLocationModal({ isOpen, onOpenChange, groupId, slug, existingLocation, currentMemberName, currentMemberId, onLocationUpdate }: EditLocationModalProps) {
     const [name, setName] = useState('');
     const [link, setLink] = useState('');
+    const [address, setAddress] = useState('');
+    const [image, setImage] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
-    const [isFetchingPreview, setIsFetchingPreview] = useState(false);
-    const [preview, setPreview] = useState<{ title?: string; description?: string; image?: string } | null>(null);
 
     useEffect(() => {
         if (isOpen) {
             if (existingLocation) {
                 setName(existingLocation.name || '');
                 setLink(existingLocation.link || '');
+                setAddress(existingLocation.address || ''); // Might be available if previously saved
             } else {
                 setName('');
                 setLink('');
+                setAddress('');
+                setImage(null);
             }
         }
     }, [isOpen, existingLocation]);
 
-    // Debounced preview fetch
-    useEffect(() => {
-        const fetchPreview = async () => {
-            if (!link || !link.startsWith('http')) {
-                setPreview(null);
-                return;
+    const { ref: autocompleteRef } = usePlacesWidget({
+        apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
+        onPlaceSelected: (place: any) => {
+            if (place.name) setName(place.name);
+            if (place.formatted_address) setAddress(place.formatted_address);
+            if (place.url) setLink(place.url);
+            if (place.photos && place.photos.length > 0 && typeof place.photos[0].getUrl === 'function') {
+                setImage(place.photos[0].getUrl({ maxWidth: 400 }));
+            } else {
+                setImage(null);
             }
-
-            setIsFetchingPreview(true);
-            try {
-                const res = await fetch(`/api/og?url=${encodeURIComponent(link)}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.title || data.image) { // Only set if we got meaningful data
-                        setPreview(data);
-                        if (data.title) {
-                            // Clean up Google Maps title: remove " - Google Maps" and unwanted separators like " · "
-                            let cleanName = data.title.replace(/ - Google Maps$/, '');
-                            cleanName = cleanName.split(' · ')[0];
-                            setName(cleanName);
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error("Failed to fetch preview", error);
-            } finally {
-                setIsFetchingPreview(false);
-            }
-        };
-
-        const timer = setTimeout(fetchPreview, 1000);
-        return () => clearTimeout(timer);
-    }, [link]);
+        },
+        options: {
+            types: ["establishment", "geocode"],
+        },
+    });
 
     const handleSave = async () => {
         if (!name.trim()) return;
@@ -87,10 +74,10 @@ export function EditLocationModal({ isOpen, onOpenChange, groupId, slug, existin
         const newLocation = {
             name: name.trim(),
             link: link.trim() || null,
-            address: '', // We are simplifying to just name + link per user request
-            image: preview?.image || null,
-            description: preview?.description || null,
-            preview_title: preview?.title || null,
+            address: address.trim() || null,
+            image: image || null,
+            description: address.trim() || null,
+            preview_title: name.trim() || null,
             proposed_by: currentMemberName,
             proposed_by_id: currentMemberId
         };
@@ -113,89 +100,78 @@ export function EditLocationModal({ isOpen, onOpenChange, groupId, slug, existin
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-md glass-panel border-white/10 text-white rounded-3xl p-6">
-                <DialogHeader className="mb-2">
-                    <DialogTitle className="text-xl font-bold">Modifier le lieu</DialogTitle>
-                    <DialogDescription className="text-slate-400">
-                        Indiquez où le groupe doit se retrouver.
-                    </DialogDescription>
-                </DialogHeader>
+            <DialogContent className="max-w-md glass-panel border-white/10 text-white rounded-3xl p-0 overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--v2-primary)] to-[var(--v2-accent)]"></div>
+                <div className="p-6">
+                    <DialogHeader className="mb-2">
+                        <DialogTitle className="text-xl font-bold">Modifier le lieu</DialogTitle>
+                        <DialogDescription className="text-slate-400">
+                            Indiquez où le groupe doit se retrouver.
+                        </DialogDescription>
+                    </DialogHeader>
 
-                <div className="space-y-6 py-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="loc-name" className="text-slate-300 font-medium">Nom du lieu <span className="text-red-400">*</span></Label>
-                        <Input
-                            id="loc-name"
-                            placeholder="Ex: Bar de la Plage, Chez Marco..."
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            className="h-11 bg-black/20 border-white/10 text-white placeholder:text-slate-600 focus-visible:ring-[var(--v2-primary)] rounded-xl"
-                        />
-                    </div>
+                    <div className="space-y-6 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="loc-name" className="text-slate-300 font-medium">Rechercher un lieu <span className="text-red-400">*</span></Label>
+                            <Input
+                                id="loc-name"
+                                ref={autocompleteRef as any}
+                                placeholder="Ex: Bar de la Plage, Paris..."
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                className="input-rdychk"
+                            />
+                            <p className="text-xs text-slate-500 mt-2">
+                                Sélectionnez une suggestion Google Maps pour ajouter automatiquement l&apos;adresse et l&apos;itinéraire.
+                            </p>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="loc-link" className="text-slate-300 font-medium">Lien Google Maps (facultatif)</Label>
-                        <Input
-                            id="loc-link"
-                            placeholder="https://maps.google.com/..."
-                            value={link}
-                            onChange={(e) => setLink(e.target.value)}
-                            className="h-11 bg-black/20 border-white/10 text-white placeholder:text-slate-600 focus-visible:ring-[var(--v2-primary)] rounded-xl"
-                        />
-                        <p className="text-xs text-slate-500">
-                            Permet aux membres d&apos;ouvrir l&apos;itinéraire directement.
-                        </p>
-
-                        {/* Link Preview */}
-                        {(isFetchingPreview || preview) && (
-                            <div className="mt-2 border border-white/10 rounded-xl overflow-hidden bg-white/5">
-                                {isFetchingPreview ? (
-                                    <div className="p-3 flex items-center gap-2 text-slate-400 text-sm">
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                        Chargement de l&apos;aperçu...
-                                    </div>
-                                ) : preview && (
-                                    <div className="flex h-20">
-                                        {preview.image && (
-                                            <div className="w-24 h-full shrink-0 relative border-r border-white/10">
-                                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                <img
-                                                    src={preview.image}
-                                                    alt="Preview"
-                                                    className="w-full h-full object-cover"
-                                                    referrerPolicy="no-referrer"
-                                                />
+                            {/* Link Preview */}
+                            {(address || link || image) && (
+                                <div className="mt-4 border border-white/10 rounded-xl overflow-hidden bg-white/5 flex h-24">
+                                    {image && (
+                                        <div className="w-24 h-full shrink-0 relative border-r border-white/10 bg-slate-800">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img
+                                                src={image}
+                                                alt="Preview"
+                                                className="w-full h-full object-cover"
+                                                referrerPolicy="no-referrer"
+                                            />
+                                        </div>
+                                    )}
+                                    <div className="p-3 flex-1 min-w-0 flex flex-col justify-center">
+                                        <div className="font-bold text-sm text-white line-clamp-1">{name}</div>
+                                        {address && (
+                                            <div className="text-xs text-slate-400 line-clamp-2 leading-tight mt-1">
+                                                {address}
                                             </div>
                                         )}
-                                        <div className="p-3 flex-1 min-w-0 flex flex-col justify-center">
-                                            <div className="font-bold text-sm text-white line-clamp-1">{preview.title}</div>
-                                            {preview.description && (
-                                                <div className="text-[11px] text-slate-400 line-clamp-2 leading-tight mt-1">
-                                                    {preview.description}
-                                                </div>
-                                            )}
-                                        </div>
+                                        {link && (
+                                            <a href={link} target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-400 hover:underline mt-1 line-clamp-1">
+                                                Voir sur Google Maps
+                                            </a>
+                                        )}
                                     </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="flex justify-end pt-4 mt-2 border-t border-white/10">
-                        <Button
-                            onClick={handleSave}
-                            disabled={saving || !name.trim() || isFetchingPreview}
-                            className="w-full bg-[var(--v2-primary)] text-white hover:bg-[var(--v2-primary)]/80 font-bold h-12 rounded-xl transition-all shadow-neon-primary"
-                        >
-                            {saving ? (
-                                <>
-                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                    Enregistrement...
-                                </>
-                            ) : (
-                                "Valider le lieu"
+                                </div>
                             )}
-                        </Button>
+                        </div>
+
+                        <div className="flex justify-end pt-4 mt-2 border-t border-white/10">
+                            <Button
+                                onClick={handleSave}
+                                disabled={saving || !name.trim()}
+                                className="w-full btn-massive h-12 rounded-xl text-white font-bold"
+                            >
+                                {saving ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                        Enregistrement...
+                                    </>
+                                ) : (
+                                    "Valider le lieu"
+                                )}
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </DialogContent>
