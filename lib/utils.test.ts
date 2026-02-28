@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert'
-import { cn } from './utils.ts'
+import { cn } from './utils'
 
 test('cn utility', async (t) => {
   await t.test('concatenates classes', () => {

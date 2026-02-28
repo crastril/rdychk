@@ -28,7 +28,7 @@ export default function ProgressCounter({ readyCount, totalCount }: ProgressCoun
                 {/* Foreground Progress */}
                 <circle
                     // Using tailwind's drop-shadow allows us to hook into the neon variables seamlessly
-                    className="text-[var(--v2-primary)] stroke-current drop-shadow-[0_0_8px_var(--v2-primary)] transition-all duration-1000 ease-out fill-none"
+                    className="text-[var(--v2-primary)] stroke-current drop-shadow-[0_0_8px_var(--v2-primary)] transition-all duration-300 ease-out fill-none"
                     cx="50" cy="50" r={radius}
                     strokeWidth="8"
                     strokeDasharray={circumference}

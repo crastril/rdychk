@@ -40,6 +40,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
     const [showLocationProposal, setShowLocationProposal] = useState(false);
+    const [localOptimisticReady, setLocalOptimisticReady] = useState<boolean | null>(null);
 
     const fetchGroup = async () => {
         try {
@@ -141,8 +142,12 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                     table: 'members',
                     filter: `group_id=eq.${group.id}`,
                 },
-                () => {
-                    fetchMembers();
+                (payload) => {
+                    if (payload.eventType === 'UPDATE') {
+                        setMembers(prev => prev.map(m => m.id === payload.new.id ? { ...m, ...payload.new } : m));
+                    } else {
+                        fetchMembers();
+                    }
                 }
             )
             .subscribe();
@@ -242,6 +247,12 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                 (payload: { new: { is_ready: boolean; timer_end_time: string | null } }) => {
                     setIsReady(payload.new.is_ready);
                     setTimerEndTime(payload.new.timer_end_time);
+                    // Crucial: patch members array instantly to avoid race condition stutter
+                    // between this channel and the members_updates channel
+                    setMembers(prev => prev.map(m => m.id === memberId
+                        ? { ...m, is_ready: payload.new.is_ready, timer_end_time: payload.new.timer_end_time }
+                        : m
+                    ));
                 }
             )
             .subscribe();
@@ -428,10 +439,18 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
         return null;
     }
 
-    const readyCount = members.filter((m) => m.is_ready).length;
+    let readyCount = members.filter((m) => m.is_ready).length;
     const totalCount = members.length;
     const currentMember = members.find(m => m.id === memberId);
     const isAdmin = currentMember?.role === 'admin';
+
+    // Adjust readyCount manually to sync instantaneously with the ReadyButton's local click
+    if (memberId && localOptimisticReady !== null && currentMember) {
+        if (currentMember.is_ready !== localOptimisticReady) {
+            if (localOptimisticReady) readyCount++;
+            else readyCount--;
+        }
+    }
 
 
     return (
@@ -510,6 +529,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                                 memberId={memberId}
                                 isReady={isReady}
                                 timerEndTime={timerEndTime}
+                                onOptimisticChange={setLocalOptimisticReady}
                             />
                             {/* Additional Options Collapsible */}
                             <div className="flex flex-col gap-2">
