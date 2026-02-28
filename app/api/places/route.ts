@@ -10,9 +10,9 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'Query parameter "q" is required' }, { status: 400 });
     }
 
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    const apiKey = process.env.GOOGLE_MAPS_SERVER_API_KEY;
     if (!apiKey) {
-        return NextResponse.json({ error: 'Google Maps API key is missing' }, { status: 500 });
+        return NextResponse.json({ error: 'Google Maps Server API key is missing' }, { status: 500 });
     }
 
     let url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&language=fr&key=${apiKey}`;
