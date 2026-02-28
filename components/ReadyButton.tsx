@@ -105,15 +105,14 @@ export default function ReadyButton({ slug, memberId, isReady, timerEndTime, onO
             className={`
                 group relative w-full h-16 flex items-center justify-center rounded-xl font-extrabold text-lg tracking-wide transition-all duration-300 active:scale-[0.98] overflow-hidden
                 ${displayReady
-                    ? 'bg-[var(--v2-secondary)] hover:bg-[#3bf183] text-black shadow-neon-secondary'
+                    ? 'btn-ready'
                     : isSoonReady || timeLeft
-                        ? 'bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-500 shadow-[0_0_15px_-5px_rgba(245,158,11,0.4)]'
-                        : 'btn-massive text-white border-0'
+                        ? 'btn-soon-ready'
+                        : 'btn-not-ready'
                 }
                 ${isPending ? 'opacity-90 pointer-events-none' : ''}
             `}
         >
-            <div className="absolute inset-0 bg-white/0 group-hover:bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
 
             {displayReady ? (
                 <div className="flex items-center gap-2 relative z-10 text-[14px] font-black uppercase tracking-[0.2em]">

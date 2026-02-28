@@ -61,7 +61,7 @@ export function TimerPicker({ currentTimerEnd, onUpdate }: TimerPickerProps) {
                     )}
                 >
                     <Timer className={cn("w-4 h-4 mr-2 transition-transform shrink-0", isActive ? "animate-pulse" : "text-[var(--v2-primary)] group-hover:rotate-12")} />
-                    <span className="truncate">{isActive ? "⏱️ Arrivée imminente" : "Bientôt prêt"}</span>
+                    <span className="truncate">{isActive ? "Départ imminent" : "Bientôt prêt"}</span>
                 </button>
             </PopoverTrigger>
             <PopoverContent

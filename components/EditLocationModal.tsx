@@ -84,9 +84,11 @@ export function EditLocationModal({ isOpen, onOpenChange, groupId, slug, existin
                     image: null
                 });
                 setSearchQuery(name);
+                setSelectedPlaceId("existing"); // Allow saving without changes
             } else {
                 setLocationData({ name: '', address: '', link: '', image: null });
                 setSearchQuery('');
+                setSelectedPlaceId(null);
             }
         }
     }, [isOpen, existingLocation, baseLat, baseLng]);
@@ -331,22 +333,29 @@ export function EditLocationModal({ isOpen, onOpenChange, groupId, slug, existin
                             <div className="space-y-4">
                                 <div>
                                     <Label htmlFor="loc-name" className="text-slate-300 font-medium">Rechercher un lieu <span className="text-red-400">*</span></Label>
-                                    <div className="flex gap-2 mt-2">
+                                    <div className="flex gap-2 mt-2 items-center">
                                         <Input
                                             id="loc-name"
                                             placeholder="Ex: Bar de la Plage, Gare..."
                                             value={searchQuery}
-                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            onChange={(e) => {
+                                                setSearchQuery(e.target.value);
+                                                setSelectedPlaceId(null); // Force new selection
+                                            }}
                                             onKeyDown={(e) => {
                                                 if (e.key === 'Enter') {
                                                     e.preventDefault();
                                                     handleSearchPlace();
                                                 }
                                             }}
-                                            className="input-rdychk flex-1"
+                                            className="input-rdychk flex-1 h-14 text-base"
                                         />
-                                        <Button onClick={() => handleSearchPlace()} disabled={isSearchingPlace || !searchQuery.trim()} className="bg-white/10 hover:bg-white/20 px-3 border border-white/10 rounded-xl h-12">
-                                            <Search className="w-5 h-5 text-white" />
+                                        <Button
+                                            onClick={() => handleSearchPlace()}
+                                            disabled={isSearchingPlace || !searchQuery.trim()}
+                                            className="bg-[var(--v2-primary)]/20 hover:bg-[var(--v2-primary)]/40 text-[var(--v2-primary)] px-4 border border-[var(--v2-primary)]/30 rounded-xl h-14 transition-all"
+                                        >
+                                            <Search className="w-6 h-6" />
                                         </Button>
                                     </div>
                                 </div>
@@ -401,8 +410,8 @@ export function EditLocationModal({ isOpen, onOpenChange, groupId, slug, existin
                             <div className="flex justify-end pt-4 mt-2 border-t border-white/10">
                                 <Button
                                     onClick={handleSave}
-                                    disabled={saving || (!locationData.name.trim() && !searchQuery.trim())}
-                                    className="w-full btn-massive h-12 rounded-xl text-white font-bold"
+                                    disabled={saving || !selectedPlaceId}
+                                    className="w-full btn-massive h-14 rounded-xl text-white font-bold text-lg"
                                 >
                                     {saving ? (
                                         <>

@@ -62,16 +62,23 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
         <Dialog open={open} onOpenChange={setOpen}>
             <div className="w-full relative group/modal">
                 <DialogTrigger asChild>
-                    <button className="flex w-full items-center justify-center py-4 px-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 text-[11px] uppercase tracking-[0.2em] font-black transition-all group">
-                        <Clock className="w-4 h-4 mr-2 text-[var(--v2-primary)] group-hover:rotate-12 transition-transform shrink-0" />
-                        <span className="truncate">{currentProposedTime ? `HORAIRE : ${currentProposedTime}` : 'PROPOSER UN HORAIRE'}</span>
+                    <button className={`flex w-full items-center justify-center py-4 pl-4 pr-10 rounded-xl text-[11px] uppercase tracking-[0.2em] font-black transition-all duration-300 group ${currentProposedTime ? 'btn-proposed' : 'bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white'}`}>
+                        <Clock className={`w-4 h-4 mr-2 transition-transform shrink-0 group-hover:rotate-12 ${currentProposedTime ? 'text-[#38bdf8]' : 'text-[var(--v2-primary)]'}`} />
+                        {currentProposedTime ? (
+                            <span className="truncate">HORAIRE : {currentProposedTime}</span>
+                        ) : (
+                            <span className="truncate">
+                                <span className="sm:hidden">PROPOSER</span>
+                                <span className="hidden sm:inline">PROPOSER UN HORAIRE</span>
+                            </span>
+                        )}
                     </button>
                 </DialogTrigger>
                 {currentProposedTime && (
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-black/60 border border-white/10 hover:bg-destructive/20 hover:text-destructive hover:border-destructive/30 transition-all z-20"
+                        className="absolute top-1/2 right-3 -translate-y-1/2 h-6 w-6 rounded-full bg-black/60 border border-white/10 hover:bg-destructive/20 hover:text-destructive hover:border-destructive/30 transition-all z-20"
                         onClick={handleClear}
                         disabled={loading}
                     >
@@ -79,7 +86,7 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
                     </Button>
                 )}
             </div>
-            <DialogContent className="sm:max-w-md glass-panel border-white/10 text-white rounded-3xl p-0 overflow-hidden backdrop-blur-2xl">
+            <DialogContent className="w-[calc(100%-2rem)] max-w-md mx-auto glass-panel border-white/10 text-white rounded-3xl p-0 overflow-hidden backdrop-blur-2xl">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--v2-primary)] to-[var(--v2-accent)]"></div>
                 <div className="p-8">
                     <DialogHeader className="mb-4">
@@ -88,15 +95,15 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
                             Indiquez l'heure à laquelle vous pensez être présent.
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="flex items-center justify-center py-4">
+                    <div className="flex items-center justify-center py-8">
                         <Input
                             type="time"
                             value={time}
                             onChange={(e) => setTime(e.target.value)}
-                            className="text-3xl font-bold p-4 h-20 w-48 text-center input-rdychk"
+                            className="bg-black/50 border-white/10 text-white placeholder:text-slate-500 focus-visible:ring-[var(--v2-primary)] focus-visible:border-[var(--v2-primary)] text-3xl font-bold p-4 h-20 w-48 text-center rounded-2xl transition-all"
                         />
                     </div>
-                    <DialogFooter className="flex gap-2 sm:justify-between mt-4">
+                    <DialogFooter className="flex flex-col sm:flex-row gap-3 sm:justify-between mt-4">
                         <DialogClose asChild>
                             <Button type="button" variant="outline" className="w-full sm:w-auto h-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 text-slate-300 hover:text-white transition-all">
                                 Annuler
@@ -105,7 +112,7 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
                         <Button
                             onClick={handleSave}
                             disabled={loading}
-                            className="w-full sm:w-auto btn-massive h-12 rounded-xl text-white font-bold px-8"
+                            className="w-full sm:w-auto btn-massive h-12 rounded-xl text-white font-bold px-8 shadow-neon-primary"
                         >
                             {loading ? 'Enregistrement...' : 'Valider'}
                         </Button>

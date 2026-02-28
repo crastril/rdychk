@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowBigUp, ArrowBigDown, Target, ArrowLeft, Pencil, ChevronDown, ChevronUp, X } from "lucide-react";
+import { ArrowBigUp, ArrowBigDown, Target, ArrowLeft, Pencil, ChevronDown, ChevronUp, X, Zap } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import type { Group } from "@/types/database";
@@ -137,21 +137,59 @@ export function LocationCard({ group, slug, memberId, isAdmin, currentMemberName
         }
     };
 
+    const waterfallEmojisUp = ['💯', '👌', '🔥', '🥵', '😍', '❤️🔥'];
+    const waterfallEmojisDown = ['🤢', '😒', '💩', '🛌', '👎', '🙅', '🥶'];
+
+    // Pre-calculate to avoid hydration issues
+    const [particles, setParticles] = useState<{ id: number, emoji: string, left: string, delay: string, duration: string }[]>([]);
+    const [particleScoreSign, setParticleScoreSign] = useState(0);
+
+    useEffect(() => {
+        const newSign = Math.sign(score);
+        if (newSign !== particleScoreSign) {
+            if (newSign !== 0) {
+                const emojisToUse = newSign > 0 ? waterfallEmojisUp : waterfallEmojisDown;
+                setParticles(
+                    Array.from({ length: 15 }).map((_, i) => ({
+                        id: i,
+                        emoji: emojisToUse[Math.floor(Math.random() * emojisToUse.length)],
+                        left: `${Math.random() * 90}%`,
+                        delay: `${Math.random() * 5}s`,
+                        duration: `${3 + Math.random() * 3}s`
+                    }))
+                );
+            } else {
+                setParticles([]);
+            }
+            setParticleScoreSign(newSign);
+        }
+    }, [score, particleScoreSign]);
+
     return (
         <>
-            <div className="glass-panel rounded-2xl p-4 flex flex-col gap-3 relative group/card">
-                {isAdmin && onRemove && (
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onRemove();
-                        }}
-                        className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-black/60 border border-white/10 text-slate-400 hover:text-red-400 hover:border-red-400/30 transition-all flex items-center justify-center z-30"
-                    >
-                        <X className="h-4 w-4" />
-                    </button>
+            <div className="glass-panel rounded-2xl p-4 flex flex-col gap-3 relative group/card overflow-hidden">
+                {/* Emoji Waterfall Background for Votes */}
+                {score !== 0 && (
+                    <div className="absolute inset-0 pointer-events-none z-0 opacity-20">
+                        {particles.map(p => (
+                            <div
+                                key={p.id}
+                                className={cn(
+                                    "absolute text-2xl duration-1000",
+                                    score > 0 ? "bottom-[-20%] animate-emoji-waterfall" : "top-[-20%] animate-emoji-waterfall-down"
+                                )}
+                                style={{
+                                    left: p.left,
+                                    animationDelay: p.delay,
+                                    animationDuration: p.duration
+                                }}
+                            >
+                                {p.emoji}
+                            </div>
+                        ))}
+                    </div>
                 )}
-                <div className="flex gap-4 items-center">
+                <div className="flex gap-4 items-center relative z-10">
                     {/* Left: Image or Icon */}
                     <div className="h-16 w-16 rounded-xl bg-white/10 shrink-0 border border-white/5 overflow-hidden relative flex items-center justify-center">
                         {group.location?.image ? (
@@ -238,35 +276,49 @@ export function LocationCard({ group, slug, memberId, isAdmin, currentMemberName
 
                 {/* Bottom Actions: Edit / Counter-Proposal */}
                 {(isAdmin || (hasLocation && score < 0)) && (
-                    <div className="flex items-center justify-end gap-2 mt-1 border-t border-white/5 pt-2">
+                    <div className="flex flex-col gap-3 mt-1 border-t border-white/5 pt-2 relative z-10">
                         {isAdmin && (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 text-xs text-slate-400 hover:text-white hover:bg-white/10 px-2"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setEditMode('edit');
-                                }}
-                            >
-                                <Pencil className="h-3 w-3 mr-1" />
-                                Modifier
-                            </Button>
+                            <div className="flex justify-end gap-2">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 text-xs text-slate-400 hover:text-white hover:bg-white/10 px-2 rounded-lg"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setEditMode('edit');
+                                    }}
+                                >
+                                    <Pencil className="h-3 w-3 mr-1" />
+                                    Modifier
+                                </Button>
+                                {onRemove && (
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-7 text-xs text-slate-400 hover:text-red-400 hover:bg-red-500/10 px-2 rounded-lg"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onRemove();
+                                        }}
+                                    >
+                                        <X className="h-3 w-3 mr-1" />
+                                        Supprimer
+                                    </Button>
+                                )}
+                            </div>
                         )}
 
                         {hasLocation && score < 0 && (
-                            <Button
-                                variant="link"
-                                size="sm"
-                                className="h-6 text-xs text-red-400 hover:text-red-300 px-2"
+                            <button
+                                className="w-full py-3 rounded-xl btn-challenger uppercase tracking-[0.2em] font-black flex items-center justify-center gap-2"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setEditMode('counter');
                                 }}
                             >
-                                <Target className="h-3 w-3 mr-1" />
-                                Faire une contre-proposition
-                            </Button>
+                                <Zap className="w-5 h-5 animate-pulse" fill="currentColor" />
+                                CONTRE-PROPOSITION
+                            </button>
                         )}
                     </div>
                 )}
