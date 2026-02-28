@@ -163,7 +163,7 @@ export function GroupHistoryModal({ open, onOpenChange }: GroupHistoryModalProps
                                     {groups.map((item) => (
                                         <div
                                             key={item.id}
-                                            className="flex items-center justify-between p-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors group"
+                                            className="flex items-center justify-between p-4 rounded-2xl glass-panel group hover:border-[var(--v2-primary)]/40 hover:shadow-[0_0_15px_-5px_rgba(var(--v2-primary-rgb),0.3)] transition-all duration-300"
                                         >
                                             <Link
                                                 href={`/group/${item.groups.slug}`}
@@ -184,7 +184,7 @@ export function GroupHistoryModal({ open, onOpenChange }: GroupHistoryModalProps
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className="text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl w-10 h-10 shrink-0"
+                                                className="text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl w-10 h-10 shrink-0 transition-all hover:scale-110"
                                                 onClick={() => setConfirmLeaveId(item.group_id)}
                                                 disabled={leavingId === item.group_id}
                                             >
@@ -214,10 +214,10 @@ export function GroupHistoryModal({ open, onOpenChange }: GroupHistoryModalProps
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter className="mt-6 border-t border-white/10 pt-4">
-                            <AlertDialogCancel className="rounded-xl bg-white/5 border-white/10 hover:bg-white/10 text-slate-300 hover:text-white">Annuler</AlertDialogCancel>
+                            <AlertDialogCancel className="w-full sm:w-auto rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-slate-300 hover:text-white transition-all">Annuler</AlertDialogCancel>
                             <AlertDialogAction
                                 onClick={(e) => { e.preventDefault(); handleLeaveGroup(); }}
-                                className="rounded-xl bg-red-500/20 border border-red-500/30 text-red-500 hover:bg-red-500/30 font-bold"
+                                className="w-full sm:w-auto rounded-xl bg-red-500/20 border border-red-500/30 text-red-500 hover:bg-red-500/30 font-bold transition-all hover:shadow-[0_0_20px_rgba(239,68,68,0.2)]"
                             >
                                 Quitter
                             </AlertDialogAction>
