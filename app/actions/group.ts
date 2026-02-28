@@ -43,3 +43,41 @@ export async function updateLocationAction(
 
     return { success: true };
 }
+
+export async function updateGroupBaseLocationAction(
+    slug: string,
+    memberId: string,
+    groupId: string,
+    baseLat: number | null,
+    baseLng: number | null
+) {
+    const isAuthorized = await verifyGuestSession(slug, memberId);
+
+    if (!isAuthorized) {
+        return { success: false, error: 'Unauthorized access: Invalid or missing session cookie.' };
+    }
+
+    // Verify member exists in group
+    const { data: member } = await supabase
+        .from('members')
+        .select('id')
+        .eq('id', memberId)
+        .eq('group_id', groupId)
+        .single();
+
+    if (!member) {
+        return { success: false, error: 'Member is not in the group.' };
+    }
+
+    const { error: updateError } = await supabase
+        .from('groups')
+        .update({ base_lat: baseLat, base_lng: baseLng })
+        .eq('id', groupId);
+
+    if (updateError) {
+        console.error('Error updating base location:', updateError);
+        return { success: false, error: updateError.message };
+    }
+
+    return { success: true };
+}

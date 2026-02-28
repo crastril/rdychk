@@ -640,6 +640,8 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                         isOpen={isSettingsModalOpen}
                         onOpenChange={setIsSettingsModalOpen}
                         groupId={group.id}
+                        slug={slug}
+                        memberId={memberId}
                         onLeaveGroup={handleLeaveGroup}
                     />
                 </>

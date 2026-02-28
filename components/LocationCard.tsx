@@ -280,6 +280,8 @@ export function LocationCard({ group, slug, memberId, isAdmin, currentMemberName
                 existingLocation={editMode === 'edit' && group.location && (group.location as { name?: string | null })?.name ? (group.location as { name: string; address?: string; link?: string; image?: string }) : null}
                 currentMemberName={currentMemberName}
                 currentMemberId={memberId}
+                baseLat={group.base_lat as number | null}
+                baseLng={group.base_lng as number | null}
                 onLocationUpdate={onLocationUpdate}
             />
         </>

@@ -25,10 +25,12 @@ interface EditLocationModalProps {
     existingLocation?: { name: string; address?: string; link?: string } | null;
     currentMemberName: string | null;
     currentMemberId: string | null;
+    baseLat?: number | null;
+    baseLng?: number | null;
     onLocationUpdate: (location: { name?: string | null; address?: string | null; link?: string | null; image?: string | null;[key: string]: string | null | undefined }) => void;
 }
 
-export function EditLocationModal({ isOpen, onOpenChange, groupId, slug, existingLocation, currentMemberName, currentMemberId, onLocationUpdate }: EditLocationModalProps) {
+export function EditLocationModal({ isOpen, onOpenChange, groupId, slug, existingLocation, currentMemberName, currentMemberId, baseLat, baseLng, onLocationUpdate }: EditLocationModalProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearching, setIsSearching] = useState(false);
     const [results, setResults] = useState<any[]>([]);
@@ -63,41 +65,28 @@ export function EditLocationModal({ isOpen, onOpenChange, groupId, slug, existin
         }
     }, [isOpen, existingLocation]);
 
-    const handleSearch = async (useGeolocation = false) => {
-        if (!searchQuery.trim() && !useGeolocation) return;
+    const handleSearch = async () => {
+        if (!searchQuery.trim()) return;
         setIsSearching(true);
         setResults([]);
         setSelectedPlaceId(null);
 
         let url = `/api/places?q=${encodeURIComponent(searchQuery)}`;
 
-        const fetchData = async (finalUrl: string) => {
-            try {
-                const res = await fetch(finalUrl);
-                const data = await res.json();
-                if (data.results) {
-                    setResults(data.results);
-                }
-            } catch (err) {
-                console.error("Search failed", err);
-            } finally {
-                setIsSearching(false);
-            }
+        if (baseLat && baseLng) {
+            url += `&lat=${baseLat}&lng=${baseLng}`;
         }
 
-        if (useGeolocation && navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    url += `&lat=${position.coords.latitude}&lng=${position.coords.longitude}`;
-                    fetchData(url);
-                },
-                (err) => {
-                    console.warn("Geolocation denied or failed", err);
-                    fetchData(url); // Fall back to regular search
-                }
-            );
-        } else {
-            fetchData(url);
+        try {
+            const res = await fetch(url);
+            const data = await res.json();
+            if (data.results) {
+                setResults(data.results);
+            }
+        } catch (err) {
+            console.error("Search failed", err);
+        } finally {
+            setIsSearching(false);
         }
     };
 
@@ -170,24 +159,15 @@ export function EditLocationModal({ isOpen, onOpenChange, groupId, slug, existin
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter') {
                                                 e.preventDefault();
-                                                handleSearch(false);
+                                                handleSearch();
                                             }
                                         }}
                                         className="input-rdychk flex-1"
                                     />
-                                    <Button onClick={() => handleSearch(false)} disabled={isSearching || !searchQuery.trim()} className="bg-white/10 hover:bg-white/20 px-3 border border-white/10 rounded-xl h-12">
+                                    <Button onClick={() => handleSearch()} disabled={isSearching || !searchQuery.trim()} className="bg-white/10 hover:bg-white/20 px-3 border border-white/10 rounded-xl h-12">
                                         <Search className="w-5 h-5 text-white" />
                                     </Button>
                                 </div>
-
-                                <Button
-                                    variant="ghost"
-                                    className="w-full mt-2 text-blue-400 hover:text-blue-300 hover:bg-blue-400/10 text-xs py-1 h-8 rounded-xl justify-start"
-                                    onClick={() => handleSearch(true)}
-                                    disabled={isSearching}
-                                >
-                                    <MapPin className="w-3 h-3 mr-1.5" /> Chercher et prioriser autour de moi
-                                </Button>
                             </div>
 
                             {/* Results Rendering */}

@@ -10,6 +10,8 @@ export type Database = {
                     created_by?: string;
                     type: 'remote' | 'in_person';
                     location?: { name: string; address?: string; link?: string; image?: string; description?: string; preview_title?: string; proposed_by?: string; proposed_by_id?: string } | null;
+                    base_lat?: number | null;
+                    base_lng?: number | null;
                 };
                 Insert: {
                     id?: string;
@@ -19,6 +21,8 @@ export type Database = {
                     created_by?: string;
                     type?: 'remote' | 'in_person';
                     location?: { name: string; address?: string; link?: string; image?: string; description?: string; preview_title?: string; proposed_by?: string; proposed_by_id?: string } | null;
+                    base_lat?: number | null;
+                    base_lng?: number | null;
                 };
                 Update: {
                     id?: string;
@@ -27,6 +31,8 @@ export type Database = {
                     created_at?: string;
                     type?: 'remote' | 'in_person';
                     location?: { name: string; address?: string; link?: string; image?: string; description?: string; preview_title?: string; proposed_by?: string; proposed_by_id?: string } | null;
+                    base_lat?: number | null;
+                    base_lng?: number | null;
                 };
             };
             members: {

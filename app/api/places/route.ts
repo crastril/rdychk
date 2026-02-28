@@ -34,6 +34,8 @@ export async function GET(request: Request) {
             place_id: place.place_id,
             name: place.name,
             formatted_address: place.formatted_address,
+            lat: place.geometry?.location?.lat,
+            lng: place.geometry?.location?.lng,
             image: place.photos && place.photos.length > 0
                 ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=${apiKey}`
                 : null,
