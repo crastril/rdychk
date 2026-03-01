@@ -43,35 +43,33 @@ const ONLINE_MESSAGES = [
 const LiquidWaves = () => {
   return (
     <div className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.3] mix-blend-overlay z-0 overflow-hidden">
-      {/* 300vw to allow seamless 1000px translation of a repeating pattern */}
-      <svg className="absolute top-0 left-[-100vw] w-[300vw] h-full" preserveAspectRatio="none" viewBox="-1000 0 3000 1000">
+      <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="xMidYMid slice" viewBox="0 0 2000 1000">
         <g fill="none">
           <animateTransform
             attributeName="transform"
             type="translate"
             from="0 0"
-            to="1000 0"
-            dur="20s"
+            to="2000 0"
+            dur="30s"
             repeatCount="indefinite"
           />
-          {Array.from({ length: 90 }).map((_, i) => {
-            const baseY = i * 18 - 300;
-            const thickness = 10 + Math.sin(i * 0.3) * 5;
+          {Array.from({ length: 70 }).map((_, i) => {
+            const baseY = i * 35 - 500;
+            const thickness = 14 + Math.sin(i * 0.4) * 8;
 
             let d = "";
-            for (let x = -1000; x <= 2000; x += 50) {
-              const dy = i * 0.12;
-              const w = (2 * Math.PI) / 1000;
+            for (let x = -2000; x <= 4000; x += 25) {
+              const dy = i * 0.15;
+              const w = (2 * Math.PI) / 2000;
 
-              // Composition of sine waves to create pinching and expanding distances
               const yDisp =
-                Math.sin(x * w * 1 + dy * 1.5) * 80 +
-                Math.sin(x * w * 2 - dy * 0.8) * 35 +
-                Math.sin(x * w * 3 + dy * 2.1) * 15;
+                Math.sin(x * w * 1 + dy * 1.5) * 120 +
+                Math.sin(x * w * 2 - dy * 0.8) * 50 +
+                Math.sin(x * w * 3 + dy * 2.1) * 25;
 
               const currentY = baseY + yDisp;
 
-              if (x === -1000) {
+              if (x === -2000) {
                 d += `M ${x},${currentY}`;
               } else {
                 d += ` L ${x},${currentY}`;
