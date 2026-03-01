@@ -27,6 +27,32 @@ import { LocationCard } from '@/components/LocationCard';
 import { GroupSettingsModal } from '@/components/GroupSettingsModal';
 import { ConnectionStatus } from '@/components/ConnectionStatus';
 
+const LiquidWaves = () => {
+    return (
+        <div className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.10] mix-blend-overlay z-0 overflow-hidden">
+            <svg className="absolute top-0 left-[-100vw] w-[300vw] h-full" preserveAspectRatio="none" viewBox="-1000 0 3000 1000">
+                <g fill="none">
+                    <animateTransform attributeName="transform" type="translate" from="0 0" to="1000 0" dur="30s" repeatCount="indefinite" />
+                    {Array.from({ length: 90 }).map((_, i) => {
+                        const baseY = i * 18 - 300;
+                        const thickness = 10 + Math.sin(i * 0.3) * 5;
+                        let d = "";
+                        for (let x = -1000; x <= 2000; x += 50) {
+                            const dy = i * 0.12;
+                            const w = (2 * Math.PI) / 1000;
+                            const yDisp = Math.sin(x * w * 1 + dy * 1.5) * 80 + Math.sin(x * w * 2 - dy * 0.8) * 35 + Math.sin(x * w * 3 + dy * 2.1) * 15;
+                            const currentY = baseY + yDisp;
+                            if (x === -1000) d += `M ${x},${currentY}`;
+                            else d += ` L ${x},${currentY}`;
+                        }
+                        return <path key={i} stroke="#000" strokeWidth={thickness} strokeLinecap="round" strokeLinejoin="round" d={d} />;
+                    })}
+                </g>
+            </svg>
+        </div>
+    );
+};
+
 export default function GroupClient({ initialGroup, slug }: { initialGroup: Group, slug: string }) {
     const router = useRouter();
     const [group, setGroup] = useState<Group | null>(initialGroup);
@@ -454,7 +480,42 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
 
 
     return (
-        <div className="bg-background-dark text-slate-100 min-h-screen flex flex-col items-center selection:bg-[var(--v2-primary)]/30">
+        <div className="text-slate-100 min-h-screen flex flex-col items-center selection:bg-[var(--v2-primary)]/30 relative">
+            <style>{`
+                @keyframes neon-flicker-border {
+                  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { 
+                    box-shadow: inset 0 0 20px rgba(217, 70, 239, 0.2), inset 0 0 40px rgba(168, 85, 247, 0.1); 
+                    border-left: 2px solid rgba(217, 70, 239, 0.4);
+                    border-right: 2px solid rgba(217, 70, 239, 0.4);
+                  }
+                  20%, 24%, 55% { 
+                    box-shadow: none; 
+                    border-left: 2px solid rgba(217, 70, 239, 0.05);
+                    border-right: 2px solid rgba(217, 70, 239, 0.05);
+                  }
+                }
+                .cyberpunk-border {
+                  animation: neon-flicker-border 4s infinite;
+                }
+            `}</style>
+
+            {/* Dynamic Backgrounds */}
+            {group.type === 'remote' ? (
+                <div style={{ background: '#0a030f' }} className="fixed inset-0 z-[-1] crt-overlay">
+                    <div className="absolute inset-0 pointer-events-none cyberpunk-border z-10 mix-blend-screen opacity-40"></div>
+                    <div className="scan-line opacity-50"></div>
+                    <div className="absolute inset-0 bg-grid-pattern bg-[length:40px_40px] opacity-[0.15] pointer-events-none"></div>
+                    <div className="absolute inset-0 bg-gradient-to-b from-purple-900/10 via-transparent to-purple-900/10 pointer-events-none"></div>
+                </div>
+            ) : (
+                <div style={{ background: 'radial-gradient(circle at center, #2e0808, #0a0101)' }} className="fixed inset-0 z-[-1]">
+                    <div className="absolute inset-0 bg-noise opacity-20 pointer-events-none mix-blend-overlay z-0"></div>
+                    <LiquidWaves />
+                    <div className="absolute top-[-10%] left-[20%] w-[600px] h-[600px] bg-red-700/10 rounded-full blur-[120px] pointer-events-none mix-blend-screen animate-pulse z-0"></div>
+                    <div className="absolute bottom-[10%] right-[20%] w-[400px] h-[400px] bg-red-900/15 rounded-full blur-[100px] pointer-events-none mix-blend-screen z-0"></div>
+                </div>
+            )}
+
             <ConnectionStatus onRefresh={handleRefresh} />
             {!memberId && (
                 <JoinModal
@@ -666,12 +727,6 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                     />
                 </>
             )}
-
-            {/* Background Glows */}
-            <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-                <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-[var(--v2-primary)] opacity-10 rounded-full blur-[120px]"></div>
-                <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-[var(--v2-accent)] opacity-10 rounded-full blur-[100px]"></div>
-            </div>
         </div>
     );
 }
