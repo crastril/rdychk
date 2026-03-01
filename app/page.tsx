@@ -269,34 +269,37 @@ export default function Home() {
       {/* Switcher Component - Anchored to scroll container */}
       <div className="absolute top-24 md:top-32 left-0 w-full z-40 flex justify-center pointer-events-none">
         <div className="pointer-events-auto w-max relative">
-          <div className="flex items-center gap-2 md:gap-4 bg-black/40 backdrop-blur-sm p-1 rounded-full border border-white/5 shadow-2xl">
+          <div className="flex items-center gap-2 md:gap-4 bg-black/40 backdrop-blur-sm p-1 rounded-full border border-white/5 shadow-2xl relative">
+
+            {/* Morphing Sliding Pill */}
+            <div
+              className={cn(
+                "absolute top-1 bottom-1 w-[calc(50%-0.375rem)] md:w-[calc(50%-0.75rem)] rounded-full transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] z-0",
+                mode === 'in_person'
+                  ? "left-1 bg-[#facc15] shadow-[0_4px_0_rgba(0,0,0,0.3)] border-2 border-white -rotate-1"
+                  : "left-[calc(50%+0.125rem)] md:left-[calc(50%+0.25rem)] bg-white/5 shadow-[0_0_15px_rgba(217,70,239,0.3)] border border-purple-500/50 rotate-1"
+              )}
+            />
+
             <button
               onClick={() => toggleMode('in_person')}
               className={cn(
-                "px-4 md:px-6 py-2 rounded-full transition-all group relative overflow-hidden",
-                mode === 'in_person' ? 'theme-switcher-active' : 'hover:bg-white/5'
+                "w-36 md:w-44 py-2 rounded-full transition-all duration-300 relative z-10 flex items-center justify-center",
+                mode === 'in_person' ? 'text-black' : 'text-slate-400 hover:text-red-300'
               )}
             >
-              <span className={cn(
-                "relative z-10 font-black text-xs md:text-sm uppercase tracking-wide transition-colors whitespace-nowrap",
-                mode === 'in_person' ? 'text-black' : 'text-slate-400 group-hover:text-red-300'
-              )}>En Personne</span>
+              <span className="font-black text-xs md:text-sm uppercase tracking-wide whitespace-nowrap">En Personne</span>
             </button>
             <button
               onClick={() => toggleMode('remote')}
               className={cn(
-                "px-4 md:px-6 py-2 rounded-full transition-all group",
+                "w-36 md:w-44 py-2 rounded-full transition-all duration-300 relative z-10 flex items-center justify-center",
                 mode === 'remote'
-                  ? 'bg-white/5 shadow-[0_0_15px_rgba(217,70,239,0.2)] border border-purple-500/30'
-                  : 'hover:bg-white/5'
+                  ? 'text-purple-300 drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]'
+                  : 'text-slate-400 hover:text-purple-300'
               )}
             >
-              <span className={cn(
-                "relative z-10 font-pixel text-sm md:text-lg tracking-widest uppercase transition-colors whitespace-nowrap",
-                mode === 'remote'
-                  ? 'text-purple-400 drop-shadow-[0_0_5px_rgba(168,85,247,0.8)]'
-                  : 'text-slate-400 group-hover:text-purple-300'
-              )}>En Ligne</span>
+              <span className="font-pixel text-sm md:text-lg tracking-widest uppercase whitespace-nowrap">En Ligne</span>
             </button>
           </div>
         </div>

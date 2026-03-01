@@ -26,7 +26,10 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "rdychk",
+  title: {
+    template: "%s | Chaos organisé",
+    default: "rdychk | Chaos organisé",
+  },
   description: "Check if everyone is ready",
   manifest: "/manifest.json",
   appleWebApp: {
@@ -37,6 +40,12 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
+  openGraph: {
+    title: "rdychk | Chaos organisé",
+    description: "Check if everyone is ready.",
+    siteName: "rdychk",
+    type: "website",
+  }
 };
 
 export default function RootLayout({
