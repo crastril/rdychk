@@ -652,8 +652,8 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                     <GroupTabNav
                         activeTab={activeTab}
                         onTabChange={setActiveTab}
-                        calendarEnabled={group.type === 'in_person' || group.calendar_voting_enabled}
-                        locationEnabled={group.location_voting_enabled || !!group.location}
+                        calendarEnabled={group.calendar_voting_enabled}
+                        locationEnabled={group.location_voting_enabled}
                     />
                 )}
                 {/* Group Details & Share Button (Below Header) */}

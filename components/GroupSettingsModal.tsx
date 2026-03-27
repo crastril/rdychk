@@ -30,6 +30,8 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
     const [location, setLocation] = useState('');
     const [locationSearch, setLocationSearch] = useState('');
     const [locationResults, setLocationResults] = useState<string[]>([]);
+    const [calendarEnabled, setCalendarEnabled] = useState(false);
+    const [locationEnabled, setLocationEnabled] = useState(false);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
 
@@ -41,11 +43,18 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
 
     const fetchSettings = async () => {
         setLoading(true);
-        const { data } = await supabase.from('groups').select('type, city').eq('id', groupId).single();
+        const { data } = await supabase
+            .from('groups')
+            .select('type, city, calendar_voting_enabled, location_voting_enabled')
+            .eq('id', groupId)
+            .single();
+            
         if (data) {
             setGroupType((data.type as 'remote' | 'in_person') || 'remote');
             setLocation(data.city || '');
             setLocationSearch(data.city || '');
+            setCalendarEnabled(data.calendar_voting_enabled ?? false);
+            setLocationEnabled(data.location_voting_enabled ?? false);
         }
         setLoading(false);
     };
@@ -76,7 +85,9 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                 .from('groups')
                 .update({ 
                     type: groupType,
-                    city: groupType === 'in_person' ? location : null
+                    city: groupType === 'in_person' ? location : null,
+                    calendar_voting_enabled: calendarEnabled,
+                    location_voting_enabled: locationEnabled
                 })
                 .eq('id', groupId);
 
@@ -164,6 +175,71 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                     )}
                                 </div>
                             )}
+                            
+                            <div className="pt-2">
+                                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">
+                                    Fonctionnalités
+                                </h3>
+                                <div className="space-y-3">
+                                    <div 
+                                        onClick={() => isAdmin && setCalendarEnabled(!calendarEnabled)}
+                                        className={cn(
+                                            "flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 cursor-pointer",
+                                            calendarEnabled 
+                                                ? "bg-[var(--v2-primary)]/10 border-[var(--v2-primary)]/40 shadow-[0_0_15px_rgba(var(--v2-primary-rgb),0.1)]" 
+                                                : "bg-white/5 border-white/5 hover:bg-white/10"
+                                        )}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={cn(
+                                                "size-10 rounded-xl flex items-center justify-center transition-colors",
+                                                calendarEnabled ? "bg-[var(--v2-primary)]/20 text-[var(--v2-primary)]" : "bg-white/5 text-slate-400"
+                                            )}>
+                                                <CircleNotch className={cn("size-5", calendarEnabled && "animate-spin[slow]")} />
+                                            </div>
+                                            <div>
+                                                <p className={cn("font-bold text-sm", calendarEnabled ? "text-white" : "text-slate-300")}>Calendrier</p>
+                                                <p className="text-[11px] text-slate-500">Voter pour des dates</p>
+                                            </div>
+                                        </div>
+                                        <div className={cn(
+                                            "size-5 rounded-full border-2 flex items-center justify-center transition-all",
+                                            calendarEnabled ? "border-[var(--v2-primary)] bg-[var(--v2-primary)]" : "border-white/20"
+                                        )}>
+                                            {calendarEnabled && <div className="size-2 bg-white rounded-full shadow-[0_0_8px_white]" />}
+                                        </div>
+                                    </div>
+
+                                    <div 
+                                        onClick={() => isAdmin && setLocationEnabled(!locationEnabled)}
+                                        className={cn(
+                                            "flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 cursor-pointer",
+                                            locationEnabled 
+                                                ? "bg-[var(--v2-primary)]/10 border-[var(--v2-primary)]/40 shadow-[0_0_15px_rgba(var(--v2-primary-rgb),0.1)]" 
+                                                : "bg-white/5 border-white/5 hover:bg-white/10"
+                                        )}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={cn(
+                                                "size-10 rounded-xl flex items-center justify-center transition-colors",
+                                                locationEnabled ? "bg-[var(--v2-primary)]/20 text-[var(--v2-primary)]" : "bg-white/5 text-slate-400"
+                                            )}>
+                                                <MapPin className="size-5" />
+                                            </div>
+                                            <div>
+                                                <p className={cn("font-bold text-sm", locationEnabled ? "text-white" : "text-slate-300")}>Lieux</p>
+                                                <p className="text-[11px] text-slate-500">Proposer et voter pour des lieux</p>
+                                            </div>
+                                        </div>
+                                        <div className={cn(
+                                            "size-5 rounded-full border-2 flex items-center justify-center transition-all",
+                                            locationEnabled ? "border-[var(--v2-primary)] bg-[var(--v2-primary)]" : "border-white/20"
+                                        )}>
+                                            {locationEnabled && <div className="size-2 bg-white rounded-full shadow-[0_0_8px_white]" />}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
                             <div className="flex flex-col gap-3 pt-6 border-t border-white/10">
                                 {isAdmin && (
