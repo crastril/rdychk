@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/components/auth-provider";
 import { supabase } from "@/lib/supabase";
 import { Sparkle, CircleNotch } from '@phosphor-icons/react';
-import { AvatarUpload } from "./AvatarUpload";
+import { AvatarSelector } from "./AvatarSelector";
 
 interface ProfileModalProps {
     open?: boolean;
@@ -84,10 +84,9 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
 
                     <form onSubmit={handleSubmit} className="space-y-6 py-2">
                         {user && (
-                            <AvatarUpload
-                                uid={user.id}
+                            <AvatarSelector
                                 url={avatarUrl}
-                                onUpload={(url) => setAvatarUrl(url)}
+                                onSelect={(url) => setAvatarUrl(url)}
                             />
                         )}
 
