@@ -5,6 +5,7 @@ export async function GET(request: Request) {
     const query = searchParams.get('q');
     const lat = searchParams.get('lat');
     const lng = searchParams.get('lng');
+    const city = searchParams.get('city');
 
     if (!query) {
         return NextResponse.json({ error: 'Query parameter "q" is required' }, { status: 400 });
@@ -15,7 +16,8 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'Google Maps Server API key is missing' }, { status: 500 });
     }
 
-    let url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&language=fr&key=${apiKey}`;
+    const searchQuery = city ? `${query} ${city}` : query;
+    let url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(searchQuery)}&language=fr&key=${apiKey}`;
 
     if (lat && lng) {
         url += `&location=${lat},${lng}&radius=50000`; // 50km radius

@@ -648,6 +648,14 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
             </nav>
 
             <div className="w-full max-w-xl mx-auto flex flex-col gap-6 relative z-10 p-4 mt-2 pb-32 sm:pb-8">
+                {memberId && (
+                    <GroupTabNav
+                        activeTab={activeTab}
+                        onTabChange={setActiveTab}
+                        calendarEnabled={group.type === 'in_person' || group.calendar_voting_enabled}
+                        locationEnabled={group.location_voting_enabled || !!group.location}
+                    />
+                )}
                 {/* Group Details & Share Button (Below Header) */}
                 <div className="flex items-center justify-between -mb-2">
                     <div>
@@ -669,12 +677,6 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
 
                 {memberId && (
                     <div className="flex flex-col gap-6">
-                        <GroupTabNav
-                            activeTab={activeTab}
-                            onTabChange={setActiveTab}
-                            calendarEnabled={group.type === 'in_person' || group.calendar_voting_enabled}
-                            locationEnabled={group.location_voting_enabled || !!group.location}
-                        />
 
                         <AnimatePresence mode="wait">
                             <motion.div
@@ -755,6 +757,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                         groupId={group.id}
                         slug={slug}
                         memberId={memberId}
+                        isAdmin={isAdmin}
                         onLeaveGroup={handleLeaveGroup}
                     />
                 </>

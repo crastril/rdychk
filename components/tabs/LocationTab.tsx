@@ -66,6 +66,7 @@ interface LocationTabProps {
         id: string;
         slug?: string;
         location_voting_enabled: boolean;
+        city: string | null;
         location?: { name: string; address?: string } | null;
         base_lat?: number | null;
         base_lng?: number | null;
@@ -365,6 +366,7 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                 <AddLocationProposalModal
                     isOpen={showAddModal}
                     onClose={() => setShowAddModal(false)}
+                    city={group.city}
                     baseLat={group.base_lat}
                     baseLng={group.base_lng}
                     onSubmit={async (data) => {

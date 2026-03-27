@@ -12,6 +12,7 @@ export type Database = {
                     location?: { name: string; address?: string; link?: string; image?: string; description?: string; preview_title?: string; proposed_by?: string; proposed_by_id?: string } | null;
                     base_lat?: number | null;
                     base_lng?: number | null;
+                    city: string | null;
                     calendar_voting_enabled: boolean;
                     location_voting_enabled: boolean;
                     confirmed_date: string | null;
@@ -26,6 +27,7 @@ export type Database = {
                     location?: { name: string; address?: string; link?: string; image?: string; description?: string; preview_title?: string; proposed_by?: string; proposed_by_id?: string } | null;
                     base_lat?: number | null;
                     base_lng?: number | null;
+                    city?: string | null;
                     calendar_voting_enabled?: boolean;
                     location_voting_enabled?: boolean;
                     confirmed_date?: string | null;
@@ -39,6 +41,7 @@ export type Database = {
                     location?: { name: string; address?: string; link?: string; image?: string; description?: string; preview_title?: string; proposed_by?: string; proposed_by_id?: string } | null;
                     base_lat?: number | null;
                     base_lng?: number | null;
+                    city?: string | null;
                     calendar_voting_enabled?: boolean;
                     location_voting_enabled?: boolean;
                     confirmed_date?: string | null;

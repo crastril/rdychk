@@ -9,6 +9,7 @@ import { CaretRight, GameController, MapPin, Terminal, Confetti, CircleNotch, Ch
 import { AuthButton } from '@/components/auth-button';
 import { cn } from '@/lib/utils';
 import { createSlug } from '@/lib/slug';
+import { FRENCH_CITIES } from '@/lib/cities';
 
 const PERSON_MESSAGES = [
   "Go ?",
@@ -114,23 +115,15 @@ export default function Home() {
   const [isSearchingLocation, setIsSearchingLocation] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleSearchLocation = async (query: string) => {
+  const handleSearchLocation = (query: string) => {
     if (!query.trim()) {
       setLocationResults([]);
       return;
     }
-    setIsSearchingLocation(true);
-    try {
-      const res = await fetch(`/api/places?q=${encodeURIComponent(query)}`);
-      const data = await res.json();
-      if (data.results) {
-        setLocationResults(data.results);
-      }
-    } catch (err) {
-      console.error("Location search failed:", err);
-    } finally {
-      setIsSearchingLocation(false);
-    }
+    const filtered = FRENCH_CITIES.filter(city => 
+      city.toLowerCase().includes(query.toLowerCase())
+    ).slice(0, 10);
+    setLocationResults(filtered.map(city => ({ name: city })));
   };
 
   // Reset form state when switching modes
@@ -274,8 +267,10 @@ export default function Home() {
           type: mode,
           calendar_voting_enabled: calendarEnabled,
           location_voting_enabled: locationEnabled,
-          base_lat: baseLocation?.lat ?? null,
-          base_lng: baseLocation?.lng ?? null
+          city: baseLocation?.name ?? null,
+          location: null,
+          base_lat: null,
+          base_lng: null
         });
 
       if (dbError) throw dbError;
@@ -520,10 +515,10 @@ export default function Home() {
                             <div className="absolute top-full left-0 w-full mt-2 bg-black border border-white/10 rounded-xl overflow-hidden z-50 shadow-2xl max-h-48 overflow-y-auto">
                               {locationResults.map((p) => (
                                 <button
-                                  key={p.place_id}
+                                  key={p.name}
                                   type="button"
                                   onClick={() => {
-                                    setBaseLocation({ name: p.name, lat: p.lat, lng: p.lng });
+                                    setBaseLocation({ name: p.name, lat: 0, lng: 0 });
                                     setLocationSearch(p.name);
                                     setLocationResults([]);
                                   }}

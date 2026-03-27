@@ -10,12 +10,13 @@ import { Button } from '@/components/ui/button';
 interface Props {
     isOpen: boolean;
     onClose: () => void;
+    city?: string | null;
     baseLat?: number | null;
     baseLng?: number | null;
     onSubmit: (data: { name: string; link?: string; description?: string; image?: string | null }) => Promise<void>;
 }
 
-export function AddLocationProposalModal({ isOpen, onClose, baseLat, baseLng, onSubmit }: Props) {
+export function AddLocationProposalModal({ isOpen, onClose, city, baseLat, baseLng, onSubmit }: Props) {
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearchingPlace, setIsSearchingPlace] = useState(false);
     const [placeResults, setPlaceResults] = useState<any[]>([]);
@@ -47,6 +48,9 @@ export function AddLocationProposalModal({ isOpen, onClose, baseLat, baseLng, on
         setSelectedPlaceId(null);
 
         let url = `/api/places?q=${encodeURIComponent(searchQuery)}`;
+        if (city) {
+            url += `&city=${encodeURIComponent(city)}`;
+        }
         if (baseLat && baseLng) {
             url += `&lat=${baseLat}&lng=${baseLng}`;
         }
@@ -102,7 +106,7 @@ export function AddLocationProposalModal({ isOpen, onClose, baseLat, baseLng, on
                             Proposer un lieu
                         </DialogTitle>
                         <DialogDescription className="text-slate-400">
-                            Recherchez un endroit pour votre groupe. Les résultats privilégient la ville du groupe.
+                            Recherchez un endroit pour votre groupe{city ? ` à ${city}` : ""}. Les résultats privilégient la ville du groupe.
                         </DialogDescription>
                     </DialogHeader>
 
