@@ -5,7 +5,7 @@ import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { CaretRight, GameController, MapPin, Terminal, Confetti, CircleNotch } from '@phosphor-icons/react';
+import { CaretRight, GameController, MapPin, Terminal, Confetti, CircleNotch, Check } from '@phosphor-icons/react';
 import { AuthButton } from '@/components/auth-button';
 import { cn } from '@/lib/utils';
 import { createSlug } from '@/lib/slug';
@@ -105,7 +105,41 @@ export default function Home() {
 
   // Form State
   const [groupName, setGroupName] = useState('');
+  const [step, setStep] = useState<'name' | 'options'>('name');
+  const [calendarEnabled, setCalendarEnabled] = useState(true);
+  const [locationEnabled, setLocationEnabled] = useState(true);
+  const [baseLocation, setBaseLocation] = useState<{ name: string; lat: number; lng: number } | null>(null);
+  const [locationSearch, setLocationSearch] = useState('');
+  const [locationResults, setLocationResults] = useState<any[]>([]);
+  const [isSearchingLocation, setIsSearchingLocation] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const handleSearchLocation = async (query: string) => {
+    if (!query.trim()) {
+      setLocationResults([]);
+      return;
+    }
+    setIsSearchingLocation(true);
+    try {
+      const res = await fetch(`/api/places?q=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      if (data.results) {
+        setLocationResults(data.results);
+      }
+    } catch (err) {
+      console.error("Location search failed:", err);
+    } finally {
+      setIsSearchingLocation(false);
+    }
+  };
+
+  // Reset form state when switching modes
+  useEffect(() => {
+    setStep('name');
+    setBaseLocation(null);
+    setLocationSearch('');
+    setLocationResults([]);
+  }, [mode]);
 
   // Cycle messages every 4 seconds with 1.5s typing delay
   useEffect(() => {
@@ -215,6 +249,16 @@ export default function Home() {
     e.preventDefault();
     if (!groupName.trim() || loading) return;
 
+    if (step === 'name') {
+      setStep('options');
+      return;
+    }
+
+    if (mode === 'in_person' && !baseLocation) {
+      alert("Veuillez sélectionner une ville pour votre groupe sur place.");
+      return;
+    }
+
     setLoading(true);
     let uniqueSlug = '';
     try {
@@ -227,7 +271,11 @@ export default function Home() {
           name: groupName,
           slug: uniqueSlug,
           created_by: user?.id,
-          type: mode
+          type: mode,
+          calendar_voting_enabled: calendarEnabled,
+          location_voting_enabled: locationEnabled,
+          base_lat: baseLocation?.lat ?? null,
+          base_lng: baseLocation?.lng ?? null
         });
 
       if (dbError) throw dbError;
@@ -409,26 +457,111 @@ export default function Home() {
                 <div className="bg-white/5 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl relative overflow-hidden ring-1 ring-white/10">
                   <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/notebook.png')] opacity-10 mix-blend-overlay"></div>
                   <form onSubmit={handleCreateGroup} className="flex flex-col gap-6 relative z-10 text-left md:text-center">
-                    <div>
-                      <label className="block text-xs font-bold text-red-200 mb-2 uppercase tracking-wide">Nomme ton groupe</label>
-                      <input
-                        value={mode === 'in_person' ? groupName : ''}
-                        onChange={(e) => setGroupName(e.target.value)}
-                        disabled={loading || mode === 'remote'}
-                        className="w-full h-14 rounded-2xl bg-black/20 border-2 border-white/10 focus:border-red-400 focus:bg-black/40 px-5 text-lg font-medium text-white placeholder-white/30 focus:outline-none transition-all disabled:opacity-50 text-left md:text-center"
-                        placeholder="Barbecue, Cinéma..."
-                        type="text"
-                        required
-                      />
-                    </div>
+                    {step === 'name' ? (
+                      <div className="animate-in fade-in slide-in-from-right duration-500">
+                        <label className="block text-xs font-bold text-red-200 mb-2 uppercase tracking-wide">Nomme ton groupe</label>
+                        <input
+                          value={mode === 'in_person' ? groupName : ''}
+                          onChange={(e) => setGroupName(e.target.value)}
+                          disabled={loading || mode === 'remote'}
+                          className="w-full h-14 rounded-2xl bg-black/20 border-2 border-white/10 focus:border-red-400 focus:bg-black/40 px-5 text-lg font-medium text-white placeholder-white/30 focus:outline-none transition-all disabled:opacity-50 text-left md:text-center"
+                          placeholder="Barbecue, Cinéma..."
+                          type="text"
+                          required
+                          autoFocus
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-right duration-500">
+                        {/* Toggles */}
+                        <div className="flex flex-col gap-3">
+                          <label className="flex items-center justify-between p-4 rounded-2xl bg-black/20 border border-white/10 cursor-pointer hover:bg-black/30 transition-all">
+                            <span className="text-sm font-bold text-white">Voter pour une date ?</span>
+                            <input
+                              type="checkbox"
+                              checked={calendarEnabled}
+                              onChange={(e) => setCalendarEnabled(e.target.checked)}
+                              className="w-6 h-6 rounded-lg accent-red-500"
+                            />
+                          </label>
+                          <label className="flex items-center justify-between p-4 rounded-2xl bg-black/20 border border-white/10 cursor-pointer hover:bg-black/30 transition-all">
+                            <span className="text-sm font-bold text-white">Proposer des lieux ?</span>
+                            <input
+                              type="checkbox"
+                              checked={locationEnabled}
+                              onChange={(e) => setLocationEnabled(e.target.checked)}
+                              className="w-6 h-6 rounded-lg accent-red-500"
+                            />
+                          </label>
+                        </div>
+
+                        {/* City Search */}
+                        <div className="relative">
+                          <label className="block text-xs font-bold text-red-200 mb-2 uppercase tracking-wide">Où ça se passe ? (Rechercher une ville)</label>
+                          <div className="relative group/search">
+                            <input
+                              value={locationSearch}
+                              onChange={(e) => {
+                                setLocationSearch(e.target.value);
+                                handleSearchLocation(e.target.value);
+                              }}
+                              className="w-full h-12 rounded-xl bg-black/40 border-2 border-white/10 focus:border-red-400 px-4 pl-10 text-sm font-medium text-white placeholder-white/30 focus:outline-none transition-all"
+                              placeholder="Ex: Paris, Bordeaux..."
+                              type="text"
+                              autoFocus
+                            />
+                            <MapPin className="absolute left-3 top-3.5 w-4 h-4 text-white/40 group-focus-within/search:text-red-400 transition-colors" />
+                            {isSearchingLocation && (
+                              <CircleNotch className="absolute right-3 top-3.5 w-4 h-4 text-red-400 animate-spin" />
+                            )}
+                          </div>
+
+                          {locationResults.length > 0 && (
+                            <div className="absolute top-full left-0 w-full mt-2 bg-black border border-white/10 rounded-xl overflow-hidden z-50 shadow-2xl max-h-48 overflow-y-auto">
+                              {locationResults.map((p) => (
+                                <button
+                                  key={p.place_id}
+                                  type="button"
+                                  onClick={() => {
+                                    setBaseLocation({ name: p.name, lat: p.lat, lng: p.lng });
+                                    setLocationSearch(p.name);
+                                    setLocationResults([]);
+                                  }}
+                                  className="w-full px-4 py-3 text-left hover:bg-white/10 text-sm text-white transition-colors border-b border-white/5 last:border-none flex flex-col"
+                                >
+                                  <span className="font-bold">{p.name}</span>
+                                  <span className="text-xs text-white/50 truncate">{p.formatted_address}</span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+
+                          {baseLocation && (
+                            <div className="mt-2 flex items-center gap-2 text-red-400 text-xs font-bold bg-red-400/10 p-2 rounded-lg border border-red-400/20">
+                              <Check className="w-4 h-4" />
+                              Lieu sélectionné : {baseLocation.name}
+                            </div>
+                          )}
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => setStep('name')}
+                          className="text-xs text-white/40 hover:text-white uppercase tracking-widest font-bold transition-colors"
+                        >
+                          &larr; Retour au nom
+                        </button>
+                      </div>
+                    )}
+
                     <button
                       type="submit"
-                      disabled={loading || mode === 'remote' || !groupName.trim()}
+                      disabled={loading || mode === 'remote' || !groupName.trim() || (step === 'options' && !baseLocation)}
                       className="sticker-btn w-full py-5 text-2xl font-black rounded-2xl flex items-center justify-center gap-3 group-hover:shadow-[0_0_30px_rgba(255,46,46,0.6)] disabled:opacity-50 text-white border-4 border-white shadow-[6px_6px_0px_rgba(0,0,0,0.5)] -rotate-2 hover:rotate-0 hover:scale-[1.05] hover:-translate-y-1 hover:shadow-[8px_10px_0px_rgba(0,0,0,0.4)] transition-all bg-[#ff2e2e] hover:bg-[#ff4444]"
                     >
                       {loading && mode === 'in_person' ? <CircleNotch className="w-8 h-8 animate-spin" /> : (
                         <>
-                          C'EST PARTI !
+                          {step === 'name' ? 'SUIVANT' : "C'EST PARTI !"}
                           <Confetti className="w-8 h-8" />
                         </>
                       )}
@@ -596,19 +729,55 @@ export default function Home() {
               {/* Online Form */}
               <div className={cn("group relative w-full max-w-md flex flex-col gap-4", mode === 'in_person' && 'pointer-events-none')}>
                 <form onSubmit={handleCreateGroup} className="w-full flex flex-col gap-4 relative z-10">
-                  <div className="w-full text-right md:text-center">
-                    <label className="block text-xs font-mono text-purple-400 mb-2 tracking-widest">NOM_DU_GROUPE_ &lt;</label>
-                    <input
-                      value={mode === 'remote' ? groupName : ''}
-                      onChange={(e) => setGroupName(e.target.value)}
-                      disabled={loading || mode === 'in_person'}
-                      className="w-full bg-black/60 border border-purple-500/50 text-purple-200 font-mono py-4 px-6 rounded focus:outline-none focus:border-purple-400 focus:shadow-[0_0_15px_rgba(217,70,239,0.3)] placeholder-purple-800 transition-all text-lg text-right md:text-center disabled:opacity-50"
-                      placeholder="RAID_NIGHT_01"
-                      type="text"
-                      required
-                    />
-                  </div>
-                  <div className="relative w-full">
+                  {step === 'name' ? (
+                    <div className="w-full text-right md:text-center animate-in fade-in slide-in-from-right duration-500">
+                      <label className="block text-xs font-mono text-purple-400 mb-2 tracking-widest">NOM_DU_GROUPE_ &lt;</label>
+                      <input
+                        value={mode === 'remote' ? groupName : ''}
+                        onChange={(e) => setGroupName(e.target.value)}
+                        disabled={loading || mode === 'in_person'}
+                        className="w-full bg-black/60 border border-purple-500/50 text-purple-200 font-mono py-4 px-6 rounded focus:outline-none focus:border-purple-400 focus:shadow-[0_0_15px_rgba(217,70,239,0.3)] placeholder-purple-800 transition-all text-lg text-right md:text-center disabled:opacity-50"
+                        placeholder="RAID_NIGHT_01"
+                        type="text"
+                        required
+                        autoFocus
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-right duration-500">
+                      {/* Toggles */}
+                      <div className="flex flex-col gap-3">
+                        <label className="flex items-center justify-between p-4 rounded-lg bg-black/60 border border-purple-500/30 cursor-pointer hover:bg-purple-500/10 transition-all group/toggle">
+                          <span className="text-xs font-mono text-purple-300 uppercase tracking-widest">Election_date_active</span>
+                          <input
+                            type="checkbox"
+                            checked={calendarEnabled}
+                            onChange={(e) => setCalendarEnabled(e.target.checked)}
+                            className="w-5 h-5 rounded accent-purple-500 bg-black border-purple-500/50"
+                          />
+                        </label>
+                        <label className="flex items-center justify-between p-4 rounded-lg bg-black/60 border border-purple-500/30 cursor-pointer hover:bg-purple-500/10 transition-all group/toggle">
+                          <span className="text-xs font-mono text-purple-300 uppercase tracking-widest">Options_vote_active</span>
+                          <input
+                            type="checkbox"
+                            checked={locationEnabled}
+                            onChange={(e) => setLocationEnabled(e.target.checked)}
+                            className="w-5 h-5 rounded accent-purple-500 bg-black border-purple-500/50"
+                          />
+                        </label>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setStep('name')}
+                        className="text-[10px] font-mono text-purple-500/50 hover:text-purple-400 uppercase tracking-[3px] transition-colors text-right md:text-center"
+                      >
+                        &lt; RETOUR_NOM
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="relative w-full mt-2">
                     <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
                     <button
                       type="submit"
@@ -617,7 +786,7 @@ export default function Home() {
                     >
                       <span className="relative z-10 flex items-center gap-3 text-lg font-bold tracking-[2px] uppercase drop-shadow-[0_0_8px_#d946ef]">
                         {loading && mode === 'remote' ? <CircleNotch className="animate-spin text-2xl" /> : <Terminal className="text-2xl animate-pulse" />}
-                        INITIALISER_SESSION
+                        {step === 'name' ? 'SUIVANT_PROCESS' : 'INITIALISER_SESSION'}
                       </span>
                       <span className="font-mono text-xs opacity-50">&lt;ENTER&gt;</span>
                       <div className="absolute inset-0 bg-purple-500/10 transform translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-300 skew-x-12"></div>
