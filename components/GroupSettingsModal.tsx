@@ -14,6 +14,7 @@ import { GroupTypeSelector } from '@/components/GroupTypeSelector';
 import { FRENCH_CITIES } from '@/lib/cities';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 interface GroupSettingsModalProps {
     isOpen: boolean;
@@ -202,11 +203,16 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                                 <p className="text-[11px] text-slate-500">Voter pour des dates</p>
                                             </div>
                                         </div>
+                                        {/* Toggle Switch */}
                                         <div className={cn(
-                                            "size-5 rounded-full border-2 flex items-center justify-center transition-all",
-                                            calendarEnabled ? "border-[var(--v2-primary)] bg-[var(--v2-primary)]" : "border-white/20"
+                                            "w-10 h-6 rounded-full relative transition-colors duration-300",
+                                            calendarEnabled ? "bg-[var(--v2-primary)]" : "bg-white/10"
                                         )}>
-                                            {calendarEnabled && <div className="size-2 bg-white rounded-full shadow-[0_0_8px_white]" />}
+                                            <motion.div
+                                                animate={{ x: calendarEnabled ? 18 : 2 }}
+                                                className="absolute top-1 left-0 size-4 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+                                                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                            />
                                         </div>
                                     </div>
 
@@ -231,11 +237,16 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                                 <p className="text-[11px] text-slate-500">Proposer et voter pour des lieux</p>
                                             </div>
                                         </div>
+                                        {/* Toggle Switch */}
                                         <div className={cn(
-                                            "size-5 rounded-full border-2 flex items-center justify-center transition-all",
-                                            locationEnabled ? "border-[var(--v2-primary)] bg-[var(--v2-primary)]" : "border-white/20"
+                                            "w-10 h-6 rounded-full relative transition-colors duration-300",
+                                            locationEnabled ? "bg-[var(--v2-primary)]" : "bg-white/10"
                                         )}>
-                                            {locationEnabled && <div className="size-2 bg-white rounded-full shadow-[0_0_8px_white]" />}
+                                            <motion.div
+                                                animate={{ x: locationEnabled ? 18 : 2 }}
+                                                className="absolute top-1 left-0 size-4 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+                                                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                            />
                                         </div>
                                     </div>
                                 </div>

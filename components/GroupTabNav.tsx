@@ -32,6 +32,8 @@ export function GroupTabNav({ activeTab, onTabChange, calendarEnabled = true, lo
         return true;
     });
 
+    if (activeTabs.length <= 1) return null;
+
     return (
         <>
             {/* Desktop: floating glass component under header */}
