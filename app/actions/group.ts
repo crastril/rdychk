@@ -143,7 +143,26 @@ export async function voteLocationProposalAction(
         return { success: false, error: error.message };
     }
 
-    return { success: true };
+    // Calculate new score (sum of all votes for this proposal)
+    const { data: votes, error: scoreError } = await supabase
+        .from('location_proposal_votes')
+        .select('vote')
+        .eq('proposal_id', proposalId);
+
+    if (scoreError) {
+        console.error('Error calculating score:', scoreError);
+        return { success: true }; // Still return success since vote was recorded
+    }
+
+    const newScore = (votes || []).reduce((sum, v) => sum + v.vote, 0);
+
+    // Update the proposal's score in the database for redundancy/caching
+    await supabase
+        .from('location_proposals')
+        .update({ score: newScore })
+        .eq('id', proposalId);
+
+    return { success: true, score: newScore, myVote: vote };
 }
 
 export async function deleteLocationProposalAction(

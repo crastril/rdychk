@@ -14,6 +14,7 @@ export type Database = {
                     base_lng?: number | null;
                     calendar_voting_enabled: boolean;
                     location_voting_enabled: boolean;
+                    confirmed_date: string | null;
                 };
                 Insert: {
                     id?: string;
@@ -27,6 +28,7 @@ export type Database = {
                     base_lng?: number | null;
                     calendar_voting_enabled?: boolean;
                     location_voting_enabled?: boolean;
+                    confirmed_date?: string | null;
                 };
                 Update: {
                     id?: string;
@@ -39,6 +41,7 @@ export type Database = {
                     base_lng?: number | null;
                     calendar_voting_enabled?: boolean;
                     location_voting_enabled?: boolean;
+                    confirmed_date?: string | null;
                 };
             };
             members: {
