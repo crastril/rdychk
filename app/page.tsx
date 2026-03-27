@@ -41,9 +41,27 @@ const ONLINE_MESSAGES = [
   "T'AS RELANCÉ UNE PARTIE ?",
 ];
 
+// Pre-compute wave paths once (outside component) so they don't recalculate every render
+const WAVE_PATHS = Array.from({ length: 30 }).map((_, i) => {
+  const baseY = i * 60 - 500;
+  const thickness = 14 + Math.sin(i * 0.4) * 8;
+  let d = "";
+  const dy = i * 0.15;
+  const w = (2 * Math.PI) / 2000;
+  for (let x = -2000; x <= 4000; x += 50) {
+    const yDisp =
+      Math.sin(x * w + dy * 1.5) * 120 +
+      Math.sin(x * w * 2 - dy * 0.8) * 50 +
+      Math.sin(x * w * 3 + dy * 2.1) * 25;
+    const currentY = baseY + yDisp;
+    d += x === -2000 ? `M ${x},${currentY}` : ` L ${x},${currentY}`;
+  }
+  return { d, thickness };
+});
+
 const LiquidWaves = () => {
   return (
-    <div className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.3] mix-blend-overlay z-0 overflow-hidden">
+    <div className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.3] mix-blend-overlay z-0 overflow-hidden" style={{ willChange: 'transform' }}>
       <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="xMidYMid slice" viewBox="0 0 2000 1000">
         <g fill="none">
           <animateTransform
@@ -54,40 +72,16 @@ const LiquidWaves = () => {
             dur="30s"
             repeatCount="indefinite"
           />
-          {Array.from({ length: 70 }).map((_, i) => {
-            const baseY = i * 35 - 500;
-            const thickness = 14 + Math.sin(i * 0.4) * 8;
-
-            let d = "";
-            for (let x = -2000; x <= 4000; x += 25) {
-              const dy = i * 0.15;
-              const w = (2 * Math.PI) / 2000;
-
-              const yDisp =
-                Math.sin(x * w * 1 + dy * 1.5) * 120 +
-                Math.sin(x * w * 2 - dy * 0.8) * 50 +
-                Math.sin(x * w * 3 + dy * 2.1) * 25;
-
-              const currentY = baseY + yDisp;
-
-              if (x === -2000) {
-                d += `M ${x},${currentY}`;
-              } else {
-                d += ` L ${x},${currentY}`;
-              }
-            }
-
-            return (
-              <path
-                key={i}
-                stroke="#000"
-                strokeWidth={thickness}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d={d}
-              />
-            );
-          })}
+          {WAVE_PATHS.map(({ d, thickness }, i) => (
+            <path
+              key={i}
+              stroke="#000"
+              strokeWidth={thickness}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d={d}
+            />
+          ))}
         </g>
       </svg>
     </div>
@@ -97,6 +91,15 @@ const LiquidWaves = () => {
 export default function Home() {
   const { user } = useAuth();
   const router = useRouter();
+
+  // Detect mobile to skip heavy animations
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   const [recentGroups, setRecentGroups] = useState<{ name: string; slug: string; joined_at: string; type: string }[]>([]);
   const [mode, setMode] = useState<'in_person' | 'remote'>('in_person');
@@ -361,9 +364,9 @@ export default function Home() {
 
           <div className="absolute inset-0 bg-noise opacity-30 pointer-events-none mix-blend-overlay z-0"></div>
 
-          <LiquidWaves />
+          {!isMobile && <LiquidWaves />}
 
-          {mode === 'in_person' && (
+          {!isMobile && mode === 'in_person' && (
             <>
               <div className="absolute top-[-10%] left-[20%] w-[600px] h-[600px] bg-red-700/30 rounded-full blur-[120px] pointer-events-none mix-blend-screen animate-pulse z-0"></div>
               <div className="absolute bottom-[10%] right-[20%] w-[400px] h-[400px] bg-red-900/40 rounded-full blur-[100px] pointer-events-none mix-blend-screen z-0"></div>
