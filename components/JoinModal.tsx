@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Sparkles, User, ArrowLeft, Loader2 } from 'lucide-react';
+import { Sparkle, User, ArrowLeft, CircleNotch } from '@phosphor-icons/react';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { useAuth } from '@/components/auth-provider';
 import type { Member } from '@/types/database';
@@ -199,13 +199,13 @@ export default function JoinModal({ onJoin, onReclaim, groupName, existingGuests
                                 >
                                     {isLoading ? (
                                         <>
-                                            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                                            <CircleNotch className="w-5 h-5 mr-2 animate-spin" />
                                             Connexion...
                                         </>
                                     ) : (
                                         <>
                                             Rejoindre
-                                            <Sparkles className="w-5 h-5 ml-2" />
+                                            <Sparkle className="w-5 h-5 ml-2" />
                                         </>
                                     )}
                                 </Button>

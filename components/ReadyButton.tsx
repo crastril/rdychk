@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { toggleReadyAction } from '@/app/actions/member';
-import { Check, Clock, Loader2, Timer, AlertTriangle } from 'lucide-react';
+import { Check, Clock, CircleNotch, Timer, Warning } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 
 interface ReadyButtonProps {
@@ -121,7 +121,7 @@ export default function ReadyButton({ slug, memberId, isReady, timerEndTime, onO
                 </div>
             ) : isSoonReady ? (
                 <div className="flex items-center gap-2 relative z-10 animate-pulse text-amber-500 text-[14px] font-black uppercase tracking-[0.2em]">
-                    <AlertTriangle className="w-5 h-5" />
+                    <Warning className="w-5 h-5" />
                     BIENTÔT PRÊT !
                 </div>
             ) : timeLeft ? (

@@ -10,7 +10,7 @@ import {
     DialogDescription,
 } from '@/components/ui/dialog';
 import { supabase } from '@/lib/supabase';
-import { Loader2, Search, MapPin, Check, Crosshair, Edit2 } from 'lucide-react';
+import { CircleNotch, MagnifyingGlass, MapPin, Check, Crosshair, PencilSimple } from '@phosphor-icons/react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { updateLocationAction, updateGroupBaseLocationAction } from '@/app/actions/group';
@@ -189,7 +189,7 @@ export function EditLocationModal({ isOpen, onOpenChange, groupId, slug, existin
                 setPlaceResults(data.results);
             }
         } catch (err) {
-            console.error("Search failed", err);
+            console.error("MagnifyingGlass failed", err);
         } finally {
             setIsSearchingPlace(false);
         }
@@ -264,7 +264,7 @@ export function EditLocationModal({ isOpen, onOpenChange, groupId, slug, existin
                                 disabled={locatingUser}
                                 className="w-full flex items-center justify-center gap-2 bg-[var(--v2-primary)]/20 hover:bg-[var(--v2-primary)]/30 text-[var(--v2-primary)] border border-[var(--v2-primary)]/30 h-14 rounded-2xl font-semibold transition-all"
                             >
-                                {locatingUser ? <Loader2 className="w-5 h-5 animate-spin" /> : <Crosshair className="w-5 h-5" />}
+                                {locatingUser ? <CircleNotch className="w-5 h-5 animate-spin" /> : <Crosshair className="w-5 h-5" />}
                                 Utiliser ma position géographique
                             </Button>
 
@@ -287,7 +287,7 @@ export function EditLocationModal({ isOpen, onOpenChange, groupId, slug, existin
 
                                 {isSearchingCity && (
                                     <div className="flex justify-center p-4">
-                                        <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+                                        <CircleNotch className="w-6 h-6 animate-spin text-slate-400" />
                                     </div>
                                 )}
 
@@ -326,7 +326,7 @@ export function EditLocationModal({ isOpen, onOpenChange, groupId, slug, existin
                                     onClick={() => setStep(1)}
                                     className="h-8 text-xs bg-white/5 hover:bg-white/10 text-white rounded-lg px-3"
                                 >
-                                    <Edit2 className="w-3.5 h-3.5 mr-1.5" /> Modifier
+                                    <PencilSimple className="w-3.5 h-3.5 mr-1.5" /> Modifier
                                 </Button>
                             </div>
 
@@ -355,7 +355,7 @@ export function EditLocationModal({ isOpen, onOpenChange, groupId, slug, existin
                                             disabled={isSearchingPlace || !searchQuery.trim()}
                                             className="bg-[var(--v2-primary)]/20 hover:bg-[var(--v2-primary)]/40 text-[var(--v2-primary)] px-4 border border-[var(--v2-primary)]/30 rounded-xl h-14 transition-all"
                                         >
-                                            <Search className="w-6 h-6" />
+                                            <MagnifyingGlass className="w-6 h-6" />
                                         </Button>
                                     </div>
                                 </div>
@@ -363,7 +363,7 @@ export function EditLocationModal({ isOpen, onOpenChange, groupId, slug, existin
                                 {/* Results Rendering */}
                                 {isSearchingPlace && (
                                     <div className="flex justify-center p-6">
-                                        <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+                                        <CircleNotch className="w-6 h-6 animate-spin text-slate-400" />
                                     </div>
                                 )}
 
@@ -415,7 +415,7 @@ export function EditLocationModal({ isOpen, onOpenChange, groupId, slug, existin
                                 >
                                     {saving ? (
                                         <>
-                                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                            <CircleNotch className="mr-2 h-5 w-5 animate-spin" />
                                             Enregistrement...
                                         </>
                                     ) : (

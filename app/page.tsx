@@ -5,7 +5,7 @@ import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronRight, Gamepad2, MapPin, Terminal, PartyPopper, Loader2 } from 'lucide-react';
+import { CaretRight, GameController, MapPin, Terminal, Confetti, CircleNotch } from '@phosphor-icons/react';
 import { AuthButton } from '@/components/auth-button';
 import { cn } from '@/lib/utils';
 import { createSlug } from '@/lib/slug';
@@ -426,10 +426,10 @@ export default function Home() {
                       disabled={loading || mode === 'remote' || !groupName.trim()}
                       className="sticker-btn w-full py-5 text-2xl font-black rounded-2xl flex items-center justify-center gap-3 group-hover:shadow-[0_0_30px_rgba(255,46,46,0.6)] disabled:opacity-50 text-white border-4 border-white shadow-[6px_6px_0px_rgba(0,0,0,0.5)] -rotate-2 hover:rotate-0 hover:scale-[1.05] hover:-translate-y-1 hover:shadow-[8px_10px_0px_rgba(0,0,0,0.4)] transition-all bg-[#ff2e2e] hover:bg-[#ff4444]"
                     >
-                      {loading && mode === 'in_person' ? <Loader2 className="w-8 h-8 animate-spin" /> : (
+                      {loading && mode === 'in_person' ? <CircleNotch className="w-8 h-8 animate-spin" /> : (
                         <>
                           C'EST PARTI !
-                          <PartyPopper className="w-8 h-8" />
+                          <Confetti className="w-8 h-8" />
                         </>
                       )}
                     </button>
@@ -616,7 +616,7 @@ export default function Home() {
                       className="disabled:opacity-50 relative console-btn w-full py-5 px-8 rounded-lg flex items-center justify-center gap-4 overflow-hidden cursor-pointer bg-black/60 border border-[#d946ef] text-[#d946ef] hover:bg-[#d946ef]/10 shadow-[0_0_10px_rgba(217,70,239,0.5),0_0_20px_rgba(217,70,239,0.3)] hover:shadow-[0_0_20px_rgba(217,70,239,0.6),inset_0_0_10px_rgba(217,70,239,0.4)]"
                     >
                       <span className="relative z-10 flex items-center gap-3 text-lg font-bold tracking-[2px] uppercase drop-shadow-[0_0_8px_#d946ef]">
-                        {loading && mode === 'remote' ? <Loader2 className="animate-spin text-2xl" /> : <Terminal className="text-2xl animate-pulse" />}
+                        {loading && mode === 'remote' ? <CircleNotch className="animate-spin text-2xl" /> : <Terminal className="text-2xl animate-pulse" />}
                         INITIALISER_SESSION
                       </span>
                       <span className="font-mono text-xs opacity-50">&lt;ENTER&gt;</span>
@@ -636,14 +636,14 @@ export default function Home() {
                         <div className="bg-black/40 border border-purple-500/20 p-3 rounded-none flex items-center justify-between flex-row-reverse hover:bg-purple-900/20 transition-colors cursor-pointer group w-full">
                           <div className="flex items-center flex-row-reverse gap-3 text-right">
                             <div className="w-10 h-10 bg-purple-900/40 border border-purple-500/50 flex items-center justify-center text-purple-300 font-mono text-xs shadow-[0_0_10px_inset_rgba(168,85,247,0.2)]">
-                              <Gamepad2 className="w-5 h-5" />
+                              <GameController className="w-5 h-5" />
                             </div>
                             <div className="flex flex-col items-end">
                               <span className="text-sm font-mono text-purple-300 max-w-[150px] truncate text-right">{group.name}</span>
                               <span className="text-[10px] text-purple-500/60 font-mono text-right">{new Date(group.joined_at).toLocaleDateString()}</span>
                             </div>
                           </div>
-                          <ChevronRight className="w-4 h-4 text-purple-500/50 rotate-180 group-hover:text-purple-400" />
+                          <CaretRight className="w-4 h-4 text-purple-500/50 rotate-180 group-hover:text-purple-400" />
                         </div>
                       </Link>
                     )) : (

@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import { Camera, Loader2, User } from "lucide-react";
+import { Camera, CircleNotch, User } from '@phosphor-icons/react';
 import { cn } from "@/lib/utils";
 
 interface AvatarUploadProps {
@@ -69,7 +69,7 @@ export function AvatarUpload({ url, uid, onUpload }: AvatarUploadProps) {
 
                     {uploading && (
                         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center">
-                            <Loader2 className="w-6 h-6 text-[var(--v2-primary)] animate-spin" />
+                            <CircleNotch className="w-6 h-6 text-[var(--v2-primary)] animate-spin" />
                         </div>
                     )}
                 </div>

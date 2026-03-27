@@ -2,7 +2,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useId } from 'react';
 import { cn } from '@/lib/utils';
-import { Monitor, MapPin } from 'lucide-react';
+import { Monitor, MapPin } from '@phosphor-icons/react';
 
 interface GroupTypeSelectorProps {
     value: 'remote' | 'in_person';

@@ -16,7 +16,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { Share2, Copy, Instagram, MessageCircle, Facebook, QrCode } from 'lucide-react';
+import { ShareNetwork, Copy, InstagramLogo, ChatCircle, FacebookLogo, QrCode } from '@phosphor-icons/react';
 import QRCode from 'react-qr-code';
 
 interface ShareMenuProps {
@@ -84,11 +84,11 @@ export function ShareMenu({ groupName, url, variant = 'icon' }: ShareMenuProps) 
                 <DropdownMenuTrigger asChild>
                     {variant === 'icon' ? (
                         <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
-                            <Share2 className="w-5 h-5" />
+                            <ShareNetwork className="w-5 h-5" />
                         </Button>
                     ) : (
                         <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white flex items-center gap-2 px-3 py-1.5 h-auto text-sm">
-                            <Share2 className="w-4 h-4" />
+                            <ShareNetwork className="w-4 h-4" />
                             <span>Partager</span>
                         </Button>
                     )}
@@ -109,25 +109,25 @@ export function ShareMenu({ groupName, url, variant = 'icon' }: ShareMenuProps) 
 
                     {/* Native share for mobile users preference */}
                     <DropdownMenuItem onClick={handleNativeShare} className="cursor-pointer gap-2 sm:hidden focus:bg-white/10 focus:text-white dark:focus:bg-white/10">
-                        <Share2 className="w-4 h-4" />
+                        <ShareNetwork className="w-4 h-4" />
                         Autres options...
                     </DropdownMenuItem>
 
                     <DropdownMenuSeparator className="bg-white/10" />
 
                     <DropdownMenuItem onClick={() => handleShare('whatsapp')} className="cursor-pointer gap-2 focus:bg-white/10 focus:text-white dark:focus:bg-white/10">
-                        <MessageCircle className="w-4 h-4 text-green-500" />
+                        <ChatCircle className="w-4 h-4 text-green-500" />
                         WhatsApp
                     </DropdownMenuItem>
 
                     <DropdownMenuItem onClick={() => handleShare('messenger')} className="cursor-pointer gap-2 focus:bg-white/10 focus:text-white dark:focus:bg-white/10">
-                        <Facebook className="w-4 h-4 text-blue-500" />
+                        <FacebookLogo className="w-4 h-4 text-blue-500" />
                         Messenger
                     </DropdownMenuItem>
 
                     <DropdownMenuItem onClick={() => handleShare('instagram')} className="cursor-pointer gap-2 focus:bg-white/10 focus:text-white dark:focus:bg-white/10">
-                        <Instagram className="w-4 h-4 text-pink-500" />
-                        Instagram
+                        <InstagramLogo className="w-4 h-4 text-pink-500" />
+                        InstagramLogo
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>

@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowBigUp, ArrowBigDown, Target, ArrowLeft, Pencil, ChevronDown, ChevronUp, X, Zap } from "lucide-react";
+import { ArrowFatUp, ArrowFatDown, Crosshair, ArrowLeft, Pencil, CaretDown, CaretUp, X, Lightning } from '@phosphor-icons/react';
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import type { Group } from "@/types/database";
@@ -201,7 +201,7 @@ export function LocationCard({ group, slug, memberId, isAdmin, currentMemberName
                                 referrerPolicy="no-referrer"
                             />
                         ) : hasLocation ? (
-                            <Target className="w-8 h-8 text-white/30" />
+                            <Crosshair className="w-8 h-8 text-white/30" />
                         ) : (
                             <div className="w-8 h-8 border-2 border-dashed border-white/30 rounded-full" />
                         )}
@@ -252,7 +252,7 @@ export function LocationCard({ group, slug, memberId, isAdmin, currentMemberName
                                 onClick={(e) => handleVote(1, e)}
                                 disabled={loading}
                             >
-                                <ChevronUp className="w-5 h-5 stroke-[3]" />
+                                <CaretUp className="w-5 h-5 stroke-[3]" />
                             </button>
                             <span className={cn(
                                 "font-bold text-sm",
@@ -268,7 +268,7 @@ export function LocationCard({ group, slug, memberId, isAdmin, currentMemberName
                                 onClick={(e) => handleVote(-1, e)}
                                 disabled={loading}
                             >
-                                <ChevronDown className="w-5 h-5 stroke-[3]" />
+                                <CaretDown className="w-5 h-5 stroke-[3]" />
                             </button>
                         </div>
                     )}
@@ -316,7 +316,7 @@ export function LocationCard({ group, slug, memberId, isAdmin, currentMemberName
                                     setEditMode('counter');
                                 }}
                             >
-                                <Zap className="w-5 h-5 animate-pulse" fill="currentColor" />
+                                <Lightning className="w-5 h-5 animate-pulse" fill="currentColor" />
                                 CONTRE-PROPOSITION
                             </button>
                         )}

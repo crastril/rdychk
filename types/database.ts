@@ -12,6 +12,8 @@ export type Database = {
                     location?: { name: string; address?: string; link?: string; image?: string; description?: string; preview_title?: string; proposed_by?: string; proposed_by_id?: string } | null;
                     base_lat?: number | null;
                     base_lng?: number | null;
+                    calendar_voting_enabled: boolean;
+                    location_voting_enabled: boolean;
                 };
                 Insert: {
                     id?: string;
@@ -23,6 +25,8 @@ export type Database = {
                     location?: { name: string; address?: string; link?: string; image?: string; description?: string; preview_title?: string; proposed_by?: string; proposed_by_id?: string } | null;
                     base_lat?: number | null;
                     base_lng?: number | null;
+                    calendar_voting_enabled?: boolean;
+                    location_voting_enabled?: boolean;
                 };
                 Update: {
                     id?: string;
@@ -33,6 +37,8 @@ export type Database = {
                     location?: { name: string; address?: string; link?: string; image?: string; description?: string; preview_title?: string; proposed_by?: string; proposed_by_id?: string } | null;
                     base_lat?: number | null;
                     base_lng?: number | null;
+                    calendar_voting_enabled?: boolean;
+                    location_voting_enabled?: boolean;
                 };
             };
             members: {
@@ -97,4 +103,33 @@ export type Database = {
 export type Group = Database['public']['Tables']['groups']['Row'];
 export type Member = Database['public']['Tables']['members']['Row'] & {
     avatar_url?: string | null;
+};
+
+export type DateVote = {
+    id: string;
+    group_id: string;
+    member_id: string;
+    date: string;
+    created_at: string;
+};
+
+export type LocationProposal = {
+    id: string;
+    group_id: string;
+    member_id: string;
+    name: string;
+    description: string | null;
+    image: string | null;
+    link: string | null;
+    score: number;
+    created_at: string;
+    preview_title?: string | null;
+};
+
+export type LocationVote = {
+    id: string;
+    proposal_id: string;
+    member_id: string;
+    vote: 1 | -1;
+    created_at: string;
 };

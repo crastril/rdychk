@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/components/auth-provider";
 import { supabase } from "@/lib/supabase";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkle, CircleNotch } from '@phosphor-icons/react';
 import { AvatarUpload } from "./AvatarUpload";
 
 interface ProfileModalProps {
@@ -121,13 +121,13 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
                             >
                                 {isLoading ? (
                                     <>
-                                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                        <CircleNotch className="mr-2 h-5 w-5 animate-spin" />
                                         Enregistrement...
                                     </>
                                 ) : (
                                     <>
                                         {profile?.is_inferred ? "C'est parti !" : "Enregistrer"}
-                                        {!isLoading && <Sparkles className="ml-2 h-5 w-5" />}
+                                        {!isLoading && <Sparkle className="ml-2 h-5 w-5" />}
                                     </>
                                 )}
                             </Button>

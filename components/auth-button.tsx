@@ -9,7 +9,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, Loader2, User as UserIcon, UserPen, History } from "lucide-react";
+import { SignOut, CircleNotch, User as UserIcon, PencilSimple, ClockCounterClockwise } from '@phosphor-icons/react';
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import { AuthModal } from "./auth-modal";
@@ -43,7 +43,7 @@ export function AuthButton({ view = 'default', className }: AuthButtonProps) {
     };
 
     if (loading) {
-        return <Button variant="ghost" size="icon" disabled><Loader2 className="w-4 h-4 animate-spin" /></Button>;
+        return <Button variant="ghost" size="icon" disabled><CircleNotch className="w-4 h-4 animate-spin" /></Button>;
     }
 
     if (!user) {
@@ -85,16 +85,16 @@ export function AuthButton({ view = 'default', className }: AuthButtonProps) {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => setShowProfileModal(true)} className="cursor-pointer">
-                        <UserPen className="mr-2 h-4 w-4" />
+                        <PencilSimple className="mr-2 h-4 w-4" />
                         <span>Modifier mon profil</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setShowHistory(true)} className="cursor-pointer">
-                        <History className="mr-2 h-4 w-4" />
+                        <ClockCounterClockwise className="mr-2 h-4 w-4" />
                         <span>Historique</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut} className="text-red-500 focus:text-red-500 cursor-pointer">
-                        <LogOut className="mr-2 h-4 w-4" />
+                        <SignOut className="mr-2 h-4 w-4" />
                         <span>Se déconnecter</span>
                     </DropdownMenuItem>
                 </DropdownMenuContent>

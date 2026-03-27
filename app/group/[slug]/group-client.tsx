@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/auth-provider';
 import { joinGroupAction, reclaimSessionAction, leaveGroupAction, updateMemberAction, promoteToAdminAction, linkGuestToUserAction } from '@/app/actions/member';
 import { updateLocationAction } from '@/app/actions/group';
+import { AnimatePresence, motion } from 'framer-motion';
 import JoinModal from '@/components/JoinModal';
 import MemberList from '@/components/MemberList';
 import ReadyButton from '@/components/ReadyButton';
@@ -19,13 +20,17 @@ import { ManageGroupModal } from '@/components/ManageGroupModal';
 import { TimeProposalModal } from '@/components/TimeProposalModal';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Copy, Check, Target, Users, Loader2, LogOut, Settings, ChevronDown, MapPin, X } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Crosshair, Users, CircleNotch, SignOut, Gear, CaretDown, MapPin, X } from '@phosphor-icons/react';
 import { ModeToggle } from '@/components/mode-toggle';
 import { AuthButton } from '@/components/auth-button';
-import type { Group, Member } from '@/types/database';
 import { LocationCard } from '@/components/LocationCard';
 import { GroupSettingsModal } from '@/components/GroupSettingsModal';
 import { ConnectionStatus } from '@/components/ConnectionStatus';
+import { GroupTabNav, type GroupTab } from '@/components/GroupTabNav';
+import { HomeTab } from '@/components/tabs/HomeTab';
+import { CalendarTab } from '@/components/tabs/CalendarTab';
+import { LocationTab } from '@/components/tabs/LocationTab';
+import type { Group, Member, DateVote, LocationProposal } from '@/types/database';
 
 const LiquidWaves = () => {
     return (
@@ -67,6 +72,10 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
     const [showLocationProposal, setShowLocationProposal] = useState(false);
     const [localOptimisticReady, setLocalOptimisticReady] = useState<boolean | null>(null);
+    const [activeTab, setActiveTab] = useState<GroupTab>('home');
+    const [votes, setVotes] = useState<DateVote[]>([]);
+    const [proposals, setProposals] = useState<LocationProposal[]>([]);
+    const [myLocationVotes, setMyLocationVotes] = useState<Record<string, 1 | -1>>({});
 
     const fetchGroup = async () => {
         try {
@@ -114,6 +123,43 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
             setMembers(membersWithAvatars);
         }
         setLoadingMembers(false);
+    };
+
+    const fetchVotes = async () => {
+        if (!group?.id) return;
+        const { data, error } = await supabase
+            .from('date_votes')
+            .select('*')
+            .eq('group_id', group.id);
+
+        if (error) console.error("Error fetching votes:", error);
+        if (data) setVotes(data as DateVote[]);
+    };
+
+    const fetchProposals = async () => {
+        if (!group?.id) return;
+        const { data, error } = await supabase
+            .from('location_proposals')
+            .select('*')
+            .eq('group_id', group.id);
+
+        if (error) console.error("Error fetching proposals:", error);
+        if (data) setProposals(data as LocationProposal[]);
+
+        if (memberId) {
+            const { data: voteData } = await supabase
+                .from('location_proposal_votes')
+                .select('proposal_id, vote')
+                .eq('member_id', memberId);
+
+            if (voteData) {
+                const voteMap: Record<string, 1 | -1> = {};
+                voteData.forEach(v => {
+                    voteMap[v.proposal_id] = v.vote as 1 | -1;
+                });
+                setMyLocationVotes(voteMap);
+            }
+        }
     };
 
     const handleLocationDelete = async () => {
@@ -224,6 +270,34 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
         };
     }, [group?.id]);
 
+    useEffect(() => {
+        if (!group?.id) return;
+
+        fetchVotes();
+        fetchProposals();
+
+        const votesChannel = supabase
+            .channel(`votes_updates:${group.id}`)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'date_votes', filter: `group_id=eq.${group.id}` }, () => fetchVotes())
+            .subscribe();
+
+        const proposalsChannel = supabase
+            .channel(`proposals_updates:${group.id}`)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'location_proposals', filter: `group_id=eq.${group.id}` }, () => fetchProposals())
+            .subscribe();
+
+        const lpVotesChannel = supabase
+            .channel(`lp_votes_updates:${group.id}`)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'location_proposal_votes' }, () => fetchProposals())
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(votesChannel);
+            supabase.removeChannel(proposalsChannel);
+            supabase.removeChannel(lpVotesChannel);
+        };
+    }, [group?.id, memberId]);
+
     const handleRefresh = async () => {
         // Refresh server components
         router.refresh();
@@ -231,7 +305,9 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
         // Refresh client data
         await Promise.all([
             fetchGroup(),
-            fetchMembers()
+            fetchMembers(),
+            fetchVotes(),
+            fetchProposals()
         ]);
     };
 
@@ -465,16 +541,30 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
         return null;
     }
 
-    let readyCount = members.filter((m) => m.is_ready).length;
+    const readyCount = members.filter((m) => m.is_ready).length;
     const totalCount = members.length;
     const currentMember = members.find(m => m.id === memberId);
     const isAdmin = currentMember?.role === 'admin';
 
+    // Derived data for tabs
+    const topLocationProposal = proposals.length > 0
+        ? [...proposals].sort((a, b) => b.score - a.score)[0]
+        : null;
+
+    const votesByDate: Record<string, number> = {};
+    votes.forEach(v => {
+        votesByDate[v.date] = (votesByDate[v.date] || 0) + 1;
+    });
+    const popularDate = Object.entries(votesByDate).length > 0
+        ? Object.entries(votesByDate).sort(([, a], [, b]) => b - a)[0][0]
+        : null;
+
     // Adjust readyCount manually to sync instantaneously with the ReadyButton's local click
+    let adjustedReadyCount = readyCount;
     if (memberId && localOptimisticReady !== null && currentMember) {
         if (currentMember.is_ready !== localOptimisticReady) {
-            if (localOptimisticReady) readyCount++;
-            else readyCount--;
+            if (localOptimisticReady) adjustedReadyCount++;
+            else adjustedReadyCount--;
         }
     }
 
@@ -527,7 +617,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
             )}
 
             <NotificationManager
-                readyCount={readyCount}
+                readyCount={adjustedReadyCount}
                 totalCount={totalCount}
                 groupName={group.name}
             />
@@ -549,7 +639,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                                 className="text-slate-400 hover:text-white"
                                 onClick={() => setIsSettingsModalOpen(true)}
                             >
-                                <Settings className="w-5 h-5" />
+                                <Gear className="w-5 h-5" />
                             </Button>
                         )}
                         <AuthButton view="icon" className="text-slate-400 hover:text-white" />
@@ -557,7 +647,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                 </div>
             </nav>
 
-            <div className="w-full max-w-xl mx-auto flex flex-col gap-6 relative z-10 p-4 mt-2">
+            <div className="w-full max-w-xl mx-auto flex flex-col gap-6 relative z-10 p-4 mt-2 pb-32 sm:pb-8">
                 {/* Group Details & Share Button (Below Header) */}
                 <div className="flex items-center justify-between -mb-2">
                     <div>
@@ -576,131 +666,73 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                     />
                 </div>
 
-                {/* Progress Circle */}
-                <div className="flex justify-center mb-2">
-                    <ProgressCounter readyCount={readyCount} totalCount={totalCount} />
-                </div>
 
                 {memberId && (
-                    <>
-                        {/* Actions / Status */}
-                        <div className="flex flex-col gap-3">
-                            <ReadyButton
-                                slug={slug}
-                                memberId={memberId}
-                                isReady={isReady}
-                                timerEndTime={timerEndTime}
-                                onOptimisticChange={setLocalOptimisticReady}
-                            />
-                            {/* Additional Options Collapsible */}
-                            <div className="flex flex-col gap-2">
-                                <div
-                                    onClick={() => setIsOptionsOpen(!isOptionsOpen)}
-                                    className="flex items-center gap-4 cursor-pointer group py-2"
-                                >
-                                    <div className="h-[1px] flex-1 bg-white/5 group-hover:bg-white/10 transition-colors" />
-                                    <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2 group-hover:text-slate-400 transition-colors shrink-0">
-                                        Plus d'options
-                                    </h4>
-                                    <div className="h-[1px] w-8 bg-white/5 group-hover:bg-white/10 transition-colors" />
-                                    <ChevronDown className={cn("w-4 h-4 text-slate-500 group-hover:text-slate-400 transition-all duration-300", isOptionsOpen ? "rotate-180" : "")} />
-                                </div>
+                    <div className="flex flex-col gap-6">
+                        <GroupTabNav
+                            activeTab={activeTab}
+                            onTabChange={setActiveTab}
+                            calendarEnabled={group.type === 'in_person' || group.calendar_voting_enabled}
+                            locationEnabled={group.location_voting_enabled || !!group.location}
+                        />
 
-                                <div className={cn(
-                                    "grid transition-all duration-300 ease-in-out",
-                                    isOptionsOpen ? "grid-rows-[1fr] opacity-100 mt-1" : "grid-rows-[0fr] opacity-0"
-                                )}>
-                                    <div className="overflow-hidden">
-                                        <div className="flex gap-2 pb-1">
-                                            <div className="flex-1">
-                                                <TimerPicker
-                                                    currentTimerEnd={timerEndTime}
-                                                    onUpdate={async (updates) => {
-                                                        if (!memberId) return;
-                                                        await updateMemberAction(slug, memberId, updates);
-                                                    }}
-                                                />
-                                            </div>
-                                            {group.type === 'in_person' && (
-                                                <div className="flex-1">
-                                                    <TimeProposalModal
-                                                        currentProposedTime={currentMember?.proposed_time ?? null}
-                                                        onUpdate={async (updates) => {
-                                                            if (!memberId) return;
-                                                            await updateMemberAction(slug, memberId, updates);
-                                                        }}
-                                                    />
-                                                </div>
-                                            )}
-                                        </div>
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={activeTab}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                {activeTab === 'home' && (
+                                    <HomeTab
+                                        group={group}
+                                        slug={slug}
+                                        memberId={memberId}
+                                        memberName={memberName}
+                                        members={members}
+                                        loadingMembers={loadingMembers}
+                                        isAdmin={isAdmin}
+                                        isReady={isReady}
+                                        timerEndTime={timerEndTime}
+                                        readyCount={adjustedReadyCount}
+                                        localOptimisticReady={localOptimisticReady}
+                                        onSetLocalOptimisticReady={setLocalOptimisticReady}
+                                        topLocationProposal={topLocationProposal}
+                                        popularDate={popularDate}
+                                        onOpenManage={() => setIsManageModalOpen(true)}
+                                    />
+                                )}
 
-                                        {group.type === 'in_person' && (
-                                            <div className="mt-2 border-t border-white/5 pt-3">
-                                                {(!group.location?.name && !showLocationProposal) ? (
-                                                    <button
-                                                        onClick={() => {
-                                                            setShowLocationProposal(true);
-                                                            setIsOptionsOpen(false);
-                                                        }}
-                                                        className="flex w-full items-center justify-center py-4 px-2 rounded-xl text-[11px] uppercase tracking-[0.2em] font-black transition-all duration-300 group"
-                                                    >
-                                                        <MapPin className="w-4 h-4 mr-2 text-[var(--v2-primary)] group-hover:rotate-12 transition-transform" />
-                                                        RAJOUTER UN LIEU
-                                                    </button>
-                                                ) : isAdmin && (
-                                                    <button
-                                                        onClick={() => {
-                                                            handleLocationDelete();
-                                                            setIsOptionsOpen(false);
-                                                        }}
-                                                        className="flex items-center justify-center w-full py-3 px-4 rounded-xl bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 text-red-400 text-sm font-medium transition-all group"
-                                                    >
-                                                        <X className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                                                        Retirer le lieu
-                                                    </button>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                                {activeTab === 'calendar' && (
+                                    <CalendarTab
+                                        group={group}
+                                        slug={slug}
+                                        memberId={memberId}
+                                        members={members}
+                                        isAdmin={isAdmin}
+                                        onGroupChange={fetchGroup}
+                                        votes={votes}
+                                        onVotesChange={setVotes}
+                                    />
+                                )}
 
-                        {/* Location Card (if In Person and has location or user wants to propose) */}
-                        {group.type === 'in_person' && (group.location?.name || showLocationProposal) && (
-                            <LocationCard
-                                group={group}
-                                slug={slug}
-                                memberId={memberId}
-                                isAdmin={isAdmin}
-                                currentMemberName={memberName}
-                                initialEditMode={showLocationProposal && !group.location?.name ? 'edit' : null}
-                                onRemove={handleLocationDelete}
-                                onLocationUpdate={(newLocation) => {
-                                    setGroup(prev => prev ? { ...prev, location: { ...newLocation, name: newLocation.name || '' } as unknown as NonNullable<typeof prev.location> } : null);
-                                    setShowLocationProposal(false);
-                                    setTimeout(() => {
-                                        router.refresh();
-                                    }, 0);
-                                }}
-                            />
-                        )}
-
-                        {/* Members List */}
-                        <div className="flex flex-col items-end w-full mt-2">
-                            {isAdmin && (
-                                <button
-                                    onClick={() => setIsManageModalOpen(true)}
-                                    className="text-xs font-semibold text-[var(--v2-primary)] hover:text-white transition-colors uppercase tracking-wider mb-2 pr-2"
-                                >
-                                    Gérer le groupe
-                                </button>
-                            )}
-                            <div className="w-full">
-                                <MemberList members={members} loading={loadingMembers} currentMemberId={memberId} />
-                            </div>
-                        </div>
-                    </>
+                                {activeTab === 'location' && (
+                                    <LocationTab
+                                        group={group}
+                                        slug={slug}
+                                        memberId={memberId}
+                                        isAdmin={isAdmin}
+                                        proposals={proposals}
+                                        myVotes={myLocationVotes}
+                                        onProposalsChange={setProposals}
+                                        members={members}
+                                        onGroupChange={fetchGroup}
+                                    />
+                                )}
+                            </motion.div>
+                        </AnimatePresence>
+                    </div>
                 )}
             </div>
 

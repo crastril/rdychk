@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Slider } from '@/components/ui/slider';
-import { Timer, Clock, Loader2 } from 'lucide-react';
+import { Timer, Clock, CircleNotch } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 
 interface TimerPickerProps {
@@ -108,7 +108,7 @@ export function TimerPicker({ currentTimerEnd, onUpdate }: TimerPickerProps) {
                             onClick={handleSetTimer}
                             disabled={loading}
                         >
-                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "VALIDER"}
+                            {loading ? <CircleNotch className="w-4 h-4 animate-spin" /> : "VALIDER"}
                         </Button>
                         {isActive && (
                             <Button

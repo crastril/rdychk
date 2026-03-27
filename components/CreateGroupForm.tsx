@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Loader2, ArrowRight, Edit2 } from 'lucide-react';
+import { CircleNotch, ArrowRight, PencilSimple } from '@phosphor-icons/react';
 import { useAuth } from '@/components/auth-provider';
 import { createSlug } from '@/lib/slug';
 
@@ -87,7 +87,7 @@ export default function CreateGroupForm() {
                         disabled={loading}
                         required
                     />
-                    <Edit2 className="w-5 h-5 absolute left-3.5 top-3.5 text-slate-500" />
+                    <PencilSimple className="w-5 h-5 absolute left-3.5 top-3.5 text-slate-500" />
                 </div>
             </div>
             <div>
@@ -128,7 +128,7 @@ export default function CreateGroupForm() {
                 className="w-full h-14 bg-[var(--v2-primary)] shadow-neon-primary text-white font-extrabold text-lg rounded-xl transition-all active:scale-[0.98] mt-2 flex items-center justify-center gap-2 group hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 {loading ? (
-                    <Loader2 className="w-6 h-6 animate-spin" />
+                    <CircleNotch className="w-6 h-6 animate-spin" />
                 ) : (
                     <>
                         C'est parti !

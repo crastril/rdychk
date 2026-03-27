@@ -13,7 +13,7 @@ import {
     DialogClose
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Clock, X } from 'lucide-react';
+import { Clock, X } from '@phosphor-icons/react';
 
 interface TimeProposalModalProps {
     currentProposedTime: string | null;

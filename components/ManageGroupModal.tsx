@@ -10,7 +10,7 @@ import {
     DialogDescription,
 } from '@/components/ui/dialog';
 import { kickMemberAction } from '@/app/actions/member';
-import { Loader2, Trash2, ShieldAlert } from 'lucide-react';
+import { CircleNotch, Trash, WarningOctagon } from '@phosphor-icons/react';
 import { Member } from '@/types/database';
 import { Badge } from '@/components/ui/badge';
 
@@ -62,7 +62,7 @@ export function ManageGroupModal({ isOpen, onOpenChange, slug, members, loading,
                     <div className="space-y-3 h-full overflow-y-auto pr-2 custom-scrollbar">
                         {loading && members.length === 0 ? (
                             <div className="flex justify-center py-8">
-                                <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+                                <CircleNotch className="w-6 h-6 animate-spin text-slate-400" />
                             </div>
                         ) : members.length === 0 ? (
                             <p className="text-center text-slate-400 py-8">Aucun membre trouvé.</p>
@@ -93,14 +93,14 @@ export function ManageGroupModal({ isOpen, onOpenChange, slug, members, loading,
                                             disabled={deletingId === member.id}
                                         >
                                             {deletingId === member.id ? (
-                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                <CircleNotch className="w-4 h-4 animate-spin" />
                                             ) : (
-                                                <Trash2 className="w-5 h-5" />
+                                                <Trash className="w-5 h-5" />
                                             )}
                                         </Button>
                                     ) : (
                                         <div className="h-10 w-10 flex items-center justify-center">
-                                            <ShieldAlert className="w-5 h-5 text-slate-600" />
+                                            <WarningOctagon className="w-5 h-5 text-slate-600" />
                                         </div>
                                     )}
                                 </div>

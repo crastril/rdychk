@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Wifi, WifiOff, RefreshCw } from 'lucide-react';
+import { WifiHigh, WifiSlash, ArrowsClockwise } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -87,7 +87,7 @@ export function ConnectionStatus({ onRefresh }: ConnectionStatusProps) {
             <div className="fixed bottom-4 left-4 right-4 z-50 animate-in slide-in-from-bottom-5">
                 <div className="bg-destructive text-destructive-foreground px-4 py-3 rounded-lg shadow-lg flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <WifiOff className="h-4 w-4" />
+                        <WifiSlash className="h-4 w-4" />
                         <span className="font-medium text-sm">Connexion perdue</span>
                     </div>
                 </div>
@@ -103,7 +103,7 @@ export function ConnectionStatus({ onRefresh }: ConnectionStatusProps) {
         return (
             <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
                 <div className="bg-background/80 backdrop-blur-sm border px-3 py-1.5 rounded-full shadow-sm flex items-center gap-2 text-xs text-muted-foreground animate-in fade-in slide-in-from-top-2">
-                    <RefreshCw className="h-3 w-3 animate-spin" />
+                    <ArrowsClockwise className="h-3 w-3 animate-spin" />
                     <span>Mise à jour...</span>
                 </div>
             </div>
@@ -120,7 +120,7 @@ export function ConnectionStatus({ onRefresh }: ConnectionStatusProps) {
                     </DialogDescription>
                 </DialogHeader>
                 <Button onClick={handleManualRefresh} className="w-full">
-                    <RefreshCw className="mr-2 h-4 w-4" />
+                    <ArrowsClockwise className="mr-2 h-4 w-4" />
                     Rafraîchir la page
                 </Button>
             </DialogContent>

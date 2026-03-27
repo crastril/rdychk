@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { CircleNotch, WarningCircle } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 
 export default function AuthCallbackPage() {
@@ -85,7 +85,7 @@ export default function AuthCallbackPage() {
                 {!error ? (
                     <>
                         <div className="bg-primary/10 p-4 rounded-full">
-                            <Loader2 className="w-12 h-12 animate-spin text-primary" />
+                            <CircleNotch className="w-12 h-12 animate-spin text-primary" />
                         </div>
                         <div className="space-y-2">
                             <h1 className="text-2xl font-bold tracking-tight">Connexion en cours...</h1>
@@ -97,7 +97,7 @@ export default function AuthCallbackPage() {
                 ) : (
                     <>
                         <div className="bg-destructive/10 p-4 rounded-full">
-                            <AlertCircle className="w-12 h-12 text-destructive" />
+                            <WarningCircle className="w-12 h-12 text-destructive" />
                         </div>
                         <div className="space-y-2">
                             <h1 className="text-2xl font-bold tracking-tight text-destructive">Échec de la connexion</h1>

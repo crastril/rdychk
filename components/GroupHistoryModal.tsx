@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, ExternalLink, LogOut, History, AlertTriangle } from 'lucide-react';
+import { CircleNotch, ArrowSquareOut, SignOut, ClockCounterClockwise, Warning } from '@phosphor-icons/react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/auth-provider';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
@@ -141,7 +141,7 @@ export function GroupHistoryModal({ open, onOpenChange }: GroupHistoryModalProps
                     <div className="p-6">
                         <DialogHeader className="border-b border-white/10 pb-4 mb-2">
                             <DialogTitle className="flex items-center gap-3 text-2xl font-bold">
-                                <History className="w-6 h-6 text-[var(--v2-primary)]" />
+                                <ClockCounterClockwise className="w-6 h-6 text-[var(--v2-primary)]" />
                                 Historique des groupes
                             </DialogTitle>
                             <DialogDescription className="text-slate-400">
@@ -152,7 +152,7 @@ export function GroupHistoryModal({ open, onOpenChange }: GroupHistoryModalProps
                         <ScrollArea className="h-[300px] pr-4 mt-2 custom-scrollbar">
                             {loading ? (
                                 <div className="flex justify-center items-center h-full min-h-[100px]">
-                                    <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+                                    <CircleNotch className="w-8 h-8 animate-spin text-slate-400" />
                                 </div>
                             ) : groups.length === 0 ? (
                                 <div className="text-center text-slate-400 py-8">
@@ -174,7 +174,7 @@ export function GroupHistoryModal({ open, onOpenChange }: GroupHistoryModalProps
                                                     <span className="font-bold text-white truncate block">
                                                         {item.groups.name}
                                                     </span>
-                                                    <ExternalLink className="w-3.5 h-3.5 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    <ArrowSquareOut className="w-3.5 h-3.5 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                                                 </div>
                                                 <span className="text-xs text-slate-400 font-medium">
                                                     Rejoint le {new Date(item.joined_at).toLocaleDateString()}
@@ -189,9 +189,9 @@ export function GroupHistoryModal({ open, onOpenChange }: GroupHistoryModalProps
                                                 disabled={leavingId === item.group_id}
                                             >
                                                 {leavingId === item.group_id ? (
-                                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                                    <CircleNotch className="w-5 h-5 animate-spin" />
                                                 ) : (
-                                                    <LogOut className="w-5 h-5" />
+                                                    <SignOut className="w-5 h-5" />
                                                 )}
                                             </Button>
                                         </div>

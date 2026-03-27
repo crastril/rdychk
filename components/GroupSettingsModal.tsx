@@ -9,7 +9,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { supabase } from '@/lib/supabase';
-import { Loader2, LogOut } from 'lucide-react';
+import { CircleNotch, SignOut } from '@phosphor-icons/react';
 import { GroupTypeSelector } from '@/components/GroupTypeSelector';
 
 interface GroupSettingsModalProps {
@@ -74,7 +74,7 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
 
                     {loading ? (
                         <div className="flex justify-center py-8">
-                            <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+                            <CircleNotch className="w-8 h-8 animate-spin text-slate-400" />
                         </div>
                     ) : (
                         <div className="space-y-8">
@@ -97,7 +97,7 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                 >
                                     {saving ? (
                                         <>
-                                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                            <CircleNotch className="mr-2 h-5 w-5 animate-spin" />
                                             Enregistrement...
                                         </>
                                     ) : (
@@ -115,7 +115,7 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                         }}
                                         className="w-full bg-red-500/10 border-red-500/20 text-red-500 hover:bg-red-500/20 hover:text-red-400 font-bold h-12 rounded-xl transition-all"
                                     >
-                                        <LogOut className="mr-2 h-4 w-4" />
+                                        <SignOut className="mr-2 h-4 w-4" />
                                         Quitter le groupe
                                     </Button>
                                 )}

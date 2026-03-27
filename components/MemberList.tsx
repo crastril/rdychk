@@ -2,7 +2,7 @@
 
 import type { Member } from '@/types/database';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Crown, Users as UsersIcon } from 'lucide-react';
+import { Crown, Users as UsersIcon } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import { MemberStatus } from './MemberStatus';
 

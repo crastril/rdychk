@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import type { Member } from '@/types/database';
-import { Check, Clock, Timer, AlertTriangle } from 'lucide-react';
+import { Check, Clock, Timer, Warning } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 
 export function MemberStatus({ member }: { member: Member }) {
@@ -52,7 +52,7 @@ export function MemberStatus({ member }: { member: Member }) {
                     if (diff <= 0) {
                         return (
                             <>
-                                <AlertTriangle className="w-3.5 h-3.5 animate-pulse" />
+                                <Warning className="w-3.5 h-3.5 animate-pulse" />
                                 <span>BIENTÔT PRÊT</span>
                             </>
                         );
