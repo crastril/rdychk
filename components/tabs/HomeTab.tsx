@@ -1,17 +1,18 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import type { Group, Member, LocationProposal } from '@/types/database';
-import ReadyButton from '@/components/ReadyButton';
-import ProgressCounter from '@/components/ProgressCounter';
-import MemberList from '@/components/MemberList';
+import type { Group, Member, LocationProposal, DateVote } from '@/types/database';
+import { HeroBlock } from '@/components/HeroBlock';
+import { MembersCompact } from '@/components/MembersCompact';
+import { CalendarTab } from '@/components/tabs/CalendarTab';
+import { LocationTab } from '@/components/tabs/LocationTab';
 import { TimerPicker } from '@/components/TimerPicker';
 import { TimeProposalModal } from '@/components/TimeProposalModal';
 import { updateMemberAction } from '@/app/actions/member';
-import { CalendarBlank, MapPin, CaretDown, Plus } from '@phosphor-icons/react';
+import { updateLocationAction } from '@/app/actions/group';
+import { CalendarBlank, MapPin, CaretDown } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { AddLocationProposalModal } from '@/components/AddLocationProposalModal';
-import { updateLocationAction } from '@/app/actions/group';
 
 interface HomeTabProps {
     group: Group;
@@ -29,7 +30,14 @@ interface HomeTabProps {
     topLocationProposal: LocationProposal | null;
     popularDate?: string | null;
     onOpenManage: () => void;
-    onOpenOptions?: () => void;
+    // Calendar data (passed inline)
+    votes: DateVote[];
+    onVotesChange: (votes: DateVote[]) => void;
+    // Location data (passed inline)
+    proposals: LocationProposal[];
+    myLocationVotes: Record<string, 1 | -1>;
+    onProposalsChange: (proposals: LocationProposal[]) => void;
+    onGroupChange: () => void;
 }
 
 export function HomeTab({
@@ -48,217 +56,278 @@ export function HomeTab({
     topLocationProposal,
     popularDate,
     onOpenManage,
+    votes,
+    onVotesChange,
+    proposals,
+    myLocationVotes,
+    onProposalsChange,
+    onGroupChange,
 }: HomeTabProps) {
+    const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+    const [isLocationOpen, setIsLocationOpen] = useState(false);
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
-    const [isBriefingOpen, setIsBriefingOpen] = useState(false);
-    const totalCount = members.length;
-    const currentMember = members.find(m => m.id === memberId);
     const [showLocationModal, setShowLocationModal] = useState(false);
 
-    // Format confirmed_date for display
+    const currentMember = members.find(m => m.id === memberId);
+
+    // Formatted dates
     const confirmedDate = group.confirmed_date
         ? new Date(group.confirmed_date + 'T00:00:00').toLocaleDateString('fr-FR', {
-            weekday: 'long', day: 'numeric', month: 'long'
+            weekday: 'short', day: 'numeric', month: 'short',
         })
         : null;
-
     const formattedPopularDate = popularDate
         ? new Date(popularDate + 'T00:00:00').toLocaleDateString('fr-FR', {
-            weekday: 'long', day: 'numeric', month: 'long'
+            weekday: 'short', day: 'numeric', month: 'short',
         })
         : null;
 
+    const displayDate = confirmedDate || formattedPopularDate;
+    const displayLocation = group.location?.name || topLocationProposal?.name;
+
+    // Stats for action cards
+    const myVoteCount = votes.filter(v => v.member_id === memberId).length;
+    const uniqueVotedDates = new Set(votes.map(v => v.date)).size;
+
+    const calendarEnabled = group.calendar_voting_enabled;
+    const locationEnabled = group.location_voting_enabled;
+    const hasActionCards = calendarEnabled || locationEnabled || (isAdmin && !locationEnabled);
+
     return (
-        <div className="flex flex-col gap-6">
-            {/* ── BRIEFING RAPIDE (pour les flemmards) ── */}
-            {(confirmedDate || formattedPopularDate || topLocationProposal || group.location?.name || (isAdmin && !group.location_voting_enabled)) && (
-                    <div
-                        className="rounded-2xl overflow-hidden border-2 border-white/12"
-                        style={{ background: '#0c0c0c', boxShadow: '4px 4px 0px #000' }}
-                    >
-                        {/* Header tape — clickable toggle */}
+        <div className="flex flex-col gap-4">
+
+            {/* ── STATUS STRIP ── always-visible inline pills */}
+            {(displayDate || displayLocation || (isAdmin && !locationEnabled)) && (
+                <div className="flex items-center gap-2 flex-wrap px-0.5">
+                    {displayDate && (
+                        <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5">
+                            <CalendarBlank className="w-3 h-3 text-[var(--v2-primary)] shrink-0" weight="fill" />
+                            <span className="text-[11px] font-black text-white/65 capitalize">{displayDate}</span>
+                            {confirmedDate && (
+                                <span className="text-[8px] font-black text-green-400 ml-0.5">✓</span>
+                            )}
+                        </div>
+                    )}
+                    {displayLocation && (
+                        <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5">
+                            <MapPin className="w-3 h-3 text-[var(--v2-accent)] shrink-0" weight="fill" />
+                            <span className="text-[11px] font-black text-white/65 truncate max-w-[130px]">{displayLocation}</span>
+                        </div>
+                    )}
+                    {/* Admin: add location shortcut when not in voting mode */}
+                    {isAdmin && !locationEnabled && !group.location?.name && (
                         <button
-                            type="button"
-                            onClick={() => setIsBriefingOpen(v => !v)}
-                            className="w-full flex items-center gap-2.5 px-4 py-3 transition-colors hover:bg-white/5"
-                            style={{ background: isBriefingOpen ? 'rgba(255,255,255,0.03)' : 'transparent' }}
+                            onClick={() => setShowLocationModal(true)}
+                            className="flex items-center gap-1.5 bg-[var(--v2-primary)]/8 border border-[var(--v2-primary)]/20 rounded-full px-3 py-1.5 hover:bg-[var(--v2-primary)]/15 transition-colors"
                         >
-                            <span className="w-2 h-2 rounded-full bg-[var(--v2-primary)] shrink-0" style={{ boxShadow: '0 0 6px var(--v2-primary)' }} />
-                            <span className="text-[11px] font-black text-white/60 flex-1 text-left">
-                                T&apos;as rien suivi ? Clique ici
-                            </span>
-                            <CaretDown
-                                className={cn('w-4 h-4 text-white/30 transition-transform duration-200', isBriefingOpen && 'rotate-180')}
-                                weight="bold"
-                            />
+                            <MapPin className="w-3 h-3 text-[var(--v2-primary)] shrink-0" />
+                            <span className="text-[11px] font-black text-[var(--v2-primary)]/80">+ Lieu</span>
                         </button>
-
-                        {/* Info rows — collapsible */}
-                        <div className={cn(
-                            'grid transition-all duration-200 ease-in-out',
-                            isBriefingOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-                        )}>
-                        <div className="overflow-hidden">
-                        <div className="border-t-2 border-white/8 p-4 space-y-3">
-                            {/* Date */}
-                            {(confirmedDate || formattedPopularDate) && (
-                                <div className="flex items-center gap-3">
-                                    <div
-                                        className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border-2 border-[var(--v2-primary)]/30"
-                                        style={{ background: 'rgba(255,46,46,0.08)', boxShadow: '2px 2px 0px rgba(0,0,0,0.6)' }}
-                                    >
-                                        <CalendarBlank className="w-4 h-4 text-[var(--v2-primary)]" weight="fill" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/30">QUAND</p>
-                                        <p className="text-sm font-black text-white capitalize truncate">{confirmedDate || formattedPopularDate}</p>
-                                    </div>
-                                    {confirmedDate && (
-                                        <span
-                                            className="text-[8px] font-black uppercase tracking-wider px-2 py-1 rounded-lg border-2 shrink-0"
-                                            style={{ color: '#4ade80', borderColor: 'rgba(74,222,128,0.35)', background: 'rgba(74,222,128,0.07)', boxShadow: '1px 1px 0px #000' }}
-                                        >
-                                            CONFIRMÉ
-                                        </span>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Location */}
-                            {(group.location?.name || topLocationProposal) ? (
-                                <div className="flex items-center gap-3">
-                                    <div
-                                        className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border-2 border-[var(--v2-accent)]/30"
-                                        style={{ background: 'rgba(255,255,255,0.05)', boxShadow: '2px 2px 0px rgba(0,0,0,0.6)' }}
-                                    >
-                                        <MapPin className="w-4 h-4 text-[var(--v2-accent)]" weight="fill" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/30">OÙ</p>
-                                        <p className="text-sm font-black text-white truncate">
-                                            {group.location?.name || topLocationProposal?.name}
-                                        </p>
-                                    </div>
-                                    {isAdmin && !group.location_voting_enabled && group.location?.name && (
-                                        <button
-                                            onClick={() => setShowLocationModal(true)}
-                                            className="text-[9px] font-black uppercase tracking-wider text-[var(--v2-primary)] border-2 border-[var(--v2-primary)]/40 px-2 py-1 rounded-lg hover:bg-[var(--v2-primary)]/10 transition-colors shrink-0"
-                                            style={{ boxShadow: '1px 1px 0px #000' }}
-                                        >
-                                            Modifier
-                                        </button>
-                                    )}
-                                </div>
-                            ) : (
-                                isAdmin && !group.location_voting_enabled && !group.location && (
-                                    <div className="flex items-center gap-3">
-                                        <div
-                                            className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border-2 border-white/10"
-                                            style={{ background: 'rgba(255,255,255,0.03)', boxShadow: '2px 2px 0px rgba(0,0,0,0.6)' }}
-                                        >
-                                            <MapPin className="w-4 h-4 text-white/25" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/30">OÙ</p>
-                                            <p className="text-sm font-black text-white/30">Non défini</p>
-                                        </div>
-                                        <button
-                                            onClick={() => setShowLocationModal(true)}
-                                            className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--v2-primary)] border-2 border-[var(--v2-primary)]/40 px-2.5 py-1.5 rounded-lg hover:bg-[var(--v2-primary)]/10 transition-colors shrink-0"
-                                            style={{ boxShadow: '2px 2px 0px #000' }}
-                                        >
-                                            <Plus className="w-3 h-3" />
-                                            Ajouter
-                                        </button>
-                                    </div>
-                                )
-                            )}
-                        </div>
-                        </div>
-                        </div>
-                    </div>
+                    )}
+                    {isAdmin && !locationEnabled && group.location?.name && (
+                        <button
+                            onClick={() => setShowLocationModal(true)}
+                            className="flex items-center gap-1.5 bg-white/4 border border-white/8 rounded-full px-3 py-1.5 hover:bg-white/8 transition-colors"
+                        >
+                            <span className="text-[11px] font-black text-white/30">Modifier →</span>
+                        </button>
+                    )}
+                </div>
             )}
 
-            {/* Progress Circle */}
-            <div className="flex justify-center">
-                <ProgressCounter readyCount={readyCount} totalCount={totalCount} />
-            </div>
-
+            {/* ── HERO BLOCK ── progress bar + ready button */}
             {memberId && (
-                <>
-                    {/* Ready Button + Options */}
-                    <div className="flex flex-col gap-3">
-                        <ReadyButton
-                            slug={slug}
-                            memberId={memberId}
-                            isReady={isReady}
-                            timerEndTime={timerEndTime}
-                            onOptimisticChange={onSetLocalOptimisticReady}
-                        />
+                <HeroBlock
+                    slug={slug}
+                    memberId={memberId}
+                    isReady={isReady}
+                    timerEndTime={timerEndTime}
+                    readyCount={readyCount}
+                    totalCount={members.length}
+                    localOptimisticReady={localOptimisticReady}
+                    onOptimisticChange={onSetLocalOptimisticReady}
+                />
+            )}
 
-                        {/* Additional Options Collapsible */}
-                        <div className="flex flex-col gap-2">
-                            <div
-                                onClick={() => setIsOptionsOpen(!isOptionsOpen)}
-                                className="flex items-center gap-4 cursor-pointer group py-2"
+            {/* ── MEMBERS COMPACT ── */}
+            <MembersCompact
+                members={members}
+                currentMemberId={memberId}
+                loading={loadingMembers}
+                onOpenManage={onOpenManage}
+                isAdmin={isAdmin}
+            />
+
+            {/* ── ACTION CARDS ── Calendar + Location inline */}
+            {hasActionCards && (
+                <div className={cn(
+                    'grid gap-3',
+                    calendarEnabled && locationEnabled ? 'grid-cols-2' : 'grid-cols-1'
+                )}>
+                    {/* Calendar card */}
+                    {calendarEnabled && (
+                        <div
+                            className="flex flex-col rounded-2xl border-2 border-white/8 overflow-hidden"
+                            style={{ background: '#0c0c0c', boxShadow: '3px 3px 0px #000' }}
+                        >
+                            <button
+                                type="button"
+                                onClick={() => setIsCalendarOpen(v => !v)}
+                                className="flex flex-col gap-1 p-3.5 text-left hover:bg-white/[0.02] transition-colors"
                             >
-                                <div className="h-[1px] flex-1 bg-white/5 group-hover:bg-white/10 transition-colors" />
-                                <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2 group-hover:text-slate-400 transition-colors shrink-0">
-                                    Plus d&apos;options
-                                </h4>
-                                <div className="h-[1px] w-8 bg-white/5 group-hover:bg-white/10 transition-colors" />
-                                <CaretDown className={cn("w-4 h-4 text-slate-500 group-hover:text-slate-400 transition-all duration-300", isOptionsOpen ? "rotate-180" : "")} />
-                            </div>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-1.5">
+                                        <CalendarBlank className="w-3.5 h-3.5 text-[var(--v2-primary)]" weight="fill" />
+                                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">
+                                            Calendrier
+                                        </span>
+                                    </div>
+                                    <CaretDown
+                                        className={cn('w-3 h-3 text-white/20 transition-transform duration-200', isCalendarOpen && 'rotate-180')}
+                                        weight="bold"
+                                    />
+                                </div>
+                                {displayDate ? (
+                                    <p className="text-sm font-black text-white capitalize leading-tight mt-0.5">{displayDate}</p>
+                                ) : (
+                                    <p className="text-xs text-white/25 mt-0.5">Aucun vote</p>
+                                )}
+                                <p className="text-[9px] text-white/20 uppercase tracking-wider">
+                                    {uniqueVotedDates} date{uniqueVotedDates !== 1 ? 's' : ''} · {myVoteCount} vote{myVoteCount !== 1 ? 's' : ''}
+                                </p>
+                            </button>
 
+                            {/* Inline calendar */}
                             <div className={cn(
-                                "grid transition-all duration-300 ease-in-out",
-                                isOptionsOpen ? "grid-rows-[1fr] opacity-100 mt-1" : "grid-rows-[0fr] opacity-0"
+                                'grid transition-all duration-300 ease-in-out',
+                                isCalendarOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
                             )}>
                                 <div className="overflow-hidden">
-                                    <div className="flex gap-2 pb-1">
-                                        <div className="flex-1">
-                                            <TimerPicker
-                                                currentTimerEnd={timerEndTime}
-                                                onUpdate={async (updates) => {
-                                                    if (!memberId) return;
-                                                    await updateMemberAction(slug, memberId, updates);
-                                                }}
-                                            />
-                                        </div>
-                                        {group.type === 'in_person' && (
-                                            <div className="flex-1">
-                                                <TimeProposalModal
-                                                    currentProposedTime={currentMember?.proposed_time ?? null}
-                                                    onUpdate={async (updates) => {
-                                                        if (!memberId) return;
-                                                        await updateMemberAction(slug, memberId, updates);
-                                                    }}
-                                                />
-                                            </div>
-                                        )}
+                                    <div className="border-t-2 border-white/6 p-3">
+                                        <CalendarTab
+                                            group={group}
+                                            slug={slug}
+                                            memberId={memberId}
+                                            members={members}
+                                            isAdmin={isAdmin}
+                                            onGroupChange={onGroupChange}
+                                            votes={votes}
+                                            onVotesChange={onVotesChange}
+                                        />
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    )}
 
-                    {/* Members List */}
-                    <div className="flex flex-col items-end w-full mt-2">
-                        {isAdmin && (
+                    {/* Location card */}
+                    {locationEnabled && (
+                        <div
+                            className="flex flex-col rounded-2xl border-2 border-white/8 overflow-hidden"
+                            style={{ background: '#0c0c0c', boxShadow: '3px 3px 0px #000' }}
+                        >
                             <button
-                                onClick={onOpenManage}
-                                className="text-xs font-semibold text-[var(--v2-primary)] hover:text-white transition-colors uppercase tracking-wider mb-2 pr-2"
+                                type="button"
+                                onClick={() => setIsLocationOpen(v => !v)}
+                                className="flex flex-col gap-1 p-3.5 text-left hover:bg-white/[0.02] transition-colors"
                             >
-                                Gérer le groupe
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-1.5">
+                                        <MapPin className="w-3.5 h-3.5 text-[var(--v2-accent)]" weight="fill" />
+                                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">
+                                            Lieux
+                                        </span>
+                                    </div>
+                                    <CaretDown
+                                        className={cn('w-3 h-3 text-white/20 transition-transform duration-200', isLocationOpen && 'rotate-180')}
+                                        weight="bold"
+                                    />
+                                </div>
+                                {displayLocation ? (
+                                    <p className="text-sm font-black text-white truncate leading-tight mt-0.5">{displayLocation}</p>
+                                ) : (
+                                    <p className="text-xs text-white/25 mt-0.5">Aucune prop.</p>
+                                )}
+                                <p className="text-[9px] text-white/20 uppercase tracking-wider">
+                                    {proposals.length} proposition{proposals.length !== 1 ? 's' : ''}
+                                </p>
                             </button>
-                        )}
-                        <div className="w-full">
-                            <MemberList members={members} loading={loadingMembers} currentMemberId={memberId} />
+
+                            {/* Inline location */}
+                            <div className={cn(
+                                'grid transition-all duration-300 ease-in-out',
+                                isLocationOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                            )}>
+                                <div className="overflow-hidden">
+                                    <div className="border-t-2 border-white/6 p-3">
+                                        <LocationTab
+                                            group={group}
+                                            slug={slug}
+                                            memberId={memberId}
+                                            isAdmin={isAdmin}
+                                            proposals={proposals}
+                                            myVotes={myLocationVotes}
+                                            onProposalsChange={onProposalsChange}
+                                            members={members}
+                                            onGroupChange={onGroupChange}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </>
+                    )}
+                </div>
             )}
 
+            {/* ── POWER USER ZONE ── timer + options */}
+            {memberId && (
+                <div className="flex flex-col gap-2 mt-1">
+                    <button
+                        type="button"
+                        onClick={() => setIsOptionsOpen(v => !v)}
+                        className="flex items-center gap-3 py-1.5 group"
+                    >
+                        <div className="h-px flex-1 bg-white/5 group-hover:bg-white/8 transition-colors" />
+                        <span className="text-[9px] font-black uppercase tracking-[0.25em] text-white/18 group-hover:text-white/30 transition-colors flex items-center gap-1.5">
+                            Options
+                            <CaretDown className={cn('w-3 h-3 transition-transform duration-200', isOptionsOpen && 'rotate-180')} />
+                        </span>
+                        <div className="h-px flex-1 bg-white/5 group-hover:bg-white/8 transition-colors" />
+                    </button>
+
+                    <div className={cn(
+                        'grid transition-all duration-200 ease-in-out',
+                        isOptionsOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                    )}>
+                        <div className="overflow-hidden">
+                            <div className="flex gap-2 pb-1">
+                                <div className="flex-1">
+                                    <TimerPicker
+                                        currentTimerEnd={timerEndTime}
+                                        onUpdate={async (updates) => {
+                                            if (!memberId) return;
+                                            await updateMemberAction(slug, memberId, updates);
+                                        }}
+                                    />
+                                </div>
+                                {group.type === 'in_person' && (
+                                    <div className="flex-1">
+                                        <TimeProposalModal
+                                            currentProposedTime={currentMember?.proposed_time ?? null}
+                                            onUpdate={async (updates) => {
+                                                if (!memberId) return;
+                                                await updateMemberAction(slug, memberId, updates);
+                                            }}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Add location modal (admin, non-voting mode) */}
             {showLocationModal && (
                 <AddLocationProposalModal
                     isOpen={showLocationModal}
@@ -268,14 +337,13 @@ export function HomeTab({
                     baseLng={group.base_lng}
                     onSubmit={async (data) => {
                         if (!memberId || !group.id) return;
-                        const newLocation = {
+                        await updateLocationAction(slug, memberId, group.id, {
                             name: data.name,
                             address: '',
                             link: data.link,
                             image: data.image,
                             description: data.description,
-                        };
-                        await updateLocationAction(slug, memberId, group.id, newLocation);
+                        });
                         setShowLocationModal(false);
                     }}
                 />

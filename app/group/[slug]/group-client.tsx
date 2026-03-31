@@ -6,30 +6,17 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/auth-provider';
-import { joinGroupAction, reclaimSessionAction, leaveGroupAction, updateMemberAction, promoteToAdminAction, linkGuestToUserAction } from '@/app/actions/member';
-import { updateLocationAction } from '@/app/actions/group';
-import { AnimatePresence, motion } from 'framer-motion';
+import { joinGroupAction, reclaimSessionAction, leaveGroupAction, promoteToAdminAction, linkGuestToUserAction } from '@/app/actions/member';
 import JoinModal from '@/components/JoinModal';
-import MemberList from '@/components/MemberList';
-import ReadyButton from '@/components/ReadyButton';
-import ProgressCounter from '@/components/ProgressCounter';
-import { TimerPicker } from '@/components/TimerPicker';
 import { ShareMenu } from '@/components/ShareMenu';
 import { NotificationManager } from '@/components/NotificationManager';
 import { ManageGroupModal } from '@/components/ManageGroupModal';
-import { TimeProposalModal } from '@/components/TimeProposalModal';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Copy, Check, Crosshair, Users, CircleNotch, SignOut, Gear, CaretDown, MapPin, X } from '@phosphor-icons/react';
-import { ModeToggle } from '@/components/mode-toggle';
+import { Gear } from '@phosphor-icons/react';
 import { AuthButton } from '@/components/auth-button';
-import { LocationCard } from '@/components/LocationCard';
 import { GroupSettingsModal } from '@/components/GroupSettingsModal';
 import { ConnectionStatus } from '@/components/ConnectionStatus';
-import { GroupTabNav, type GroupTab } from '@/components/GroupTabNav';
 import { HomeTab } from '@/components/tabs/HomeTab';
-import { CalendarTab } from '@/components/tabs/CalendarTab';
-import { LocationTab } from '@/components/tabs/LocationTab';
 import type { Group, Member, DateVote, LocationProposal } from '@/types/database';
 
 const LiquidWaves = () => {
@@ -69,10 +56,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
     const [loadingMembers, setLoadingMembers] = useState(false);
     const [isManageModalOpen, setIsManageModalOpen] = useState(false);
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-    const [isOptionsOpen, setIsOptionsOpen] = useState(false);
-    const [showLocationProposal, setShowLocationProposal] = useState(false);
     const [localOptimisticReady, setLocalOptimisticReady] = useState<boolean | null>(null);
-    const [activeTab, setActiveTab] = useState<GroupTab>('home');
     const [votes, setVotes] = useState<DateVote[]>([]);
     const [proposals, setProposals] = useState<LocationProposal[]>([]);
     const [myLocationVotes, setMyLocationVotes] = useState<Record<string, 1 | -1>>({});
@@ -162,22 +146,6 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
         }
     };
 
-    const handleLocationDelete = async () => {
-        if (!group?.id || !memberId) return;
-
-        // If we are just in proposal mode but no location is saved in DB
-        if (showLocationProposal && !group.location?.name) {
-            setShowLocationProposal(false);
-            return;
-        }
-
-        const { success } = await updateLocationAction(slug, memberId, group.id, null);
-        if (success) {
-            setGroup(prev => prev ? { ...prev, location: null } : null);
-            setShowLocationProposal(false);
-            router.refresh();
-        }
-    };
 
     useEffect(() => {
         fetchGroup();
@@ -647,25 +615,13 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                 </div>
             </nav>
 
-            <div className="w-full max-w-xl mx-auto flex flex-col gap-6 relative z-10 p-4 mt-2 pb-32 sm:pb-8">
-                {memberId && (
-                    <GroupTabNav
-                        activeTab={activeTab}
-                        onTabChange={setActiveTab}
-                        calendarEnabled={group.calendar_voting_enabled}
-                        locationEnabled={group.location_voting_enabled}
-                    />
-                )}
-                {/* Group Details & Share Button (Below Header) */}
-                <div className="flex items-center justify-between -mb-2">
-                    <div>
-                        <h1 className="text-white font-bold text-2xl leading-tight truncate max-w-[200px] sm:max-w-[250px]">
+            <div className="w-full max-w-xl mx-auto flex flex-col gap-4 relative z-10 p-4 mt-2 pb-12">
+                {/* Group header — compact */}
+                <div className="flex items-center gap-3">
+                    <div className="flex-1 min-w-0">
+                        <h1 className="text-white font-black text-xl leading-tight truncate">
                             {group.name}
                         </h1>
-                        <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 mt-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[var(--v2-primary)] shadow-neon-primary"></span>
-                            {totalCount} {totalCount === 1 ? 'membre' : 'membres'}
-                        </div>
                     </div>
                     <ShareMenu
                         groupName={group.name}
@@ -674,67 +630,31 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                     />
                 </div>
 
-
+                {/* Single-scroll home view */}
                 {memberId && (
-                    <div className="flex flex-col gap-6">
-
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={activeTab}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                transition={{ duration: 0.2 }}
-                            >
-                                {activeTab === 'home' && (
-                                    <HomeTab
-                                        group={group}
-                                        slug={slug}
-                                        memberId={memberId}
-                                        memberName={memberName}
-                                        members={members}
-                                        loadingMembers={loadingMembers}
-                                        isAdmin={isAdmin}
-                                        isReady={isReady}
-                                        timerEndTime={timerEndTime}
-                                        readyCount={adjustedReadyCount}
-                                        localOptimisticReady={localOptimisticReady}
-                                        onSetLocalOptimisticReady={setLocalOptimisticReady}
-                                        topLocationProposal={topLocationProposal}
-                                        popularDate={popularDate}
-                                        onOpenManage={() => setIsManageModalOpen(true)}
-                                    />
-                                )}
-
-                                {activeTab === 'calendar' && (
-                                    <CalendarTab
-                                        group={group}
-                                        slug={slug}
-                                        memberId={memberId}
-                                        members={members}
-                                        isAdmin={isAdmin}
-                                        onGroupChange={fetchGroup}
-                                        votes={votes}
-                                        onVotesChange={setVotes}
-                                    />
-                                )}
-
-                                {activeTab === 'location' && (
-                                    <LocationTab
-                                        group={group}
-                                        slug={slug}
-                                        memberId={memberId}
-                                        isAdmin={isAdmin}
-                                        proposals={proposals}
-                                        myVotes={myLocationVotes}
-                                        onProposalsChange={setProposals}
-                                        members={members}
-                                        onGroupChange={fetchGroup}
-                                    />
-                                )}
-                            </motion.div>
-                        </AnimatePresence>
-                    </div>
+                    <HomeTab
+                        group={group}
+                        slug={slug}
+                        memberId={memberId}
+                        memberName={memberName}
+                        members={members}
+                        loadingMembers={loadingMembers}
+                        isAdmin={isAdmin}
+                        isReady={isReady}
+                        timerEndTime={timerEndTime}
+                        readyCount={adjustedReadyCount}
+                        localOptimisticReady={localOptimisticReady}
+                        onSetLocalOptimisticReady={setLocalOptimisticReady}
+                        topLocationProposal={topLocationProposal}
+                        popularDate={popularDate}
+                        onOpenManage={() => setIsManageModalOpen(true)}
+                        votes={votes}
+                        onVotesChange={setVotes}
+                        proposals={proposals}
+                        myLocationVotes={myLocationVotes}
+                        onProposalsChange={setProposals}
+                        onGroupChange={fetchGroup}
+                    />
                 )}
             </div>
 
