@@ -69,69 +69,162 @@ export function HomeTab({
 
     return (
         <div className="flex flex-col gap-6">
-            {/* Summary block (when there's useful info) */}
-            {(confirmedDate || formattedPopularDate || topLocationProposal || group.location?.name || (isAdmin && !group.location_voting_enabled)) && (
-                <div className="glass-panel rounded-2xl border border-white/5 p-4 space-y-3">
-                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Pour les flemmards :</h3>
+            {/* ── BRIEFING RAPIDE (pour les flemmards) ── */}
+            {(confirmedDate || formattedPopularDate || topLocationProposal || group.location?.name || (isAdmin && !group.location_voting_enabled)) && (() => {
+                const notReady = totalCount - readyCount;
+                const flemmeRatio = totalCount > 0 ? notReady / totalCount : 0;
+                const SEGMENTS = 10;
+                const filledSegments = Math.round((1 - flemmeRatio) * SEGMENTS);
+                const flemmeLabel =
+                    flemmeRatio === 0   ? ['ZÉRO', '#4ade80', '🔥 ON EST TOUS CHAUDS'] :
+                    flemmeRatio < 0.25  ? ['FAIBLE', '#86efac', '💪 PRESQUE LÀ'] :
+                    flemmeRatio < 0.5   ? ['MODÉRÉ', '#fbbf24', '😐 MOUAIS...'] :
+                    flemmeRatio < 0.75  ? ['ÉLEVÉ', '#f97316', '🥱 C\'EST CHAUD'] :
+                    flemmeRatio < 1     ? ['CRITIQUE', '#ef4444', '💀 PERSONNE BOUGE'] :
+                                         ['CATASTROPHIQUE', '#ff2e2e', '🪦 ILS SONT MORTS'];
 
-                    {/* Date Section */}
-                    {(confirmedDate || formattedPopularDate) ? (
-                        <div className="flex items-center gap-3">
-                            <div className="w-7 h-7 rounded-lg bg-[var(--v2-primary)]/10 flex items-center justify-center shrink-0">
-                                <CalendarBlank className="w-3.5 h-3.5 text-[var(--v2-primary)]" />
-                            </div>
-                            <div>
-                                <p className="text-xs text-slate-500 font-medium">Date</p>
-                                <p className="text-sm font-bold text-white capitalize">{confirmedDate || formattedPopularDate}</p>
-                            </div>
+                return (
+                    <div
+                        className="rounded-2xl overflow-hidden border-2 border-white/12"
+                        style={{ background: '#0c0c0c', boxShadow: '4px 4px 0px #000' }}
+                    >
+                        {/* Header tape */}
+                        <div
+                            className="flex items-center gap-2.5 px-4 py-2.5 border-b-2 border-white/8"
+                            style={{ background: 'rgba(255,255,255,0.03)' }}
+                        >
+                            <span className="w-2 h-2 rounded-full bg-[var(--v2-primary)] shrink-0" style={{ boxShadow: '0 0 6px var(--v2-primary)' }} />
+                            <span className="text-[10px] font-black uppercase tracking-[0.28em] text-white/45">
+                                FLEMMARD.EXE
+                            </span>
+                            <div className="flex-1" />
+                            <span className="text-[9px] font-mono tracking-widest text-white/20 uppercase">BRIEFING RAPIDE</span>
                         </div>
-                    ) : null}
 
-                    {/* Location Section */}
-                    {(group.location?.name || topLocationProposal) ? (
-                        <div className="flex items-center gap-3">
-                            <div className="w-7 h-7 rounded-lg bg-[var(--v2-accent)]/10 flex items-center justify-center shrink-0">
-                                <MapPin className="w-3.5 h-3.5 text-[var(--v2-accent)]" />
-                            </div>
-                            <div>
-                                <p className="text-xs text-slate-500 font-medium">Lieu</p>
-                                <p className="text-sm font-bold text-white flex flex-col sm:flex-row sm:items-center sm:gap-2">
-                                    {group.location?.name || topLocationProposal?.name}
+                        {/* Info rows */}
+                        <div className="p-4 space-y-3">
+                            {/* Date */}
+                            {(confirmedDate || formattedPopularDate) && (
+                                <div className="flex items-center gap-3">
+                                    <div
+                                        className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border-2 border-[var(--v2-primary)]/30"
+                                        style={{ background: 'rgba(255,46,46,0.08)', boxShadow: '2px 2px 0px rgba(0,0,0,0.6)' }}
+                                    >
+                                        <CalendarBlank className="w-4 h-4 text-[var(--v2-primary)]" weight="fill" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/30">QUAND</p>
+                                        <p className="text-sm font-black text-white capitalize truncate">{confirmedDate || formattedPopularDate}</p>
+                                    </div>
+                                    {confirmedDate && (
+                                        <span
+                                            className="text-[8px] font-black uppercase tracking-wider px-2 py-1 rounded-lg border-2 shrink-0"
+                                            style={{ color: '#4ade80', borderColor: 'rgba(74,222,128,0.35)', background: 'rgba(74,222,128,0.07)', boxShadow: '1px 1px 0px #000' }}
+                                        >
+                                            CONFIRMÉ
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Location */}
+                            {(group.location?.name || topLocationProposal) ? (
+                                <div className="flex items-center gap-3">
+                                    <div
+                                        className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border-2 border-[var(--v2-accent)]/30"
+                                        style={{ background: 'rgba(255,255,255,0.05)', boxShadow: '2px 2px 0px rgba(0,0,0,0.6)' }}
+                                    >
+                                        <MapPin className="w-4 h-4 text-[var(--v2-accent)]" weight="fill" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/30">OÙ</p>
+                                        <p className="text-sm font-black text-white truncate">
+                                            {group.location?.name || topLocationProposal?.name}
+                                        </p>
+                                    </div>
                                     {isAdmin && !group.location_voting_enabled && group.location?.name && (
                                         <button
                                             onClick={() => setShowLocationModal(true)}
-                                            className="text-[10px] text-[var(--v2-primary)] hover:underline mt-0.5 sm:mt-0"
+                                            className="text-[9px] font-black uppercase tracking-wider text-[var(--v2-primary)] border-2 border-[var(--v2-primary)]/40 px-2 py-1 rounded-lg hover:bg-[var(--v2-primary)]/10 transition-colors shrink-0"
+                                            style={{ boxShadow: '1px 1px 0px #000' }}
                                         >
                                             Modifier
                                         </button>
                                     )}
-                                </p>
-                            </div>
-                        </div>
-                    ) : (
-                        isAdmin && !group.location_voting_enabled && !group.location && (
-                            <div className="flex items-center gap-3">
-                                <div className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
-                                    <MapPin className="w-3.5 h-3.5 text-slate-500" />
                                 </div>
-                                <div className="flex-1 flex justify-between items-center">
-                                    <div>
-                                        <p className="text-xs text-slate-500">Lieu</p>
-                                        <p className="text-sm font-medium text-slate-400">Non défini</p>
+                            ) : (
+                                isAdmin && !group.location_voting_enabled && !group.location && (
+                                    <div className="flex items-center gap-3">
+                                        <div
+                                            className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border-2 border-white/10"
+                                            style={{ background: 'rgba(255,255,255,0.03)', boxShadow: '2px 2px 0px rgba(0,0,0,0.6)' }}
+                                        >
+                                            <MapPin className="w-4 h-4 text-white/25" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/30">OÙ</p>
+                                            <p className="text-sm font-black text-white/30">Non défini</p>
+                                        </div>
+                                        <button
+                                            onClick={() => setShowLocationModal(true)}
+                                            className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--v2-primary)] border-2 border-[var(--v2-primary)]/40 px-2.5 py-1.5 rounded-lg hover:bg-[var(--v2-primary)]/10 transition-colors shrink-0"
+                                            style={{ boxShadow: '2px 2px 0px #000' }}
+                                        >
+                                            <Plus className="w-3 h-3" />
+                                            Ajouter
+                                        </button>
                                     </div>
-                                    <button
-                                        onClick={() => setShowLocationModal(true)}
-                                        className="text-xs font-bold text-[var(--v2-primary)] hover:bg-[var(--v2-primary)]/10 px-2 py-1 rounded-md transition-colors flex items-center gap-1"
-                                    >
-                                        <Plus className="w-3 h-3" />
-                                        Ajouter
-                                    </button>
+                                )
+                            )}
+                        </div>
+
+                        {/* ── FLEMME METER (wow element) ── */}
+                        {totalCount > 1 && (
+                            <div
+                                className="px-4 py-3 border-t-2 border-white/8 flex items-center gap-3"
+                                style={{ background: 'rgba(0,0,0,0.3)' }}
+                            >
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between mb-1.5">
+                                        <span className="text-[8.5px] font-black uppercase tracking-[0.2em] text-white/30">NIVEAU DE FLEMME</span>
+                                        <span
+                                            className="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border"
+                                            style={{ color: flemmeLabel[1], borderColor: `${flemmeLabel[1]}44`, background: `${flemmeLabel[1]}11` }}
+                                        >
+                                            {flemmeLabel[0]}
+                                        </span>
+                                    </div>
+                                    {/* segmented bar */}
+                                    <div className="flex gap-0.5 items-center mb-1.5">
+                                        {Array.from({ length: SEGMENTS }).map((_, i) => (
+                                            <div
+                                                key={i}
+                                                className="flex-1 h-2 rounded-sm transition-all duration-300"
+                                                style={{
+                                                    background: i < filledSegments ? 'var(--v2-primary)' : 'rgba(255,255,255,0.08)',
+                                                    boxShadow: i < filledSegments ? '0 0 4px var(--v2-primary)' : 'none',
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                    <p className="text-[10px] font-black text-white/50">{flemmeLabel[2]}</p>
+                                </div>
+                                <div
+                                    className="shrink-0 text-center px-2.5 py-1.5 rounded-xl border-2"
+                                    style={{
+                                        borderColor: 'rgba(255,255,255,0.1)',
+                                        background: 'rgba(255,255,255,0.04)',
+                                        boxShadow: '2px 2px 0px #000',
+                                    }}
+                                >
+                                    <p className="text-xl font-black text-white leading-none">{notReady}</p>
+                                    <p className="text-[8px] font-black uppercase tracking-wider text-white/30 leading-none mt-0.5">flemmard{notReady > 1 ? 's' : ''}</p>
                                 </div>
                             </div>
-                        )
-                    )}
-                </div>
-            )}
+                        )}
+                    </div>
+                );
+            })()}
 
             {/* Progress Circle */}
             <div className="flex justify-center">
