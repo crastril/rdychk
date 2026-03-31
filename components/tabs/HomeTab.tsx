@@ -50,6 +50,7 @@ export function HomeTab({
     onOpenManage,
 }: HomeTabProps) {
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+    const [isBriefingOpen, setIsBriefingOpen] = useState(false);
     const totalCount = members.length;
     const currentMember = members.find(m => m.id === memberId);
     const [showLocationModal, setShowLocationModal] = useState(false);
@@ -70,39 +71,35 @@ export function HomeTab({
     return (
         <div className="flex flex-col gap-6">
             {/* ── BRIEFING RAPIDE (pour les flemmards) ── */}
-            {(confirmedDate || formattedPopularDate || topLocationProposal || group.location?.name || (isAdmin && !group.location_voting_enabled)) && (() => {
-                const notReady = totalCount - readyCount;
-                const flemmeRatio = totalCount > 0 ? notReady / totalCount : 0;
-                const SEGMENTS = 10;
-                const filledSegments = Math.round((1 - flemmeRatio) * SEGMENTS);
-                const flemmeLabel =
-                    flemmeRatio === 0   ? ['ZÉRO', '#4ade80', '🔥 ON EST TOUS CHAUDS'] :
-                    flemmeRatio < 0.25  ? ['FAIBLE', '#86efac', '💪 PRESQUE LÀ'] :
-                    flemmeRatio < 0.5   ? ['MODÉRÉ', '#fbbf24', '😐 MOUAIS...'] :
-                    flemmeRatio < 0.75  ? ['ÉLEVÉ', '#f97316', '🥱 C\'EST CHAUD'] :
-                    flemmeRatio < 1     ? ['CRITIQUE', '#ef4444', '💀 PERSONNE BOUGE'] :
-                                         ['CATASTROPHIQUE', '#ff2e2e', '🪦 ILS SONT MORTS'];
-
-                return (
+            {(confirmedDate || formattedPopularDate || topLocationProposal || group.location?.name || (isAdmin && !group.location_voting_enabled)) && (
                     <div
                         className="rounded-2xl overflow-hidden border-2 border-white/12"
                         style={{ background: '#0c0c0c', boxShadow: '4px 4px 0px #000' }}
                     >
-                        {/* Header tape */}
-                        <div
-                            className="flex items-center gap-2.5 px-4 py-2.5 border-b-2 border-white/8"
-                            style={{ background: 'rgba(255,255,255,0.03)' }}
+                        {/* Header tape — clickable toggle */}
+                        <button
+                            type="button"
+                            onClick={() => setIsBriefingOpen(v => !v)}
+                            className="w-full flex items-center gap-2.5 px-4 py-3 transition-colors hover:bg-white/5"
+                            style={{ background: isBriefingOpen ? 'rgba(255,255,255,0.03)' : 'transparent' }}
                         >
                             <span className="w-2 h-2 rounded-full bg-[var(--v2-primary)] shrink-0" style={{ boxShadow: '0 0 6px var(--v2-primary)' }} />
-                            <span className="text-[10px] font-black uppercase tracking-[0.28em] text-white/45">
-                                FLEMMARD.EXE
+                            <span className="text-[11px] font-black text-white/60 flex-1 text-left">
+                                T&apos;as rien suivi ? Clique ici
                             </span>
-                            <div className="flex-1" />
-                            <span className="text-[9px] font-mono tracking-widest text-white/20 uppercase">BRIEFING RAPIDE</span>
-                        </div>
+                            <CaretDown
+                                className={cn('w-4 h-4 text-white/30 transition-transform duration-200', isBriefingOpen && 'rotate-180')}
+                                weight="bold"
+                            />
+                        </button>
 
-                        {/* Info rows */}
-                        <div className="p-4 space-y-3">
+                        {/* Info rows — collapsible */}
+                        <div className={cn(
+                            'grid transition-all duration-200 ease-in-out',
+                            isBriefingOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                        )}>
+                        <div className="overflow-hidden">
+                        <div className="border-t-2 border-white/8 p-4 space-y-3">
                             {/* Date */}
                             {(confirmedDate || formattedPopularDate) && (
                                 <div className="flex items-center gap-3">
@@ -177,54 +174,10 @@ export function HomeTab({
                                 )
                             )}
                         </div>
-
-                        {/* ── FLEMME METER (wow element) ── */}
-                        {totalCount > 1 && (
-                            <div
-                                className="px-4 py-3 border-t-2 border-white/8 flex items-center gap-3"
-                                style={{ background: 'rgba(0,0,0,0.3)' }}
-                            >
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center justify-between mb-1.5">
-                                        <span className="text-[8.5px] font-black uppercase tracking-[0.2em] text-white/30">NIVEAU DE FLEMME</span>
-                                        <span
-                                            className="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border"
-                                            style={{ color: flemmeLabel[1], borderColor: `${flemmeLabel[1]}44`, background: `${flemmeLabel[1]}11` }}
-                                        >
-                                            {flemmeLabel[0]}
-                                        </span>
-                                    </div>
-                                    {/* segmented bar */}
-                                    <div className="flex gap-0.5 items-center mb-1.5">
-                                        {Array.from({ length: SEGMENTS }).map((_, i) => (
-                                            <div
-                                                key={i}
-                                                className="flex-1 h-2 rounded-sm transition-all duration-300"
-                                                style={{
-                                                    background: i < filledSegments ? 'var(--v2-primary)' : 'rgba(255,255,255,0.08)',
-                                                    boxShadow: i < filledSegments ? '0 0 4px var(--v2-primary)' : 'none',
-                                                }}
-                                            />
-                                        ))}
-                                    </div>
-                                    <p className="text-[10px] font-black text-white/50">{flemmeLabel[2]}</p>
-                                </div>
-                                <div
-                                    className="shrink-0 text-center px-2.5 py-1.5 rounded-xl border-2"
-                                    style={{
-                                        borderColor: 'rgba(255,255,255,0.1)',
-                                        background: 'rgba(255,255,255,0.04)',
-                                        boxShadow: '2px 2px 0px #000',
-                                    }}
-                                >
-                                    <p className="text-xl font-black text-white leading-none">{notReady}</p>
-                                    <p className="text-[8px] font-black uppercase tracking-wider text-white/30 leading-none mt-0.5">flemmard{notReady > 1 ? 's' : ''}</p>
-                                </div>
-                            </div>
-                        )}
+                        </div>
+                        </div>
                     </div>
-                );
-            })()}
+            )}
 
             {/* Progress Circle */}
             <div className="flex justify-center">
