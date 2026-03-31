@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { CaretRight, GameController, MapPin, Terminal, Confetti, CircleNotch, Check } from '@phosphor-icons/react';
+import { CaretRight, GameController, MapPin, Terminal, Confetti, CircleNotch, Check, CalendarBlank } from '@phosphor-icons/react';
 import { AuthButton } from '@/components/auth-button';
 import { cn } from '@/lib/utils';
 import { createSlug } from '@/lib/slug';
@@ -41,50 +41,120 @@ const ONLINE_MESSAGES = [
   "T'AS RELANCÉ UNE PARTIE ?",
 ];
 
-// Pre-compute wave paths once (outside component) so they don't recalculate every render
-const WAVE_PATHS = Array.from({ length: 30 }).map((_, i) => {
-  const baseY = i * 60 - 500;
-  const thickness = 14 + Math.sin(i * 0.4) * 8;
-  let d = "";
-  const dy = i * 0.15;
-  const w = (2 * Math.PI) / 2000;
-  for (let x = -2000; x <= 4000; x += 50) {
-    const yDisp =
-      Math.sin(x * w + dy * 1.5) * 120 +
-      Math.sin(x * w * 2 - dy * 0.8) * 50 +
-      Math.sin(x * w * 3 + dy * 2.1) * 25;
-    const currentY = baseY + yDisp;
-    d += x === -2000 ? `M ${x},${currentY}` : ` L ${x},${currentY}`;
+// WebGL fragment shader — same topographic formula, runs entirely on GPU
+const VERT_SRC = `
+  attribute vec2 a_pos;
+  void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }
+`;
+const FRAG_SRC = `
+  precision mediump float;
+  uniform float u_time;
+  uniform vec2  u_res;
+  void main() {
+    float S = 0.003;
+    float x = gl_FragCoord.x * S;
+    float y = gl_FragCoord.y * S;
+    float t = u_time;
+    float v = sin(x*1.00 + y*0.75 + t)
+            + sin(x*0.85 + y*1.10 - t*0.82) * 0.90
+            + sin(x*1.20 - y*0.80 + t*0.67) * 0.75
+            + sin(x*0.70 + y*0.95 + t*0.44) * 0.60
+            + sin(x*0.55 - y*1.25 - t*0.53) * 0.45;
+    float band = mod(floor((v + 5.0) * 3.5), 2.0);
+    gl_FragColor = vec4(0.0, 0.0, 0.0, band * 0.82);
   }
-  return { d, thickness };
-});
+`;
 
-const LiquidWaves = () => {
+const LiquidWaves = ({ mobile = false }: { mobile?: boolean }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animRef   = useRef<number>();
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false })
+            || canvas.getContext('experimental-webgl', { alpha: true, premultipliedAlpha: false }) as WebGLRenderingContext | null;
+    if (!gl) return; // graceful fallback: no effect if WebGL unavailable
+
+    // Compile & link shaders
+    const compile = (type: number, src: string) => {
+      const s = gl.createShader(type)!;
+      gl.shaderSource(s, src); gl.compileShader(s); return s;
+    };
+    const prog = gl.createProgram()!;
+    gl.attachShader(prog, compile(gl.VERTEX_SHADER,   VERT_SRC));
+    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FRAG_SRC));
+    gl.linkProgram(prog);
+    gl.useProgram(prog);
+
+    // Fullscreen quad (2 triangles via TRIANGLE_STRIP)
+    const buf = gl.createBuffer()!;
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+    const aPos = gl.getAttribLocation(prog, 'a_pos');
+    gl.enableVertexAttribArray(aPos);
+    gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+    // Blend so transparent fragments reveal the red background
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+    const uTime = gl.getUniformLocation(prog, 'u_time');
+    const uRes  = gl.getUniformLocation(prog, 'u_res');
+
+    const resize = () => {
+      const r = canvas.getBoundingClientRect();
+      canvas.width  = Math.round(r.width);
+      canvas.height = Math.round(r.height);
+      gl.viewport(0, 0, canvas.width, canvas.height);
+    };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas);
+
+    const DT = mobile ? 0.002 : 0.003;
+    let t = 0;
+    let frameCount = 0;
+
+    const draw = () => {
+      frameCount++;
+      // 30 fps on mobile to save battery
+      if (mobile && frameCount % 2 !== 0) {
+        animRef.current = requestAnimationFrame(draw);
+        return;
+      }
+      t += DT;
+      gl.uniform1f(uTime, t);
+      gl.uniform2f(uRes, canvas.width, canvas.height);
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      animRef.current = requestAnimationFrame(draw);
+    };
+
+    animRef.current = requestAnimationFrame(draw);
+
+    const onVisibility = () => {
+      if (document.hidden) { if (animRef.current) cancelAnimationFrame(animRef.current); }
+      else animRef.current = requestAnimationFrame(draw);
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      if (animRef.current) cancelAnimationFrame(animRef.current);
+      ro.disconnect();
+      document.removeEventListener('visibilitychange', onVisibility);
+      gl.deleteProgram(prog);
+    };
+  }, [mobile]);
+
   return (
-    <div className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.3] mix-blend-overlay z-0 overflow-hidden" style={{ willChange: 'transform' }}>
-      <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="xMidYMid slice" viewBox="0 0 2000 1000">
-        <g fill="none">
-          <animateTransform
-            attributeName="transform"
-            type="translate"
-            from="0 0"
-            to="2000 0"
-            dur="30s"
-            repeatCount="indefinite"
-          />
-          {WAVE_PATHS.map(({ d, thickness }, i) => (
-            <path
-              key={i}
-              stroke="#000"
-              strokeWidth={thickness}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d={d}
-            />
-          ))}
-        </g>
-      </svg>
-    </div>
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 w-full h-full pointer-events-none z-0"
+      style={{ opacity: 0.35 }}
+    />
   );
 };
 
@@ -104,12 +174,12 @@ export default function Home() {
   const [recentGroups, setRecentGroups] = useState<{ name: string; slug: string; joined_at: string; type: string }[]>([]);
   const [mode, setMode] = useState<'in_person' | 'remote'>('in_person');
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [messageIndex, setMessageIndex] = useState(-1);
-  const [isTyping, setIsTyping] = useState(true);
+  const [messageIndex, setMessageIndex] = useState(0);
+  const [isTyping, setIsTyping] = useState(false);
 
   // Form State
   const [groupName, setGroupName] = useState('');
-  const [step, setStep] = useState<'name' | 'options'>('name');
+  const [step, setStep] = useState<'name' | 'options' | 'city'>('name');
   const [calendarEnabled, setCalendarEnabled] = useState(true);
   const [locationEnabled, setLocationEnabled] = useState(true);
   const [baseLocation, setBaseLocation] = useState<{ name: string; lat: number; lng: number } | null>(null);
@@ -137,31 +207,36 @@ export default function Home() {
     setLocationResults([]);
   }, [mode]);
 
-  // Cycle messages every 4 seconds with 1.5s typing delay
+  // Cycle messages with a delay proportional to message length (1s–2s)
+  const messageIndexRef = useRef(0);
   useEffect(() => {
     let isMounted = true;
-    setIsTyping(true);
+    let timeoutId: ReturnType<typeof setTimeout>;
 
-    const initialTimeout = setTimeout(() => {
-      if (!isMounted) return;
-      setIsTyping(false);
-      setMessageIndex(0);
-    }, 1500);
+    const schedule = () => {
+      const idx = messageIndexRef.current;
+      const msg = PERSON_MESSAGES[idx % PERSON_MESSAGES.length];
+      // Scale: shortest msg (~4 chars) → 1000ms, longest (~35 chars) → 2000ms
+      const delay = 1000 + Math.round((msg.length / 35) * 1000);
 
-    const interval = setInterval(() => {
-      if (!isMounted) return;
-      setIsTyping(true);
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         if (!isMounted) return;
-        setIsTyping(false);
-        setMessageIndex(prev => prev + 1);
-      }, 1500);
-    }, 4000);
+        setIsTyping(true);
+        timeoutId = setTimeout(() => {
+          if (!isMounted) return;
+          messageIndexRef.current += 1;
+          setIsTyping(false);
+          setMessageIndex(messageIndexRef.current);
+          schedule();
+        }, 600);
+      }, delay);
+    };
+
+    schedule();
 
     return () => {
       isMounted = false;
-      clearTimeout(initialTimeout);
-      clearInterval(interval);
+      clearTimeout(timeoutId);
     };
   }, []);
 
@@ -247,6 +322,11 @@ export default function Home() {
 
     if (step === 'name') {
       setStep('options');
+      return;
+    }
+
+    if (step === 'options') {
+      setStep('city');
       return;
     }
 
@@ -364,7 +444,7 @@ export default function Home() {
 
           <div className="absolute inset-0 bg-noise opacity-30 pointer-events-none mix-blend-overlay z-0"></div>
 
-          {!isMobile && <LiquidWaves />}
+          <LiquidWaves mobile={isMobile} />
 
           {!isMobile && mode === 'in_person' && (
             <>
@@ -455,6 +535,21 @@ export default function Home() {
                 <div className="bg-white/5 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl relative overflow-hidden ring-1 ring-white/10">
                   <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/notebook.png')] opacity-10 mix-blend-overlay"></div>
                   <form onSubmit={handleCreateGroup} className="flex flex-col gap-6 relative z-10 text-left md:text-center">
+                    {/* Step indicator — pill for active, dot for inactive */}
+                    <div className="flex items-center justify-center gap-1.5">
+                      {(['name', 'options', 'city'] as const).map((s) => (
+                        <div
+                          key={s}
+                          className={cn(
+                            "rounded-full transition-all duration-300",
+                            step === s
+                              ? "w-5 h-1.5 bg-white/70"
+                              : "w-1.5 h-1.5 bg-white/20"
+                          )}
+                        />
+                      ))}
+                    </div>
+
                     {step === 'name' ? (
                       <div className="animate-in fade-in slide-in-from-right duration-500">
                         <label className="block text-xs font-bold text-red-200 mb-2 uppercase tracking-wide">Nomme ton groupe</label>
@@ -469,97 +564,128 @@ export default function Home() {
                           autoFocus
                         />
                       </div>
-                    ) : (
-                      <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-right duration-500">
-                        {/* Toggles */}
-                        <div className="flex flex-col gap-3">
-                          <label className="flex items-center justify-between p-4 rounded-2xl bg-black/20 border border-white/10 cursor-pointer hover:bg-black/30 transition-all">
-                            <span className="text-sm font-bold text-white">Voter pour une date ?</span>
-                            <input
-                              type="checkbox"
-                              checked={calendarEnabled}
-                              onChange={(e) => setCalendarEnabled(e.target.checked)}
-                              className="w-6 h-6 rounded-lg accent-red-500"
-                            />
-                          </label>
-                          <label className="flex items-center justify-between p-4 rounded-2xl bg-black/20 border border-white/10 cursor-pointer hover:bg-black/30 transition-all">
-                            <span className="text-sm font-bold text-white">Proposer des lieux ?</span>
-                            <input
-                              type="checkbox"
-                              checked={locationEnabled}
-                              onChange={(e) => setLocationEnabled(e.target.checked)}
-                              className="w-6 h-6 rounded-lg accent-red-500"
-                            />
-                          </label>
-                        </div>
 
-                        {/* City Search */}
-                        <div className="relative">
-                          <label className="block text-xs font-bold text-red-200 mb-2 uppercase tracking-wide">Où ça se passe ? (Rechercher une ville)</label>
-                          <div className="relative group/search">
-                            <input
-                              value={locationSearch}
-                              onChange={(e) => {
-                                setLocationSearch(e.target.value);
-                                handleSearchLocation(e.target.value);
-                              }}
-                              className="w-full h-12 rounded-xl bg-black/40 border-2 border-white/10 focus:border-red-400 px-4 pl-10 text-sm font-medium text-white placeholder-white/30 focus:outline-none transition-all"
-                              placeholder="Ex: Paris, Bordeaux..."
-                              type="text"
-                              autoFocus
-                            />
-                            <MapPin className="absolute left-3 top-3.5 w-4 h-4 text-white/40 group-focus-within/search:text-red-400 transition-colors" />
-                            {isSearchingLocation && (
-                              <CircleNotch className="absolute right-3 top-3.5 w-4 h-4 text-red-400 animate-spin" />
+                    ) : step === 'options' ? (
+                      <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-right duration-500">
+                        <p className="text-xs font-bold text-white/40 uppercase tracking-widest text-center">Activer les fonctions</p>
+                        <div className="grid grid-cols-2 gap-3">
+                          {/* Calendar toggle card */}
+                          <button
+                            type="button"
+                            onClick={() => setCalendarEnabled(v => !v)}
+                            className={cn(
+                              "relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all duration-200 select-none",
+                              calendarEnabled
+                                ? "bg-red-500/15 border-red-400/70 text-white"
+                                : "bg-black/20 border-white/8 text-white/35 hover:border-white/20 hover:text-white/55"
                             )}
-                          </div>
+                          >
+                            {calendarEnabled && (
+                              <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-red-400" />
+                            )}
+                            <CalendarBlank className="w-7 h-7" weight={calendarEnabled ? 'fill' : 'regular'} />
+                            <span className="text-xs font-bold uppercase tracking-wide text-center leading-tight">
+                              Voter<br/>une date
+                            </span>
+                          </button>
 
-                          {locationResults.length > 0 && (
-                            <div className="absolute top-full left-0 w-full mt-2 bg-black border border-white/10 rounded-xl overflow-hidden z-50 shadow-2xl max-h-48 overflow-y-auto">
-                              {locationResults.map((p) => (
-                                <button
-                                  key={p.name}
-                                  type="button"
-                                  onClick={() => {
-                                    setBaseLocation({ name: p.name, lat: 0, lng: 0 });
-                                    setLocationSearch(p.name);
-                                    setLocationResults([]);
-                                  }}
-                                  className="w-full px-4 py-3 text-left hover:bg-white/10 text-sm text-white transition-colors border-b border-white/5 last:border-none flex flex-col"
-                                >
-                                  <span className="font-bold">{p.name}</span>
-                                  <span className="text-xs text-white/50 truncate">{p.formatted_address}</span>
-                                </button>
-                              ))}
-                            </div>
-                          )}
-
-                          {baseLocation && (
-                            <div className="mt-2 flex items-center gap-2 text-red-400 text-xs font-bold bg-red-400/10 p-2 rounded-lg border border-red-400/20">
-                              <Check className="w-4 h-4" />
-                              Lieu sélectionné : {baseLocation.name}
-                            </div>
-                          )}
+                          {/* Location toggle card */}
+                          <button
+                            type="button"
+                            onClick={() => setLocationEnabled(v => !v)}
+                            className={cn(
+                              "relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all duration-200 select-none",
+                              locationEnabled
+                                ? "bg-red-500/15 border-red-400/70 text-white"
+                                : "bg-black/20 border-white/8 text-white/35 hover:border-white/20 hover:text-white/55"
+                            )}
+                          >
+                            {locationEnabled && (
+                              <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-red-400" />
+                            )}
+                            <MapPin className="w-7 h-7" weight={locationEnabled ? 'fill' : 'regular'} />
+                            <span className="text-xs font-bold uppercase tracking-wide text-center leading-tight">
+                              Proposer<br/>des lieux
+                            </span>
+                          </button>
                         </div>
-
                         <button
                           type="button"
                           onClick={() => setStep('name')}
-                          className="text-xs text-white/40 hover:text-white uppercase tracking-widest font-bold transition-colors"
+                          className="text-xs text-white/30 hover:text-white/60 uppercase tracking-widest font-bold transition-colors text-center"
                         >
-                          &larr; Retour au nom
+                          ← Retour
+                        </button>
+                      </div>
+
+                    ) : (
+                      /* Step 3 — City */
+                      <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-right duration-500">
+                        <div className="flex flex-col items-center gap-1">
+                          <MapPin className="w-6 h-6 text-red-400" weight="fill" />
+                          <p className="text-xs font-bold text-white/40 uppercase tracking-widest">Où ça se passe ?</p>
+                        </div>
+                        <div className="relative group/search">
+                          <input
+                            value={locationSearch}
+                            onChange={(e) => {
+                              setLocationSearch(e.target.value);
+                              handleSearchLocation(e.target.value);
+                            }}
+                            className="w-full h-14 rounded-2xl bg-black/20 border-2 border-white/10 focus:border-red-400 focus:bg-black/40 px-5 text-lg font-medium text-white placeholder-white/30 focus:outline-none transition-all"
+                            placeholder="Paris, Bordeaux..."
+                            type="text"
+                            autoFocus
+                          />
+                          {isSearchingLocation && (
+                            <CircleNotch className="absolute right-4 top-4 w-5 h-5 text-red-400 animate-spin" />
+                          )}
+                        </div>
+
+                        {locationResults.length > 0 && (
+                          <div className="w-full bg-black/90 border border-white/10 rounded-2xl overflow-hidden shadow-2xl max-h-44 overflow-y-auto">
+                            {locationResults.map((p) => (
+                              <button
+                                key={p.name}
+                                type="button"
+                                onClick={() => {
+                                  setBaseLocation({ name: p.name, lat: 0, lng: 0 });
+                                  setLocationSearch(p.name);
+                                  setLocationResults([]);
+                                }}
+                                className="w-full px-4 py-3 text-left hover:bg-white/8 text-sm text-white transition-colors border-b border-white/5 last:border-none"
+                              >
+                                <span className="font-bold">{p.name}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        {baseLocation && (
+                          <div className="flex items-center gap-2 text-red-400 text-xs font-bold bg-red-400/10 px-3 py-2 rounded-xl border border-red-400/20">
+                            <Check className="w-4 h-4 shrink-0" />
+                            {baseLocation.name}
+                          </div>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => setStep('options')}
+                          className="text-xs text-white/30 hover:text-white/60 uppercase tracking-widest font-bold transition-colors text-center"
+                        >
+                          ← Retour
                         </button>
                       </div>
                     )}
 
                     <button
                       type="submit"
-                      disabled={loading || mode === 'remote' || !groupName.trim() || (step === 'options' && !baseLocation)}
+                      disabled={loading || mode === 'remote' || !groupName.trim() || (step === 'city' && !baseLocation)}
                       className="sticker-btn w-full py-5 text-2xl font-black rounded-2xl flex items-center justify-center gap-3 group-hover:shadow-[0_0_30px_rgba(255,46,46,0.6)] disabled:opacity-50 text-white border-4 border-white shadow-[6px_6px_0px_rgba(0,0,0,0.5)] -rotate-2 hover:rotate-0 hover:scale-[1.05] hover:-translate-y-1 hover:shadow-[8px_10px_0px_rgba(0,0,0,0.4)] transition-all bg-[#ff2e2e] hover:bg-[#ff4444]"
                     >
                       {loading && mode === 'in_person' ? <CircleNotch className="w-8 h-8 animate-spin" /> : (
                         <>
-                          {step === 'name' ? 'SUIVANT' : "C'EST PARTI !"}
+                          {step === 'city' ? "C'EST PARTI !" : 'SUIVANT'}
                           <Confetti className="w-8 h-8" />
                         </>
                       )}
