@@ -67,7 +67,7 @@ const FRAG_SRC = `
 
 const LiquidWaves = ({ mobile = false }: { mobile?: boolean }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animRef   = useRef<number>();
+  const animRef   = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     const canvas = canvasRef.current;
