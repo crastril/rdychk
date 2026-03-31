@@ -217,6 +217,7 @@ export function HomeTab({
                 <AddLocationProposalModal
                     isOpen={showLocationModal}
                     onClose={() => setShowLocationModal(false)}
+                    city={group.city}
                     baseLat={group.base_lat}
                     baseLng={group.base_lng}
                     onSubmit={async (data) => {

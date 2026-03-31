@@ -605,7 +605,7 @@ export default function Home() {
                             )}
                             <MapPin className="w-7 h-7" weight={locationEnabled ? 'fill' : 'regular'} />
                             <span className="text-xs font-bold uppercase tracking-wide text-center leading-tight">
-                              Proposer<br/>des lieux
+                              Voter<br/>un lieu
                             </span>
                           </button>
                         </div>
