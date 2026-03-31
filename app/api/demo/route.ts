@@ -134,7 +134,7 @@ export async function POST() {
 
         const isStale =
             !existingAdmin ||
-            Date.now() - new Date(existingAdmin.created_at).getTime() > RESET_AFTER_MS;
+            Date.now() - new Date(existingAdmin.updated_at).getTime() > RESET_AFTER_MS;
 
         let adminMember = existingAdmin;
 

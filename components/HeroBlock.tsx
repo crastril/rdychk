@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { Check, Clock, Timer, Warning } from '@phosphor-icons/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { toggleReadyAction } from '@/app/actions/member';
 
 interface HeroBlockProps {
@@ -25,6 +25,10 @@ const ALL_READY_MSGS = [
     'YALLAH 🚀',
 ];
 
+const CELEBRATION_EMOJIS = ['🎉', '🔥', '💪', '🚀', '⚡', '💥', '🎯', '🥂', '🎊', '👊', '✅', '🤝'];
+
+type Particle = { id: number; emoji: string; x: number; delay: number; dur: number };
+
 export function HeroBlock({
     slug,
     memberId,
@@ -39,13 +43,33 @@ export function HeroBlock({
     const [isSoonReady, setIsSoonReady] = useState(false);
     const [optimisticReady, setOptimisticReady] = useState<boolean | null>(null);
     const [isPending, setIsPending] = useState(false);
+    const [particles, setParticles] = useState<Particle[]>([]);
     const [allReadyMsg] = useState(
         () => ALL_READY_MSGS[Math.floor(Math.random() * ALL_READY_MSGS.length)]
     );
+    const prevAllReadyRef = useRef(false);
 
     const displayReady = optimisticReady !== null ? optimisticReady : isReady;
     const allReady = readyCount === totalCount && totalCount > 0;
     const progress = totalCount > 0 ? (readyCount / totalCount) * 100 : 0;
+    const remaining = totalCount - readyCount;
+
+    // Celebration burst when everyone becomes ready
+    useEffect(() => {
+        if (allReady && !prevAllReadyRef.current) {
+            const burst: Particle[] = Array.from({ length: 16 }, (_, i) => ({
+                id: i,
+                emoji: CELEBRATION_EMOJIS[i % CELEBRATION_EMOJIS.length],
+                x: 5 + (i * 6) % 90,
+                delay: i * 0.07,
+                dur: 1.2 + Math.random() * 0.6,
+            }));
+            setParticles(burst);
+            const t = setTimeout(() => setParticles([]), 2800);
+            return () => clearTimeout(t);
+        }
+        prevAllReadyRef.current = allReady;
+    }, [allReady]);
 
     // Clear optimistic state when server confirms
     useEffect(() => {
@@ -102,17 +126,48 @@ export function HeroBlock({
     };
 
     return (
-        <div className="flex flex-col w-full" style={{ filter: 'drop-shadow(5px 5px 0px #000)' }}>
+        <div className="flex flex-col w-full relative" style={{ filter: 'drop-shadow(5px 5px 0px #000)' }}>
+            {/* Celebration particles */}
+            {particles.length > 0 && (
+                <>
+                    <style>{`
+                        @keyframes celebrate-burst {
+                            0%   { transform: translateY(0)    scale(1)   rotate(0deg);   opacity: 1; }
+                            70%  { opacity: 1; }
+                            100% { transform: translateY(-160px) scale(0.3) rotate(540deg); opacity: 0; }
+                        }
+                    `}</style>
+                    <div className="absolute inset-0 pointer-events-none overflow-visible z-30">
+                        {particles.map(p => (
+                            <span
+                                key={p.id}
+                                className="absolute bottom-4 text-xl select-none"
+                                style={{
+                                    left: `${p.x}%`,
+                                    animation: `celebrate-burst ${p.dur}s ease-out ${p.delay}s both`,
+                                }}
+                            >
+                                {p.emoji}
+                            </span>
+                        ))}
+                    </div>
+                </>
+            )}
+
             {/* Progress header bar */}
             <div
-                className="flex items-center gap-3 px-4 py-3 rounded-t-2xl border-x-[3px] border-t-[3px] border-black"
+                className="flex items-center gap-3 px-4 py-3 rounded-t-2xl border-x-[3px] border-t-[3px] border-black transition-colors duration-500"
                 style={{ background: allReady ? '#052010' : '#0f0f0f' }}
             >
                 <span className={cn(
-                    'text-[10px] font-black uppercase tracking-[0.22em] shrink-0 tabular-nums',
+                    'text-[10px] font-black uppercase tracking-[0.18em] shrink-0 tabular-nums transition-colors duration-300',
                     allReady ? 'text-green-400' : 'text-white/40'
                 )}>
-                    {allReady ? allReadyMsg : `${readyCount} / ${totalCount}`}
+                    {allReady
+                        ? allReadyMsg
+                        : remaining === 1
+                        ? `encore 1 à convaincre 👀`
+                        : `${readyCount} / ${totalCount}`}
                 </span>
 
                 {/* Progress bar track */}
@@ -124,7 +179,7 @@ export function HeroBlock({
                             background: allReady
                                 ? 'linear-gradient(90deg, #22c55e, #4ade80)'
                                 : 'var(--v2-primary)',
-                            boxShadow: allReady ? '0 0 8px #22c55e80' : '0 0 6px var(--v2-primary)',
+                            boxShadow: allReady ? '0 0 10px #22c55e90' : '0 0 6px var(--v2-primary)',
                         }}
                     />
                 </div>

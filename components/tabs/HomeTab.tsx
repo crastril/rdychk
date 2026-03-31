@@ -10,9 +10,10 @@ import { TimerPicker } from '@/components/TimerPicker';
 import { TimeProposalModal } from '@/components/TimeProposalModal';
 import { updateMemberAction } from '@/app/actions/member';
 import { updateLocationAction } from '@/app/actions/group';
-import { CalendarBlank, MapPin, CaretDown } from '@phosphor-icons/react';
+import { CalendarBlank, MapPin, CaretDown, UserPlus } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { AddLocationProposalModal } from '@/components/AddLocationProposalModal';
+import { ShareMenu } from '@/components/ShareMenu';
 
 interface HomeTabProps {
     group: Group;
@@ -85,19 +86,31 @@ export function HomeTab({
     const displayDate = confirmedDate || formattedPopularDate;
     const displayLocation = group.location?.name || topLocationProposal?.name;
 
-    // Stats for action cards
-    const myVoteCount = votes.filter(v => v.member_id === memberId).length;
-    const uniqueVotedDates = new Set(votes.map(v => v.date)).size;
-
     const calendarEnabled = group.calendar_voting_enabled;
     const locationEnabled = group.location_voting_enabled;
-    const hasActionCards = calendarEnabled || locationEnabled || (isAdmin && !locationEnabled);
+
+    // Vote nudge indicators
+    const myVoteCount = votes.filter(v => v.member_id === memberId).length;
+    const uniqueVotedDates = new Set(votes.map(v => v.date)).size;
+    const needsCalendarVote = calendarEnabled && myVoteCount === 0 && !!memberId;
+
+    const hasProposedLocation = proposals.some(p => p.member_id === memberId);
+    const hasVotedLocation = Object.keys(myLocationVotes).length > 0;
+    const needsLocationAction = locationEnabled && proposals.length > 0 && !hasProposedLocation && !hasVotedLocation && !!memberId;
+
+    // Grid: single column when a card is expanded (avoids cramped calendar)
+    const bothEnabled = calendarEnabled && locationEnabled;
+    const anyOpen = isCalendarOpen || isLocationOpen;
+    const gridClass = bothEnabled && !anyOpen ? 'grid-cols-2' : 'grid-cols-1';
+
+    // Invite nudge: group is small and no pending actions
+    const showInviteNudge = members.length < 4 && !!memberId;
 
     return (
         <div className="flex flex-col gap-4">
 
-            {/* ── STATUS STRIP ── always-visible inline pills */}
-            {(displayDate || displayLocation || (isAdmin && !locationEnabled)) && (
+            {/* ── STATUS STRIP ── */}
+            {(displayDate || displayLocation || (isAdmin && !locationEnabled)) ? (
                 <div className="flex items-center gap-2 flex-wrap px-0.5">
                     {displayDate && (
                         <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5">
@@ -114,7 +127,6 @@ export function HomeTab({
                             <span className="text-[11px] font-black text-white/65 truncate max-w-[130px]">{displayLocation}</span>
                         </div>
                     )}
-                    {/* Admin: add location shortcut when not in voting mode */}
                     {isAdmin && !locationEnabled && !group.location?.name && (
                         <button
                             onClick={() => setShowLocationModal(true)}
@@ -133,9 +145,19 @@ export function HomeTab({
                         </button>
                     )}
                 </div>
+            ) : memberId && calendarEnabled && (
+                /* Empty state nudge: nothing set yet → prompt to vote */
+                <div className="flex items-center gap-2 px-0.5">
+                    <div className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--v2-primary)] animate-pulse shrink-0" />
+                        <span className="text-[11px] font-black text-white/25">
+                            Commence par voter une date ↓
+                        </span>
+                    </div>
+                </div>
             )}
 
-            {/* ── HERO BLOCK ── progress bar + ready button */}
+            {/* ── HERO BLOCK ── */}
             {memberId && (
                 <HeroBlock
                     slug={slug}
@@ -149,6 +171,21 @@ export function HomeTab({
                 />
             )}
 
+            {/* ── INVITE NUDGE ── shown when group is small */}
+            {showInviteNudge && (
+                <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-dashed border-white/10 bg-white/2">
+                    <UserPlus className="w-4 h-4 text-white/25 shrink-0" />
+                    <span className="text-[11px] font-black text-white/25 flex-1">
+                        Invite tes amis à rejoindre
+                    </span>
+                    <ShareMenu
+                        groupName={group.name}
+                        url={typeof window !== 'undefined' ? window.location.href : ''}
+                        variant="button"
+                    />
+                </div>
+            )}
+
             {/* ── MEMBERS COMPACT ── */}
             <MembersCompact
                 members={members}
@@ -158,12 +195,10 @@ export function HomeTab({
                 isAdmin={isAdmin}
             />
 
-            {/* ── ACTION CARDS ── Calendar + Location inline */}
-            {hasActionCards && (
-                <div className={cn(
-                    'grid gap-3',
-                    calendarEnabled && locationEnabled ? 'grid-cols-2' : 'grid-cols-1'
-                )}>
+            {/* ── ACTION CARDS ── Calendar + Location */}
+            {(calendarEnabled || locationEnabled || (isAdmin && !locationEnabled)) && (
+                <div className={cn('grid gap-3 transition-all duration-300', gridClass)}>
+
                     {/* Calendar card */}
                     {calendarEnabled && (
                         <div
@@ -172,7 +207,10 @@ export function HomeTab({
                         >
                             <button
                                 type="button"
-                                onClick={() => setIsCalendarOpen(v => !v)}
+                                onClick={() => {
+                                    setIsCalendarOpen(v => !v);
+                                    if (!isCalendarOpen) setIsLocationOpen(false); // close other
+                                }}
                                 className="flex flex-col gap-1 p-3.5 text-left hover:bg-white/[0.02] transition-colors"
                             >
                                 <div className="flex items-center justify-between">
@@ -181,6 +219,10 @@ export function HomeTab({
                                         <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">
                                             Calendrier
                                         </span>
+                                        {/* Nudge dot: hasn't voted yet */}
+                                        {needsCalendarVote && (
+                                            <span className="w-1.5 h-1.5 rounded-full bg-[var(--v2-primary)] animate-pulse" />
+                                        )}
                                     </div>
                                     <CaretDown
                                         className={cn('w-3 h-3 text-white/20 transition-transform duration-200', isCalendarOpen && 'rotate-180')}
@@ -190,7 +232,9 @@ export function HomeTab({
                                 {displayDate ? (
                                     <p className="text-sm font-black text-white capitalize leading-tight mt-0.5">{displayDate}</p>
                                 ) : (
-                                    <p className="text-xs text-white/25 mt-0.5">Aucun vote</p>
+                                    <p className="text-xs text-white/25 mt-0.5">
+                                        {needsCalendarVote ? 'Vote ta dispo !' : 'Aucun vote'}
+                                    </p>
                                 )}
                                 <p className="text-[9px] text-white/20 uppercase tracking-wider">
                                     {uniqueVotedDates} date{uniqueVotedDates !== 1 ? 's' : ''} · {myVoteCount} vote{myVoteCount !== 1 ? 's' : ''}
@@ -228,7 +272,10 @@ export function HomeTab({
                         >
                             <button
                                 type="button"
-                                onClick={() => setIsLocationOpen(v => !v)}
+                                onClick={() => {
+                                    setIsLocationOpen(v => !v);
+                                    if (!isLocationOpen) setIsCalendarOpen(false); // close other
+                                }}
                                 className="flex flex-col gap-1 p-3.5 text-left hover:bg-white/[0.02] transition-colors"
                             >
                                 <div className="flex items-center justify-between">
@@ -237,6 +284,10 @@ export function HomeTab({
                                         <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">
                                             Lieux
                                         </span>
+                                        {/* Nudge dot: has proposals but user hasn't participated */}
+                                        {needsLocationAction && (
+                                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                                        )}
                                     </div>
                                     <CaretDown
                                         className={cn('w-3 h-3 text-white/20 transition-transform duration-200', isLocationOpen && 'rotate-180')}
@@ -279,7 +330,7 @@ export function HomeTab({
                 </div>
             )}
 
-            {/* ── POWER USER ZONE ── timer + options */}
+            {/* ── POWER USER ZONE ── */}
             {memberId && (
                 <div className="flex flex-col gap-2 mt-1">
                     <button
