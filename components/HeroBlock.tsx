@@ -4,14 +4,17 @@ import { cn } from '@/lib/utils';
 import { Check, Clock, Timer, Warning } from '@phosphor-icons/react';
 import { useState, useEffect, useRef } from 'react';
 import { toggleReadyAction } from '@/app/actions/member';
+import type { Member } from '@/types/database';
 
 interface HeroBlockProps {
     slug: string;
     memberId: string;
     isReady: boolean;
     timerEndTime?: string | null;
+    proposedTime?: string | null;
     readyCount: number;
     totalCount: number;
+    members: Member[];
     localOptimisticReady: boolean | null;
     onOptimisticChange: (val: boolean | null) => void;
 }
@@ -34,8 +37,10 @@ export function HeroBlock({
     memberId,
     isReady,
     timerEndTime,
+    proposedTime,
     readyCount,
     totalCount,
+    members,
     localOptimisticReady,
     onOptimisticChange,
 }: HeroBlockProps) {
@@ -53,6 +58,19 @@ export function HeroBlock({
     const allReady = readyCount === totalCount && totalCount > 0;
     const progress = totalCount > 0 ? (readyCount / totalCount) * 100 : 0;
     const remaining = totalCount - readyCount;
+
+    // Social pressure: other members already ready
+    const readyOthers = members.filter(m => m.is_ready && m.id !== memberId);
+    const socialPressureMsg = !displayReady && readyOthers.length > 0
+        ? readyOthers.length === 1
+            ? `${readyOthers[0].name.split(' ')[0]} t'attend 👀`
+            : `${readyOthers.length} personnes t'attendent 👀`
+        : null;
+
+    // Format proposed time for display in button: "20:30" → "20H30"
+    const formattedProposedTime = proposedTime
+        ? proposedTime.slice(0, 5).replace(':', 'H')
+        : null;
 
     // Celebration burst when everyone becomes ready
     useEffect(() => {
@@ -125,8 +143,12 @@ export function HeroBlock({
         }
     };
 
+    // Is this the default "not ready, nothing set" state?
+    const isDefaultNotReady = !displayReady && !timeLeft && !isSoonReady && !formattedProposedTime;
+
     return (
-        <div className="flex flex-col w-full relative" style={{ filter: 'drop-shadow(5px 5px 0px #000)' }}>
+        // box-shadow instead of filter:drop-shadow to avoid stacking-context glow clipping
+        <div className="flex flex-col w-full relative rounded-2xl" style={{ boxShadow: '5px 5px 0px #000' }}>
             {/* Celebration particles */}
             {particles.length > 0 && (
                 <>
@@ -161,10 +183,12 @@ export function HeroBlock({
             >
                 <span className={cn(
                     'text-xs font-black uppercase tracking-[0.18em] shrink-0 tabular-nums transition-colors duration-300',
-                    allReady ? 'text-green-400' : 'text-white/50'
+                    allReady ? 'text-green-400' : socialPressureMsg ? 'text-amber-400' : 'text-white/50'
                 )}>
                     {allReady
                         ? allReadyMsg
+                        : socialPressureMsg
+                        ? socialPressureMsg
                         : remaining === 1
                         ? `encore 1 à convaincre 👀`
                         : `${readyCount} / ${totalCount}`}
@@ -184,7 +208,7 @@ export function HeroBlock({
                     />
                 </div>
 
-                {!allReady && (
+                {!allReady && !socialPressureMsg && (
                     <span className="text-xs font-black text-white/35 tracking-tight shrink-0 tabular-nums">
                         PRÊTS
                     </span>
@@ -195,21 +219,24 @@ export function HeroBlock({
             <button
                 onClick={toggle}
                 disabled={isPending}
-                aria-label={displayReady ? 'Marquer comme pas prêt' : 'Marquer comme prêt'}
+                aria-label={displayReady ? 'Marquer comme pas prêt' : 'Indiquer que je suis prêt'}
                 aria-pressed={displayReady}
                 className={cn(
-                    'relative w-full h-20 flex items-center justify-center',
+                    'relative w-full flex items-center justify-center',
                     'rounded-b-2xl border-x-[3px] border-b-[3px] border-black',
                     'font-black text-[15px] uppercase tracking-[0.22em]',
                     'transition-all duration-100 select-none overflow-hidden',
                     'active:translate-y-[2px]',
+                    isDefaultNotReady ? 'h-[4.75rem] pb-3' : 'h-20',
                     displayReady
                         ? 'bg-green-500 text-black'
                         : isSoonReady
                         ? 'bg-amber-500/15 text-amber-400'
                         : timeLeft
                         ? 'bg-[#111] text-white'
-                        : 'bg-[#111] text-white/80 hover:bg-[#161616]',
+                        : formattedProposedTime
+                        ? 'bg-[#111] text-[var(--v2-primary)] hover:bg-[#161616]'
+                        : 'bg-[#111] text-white/90 hover:bg-[#161616]',
                     isPending && 'opacity-70 pointer-events-none'
                 )}
             >
@@ -218,15 +245,25 @@ export function HeroBlock({
                     <div className="absolute inset-0 bg-green-400/10 animate-pulse" />
                 )}
 
-                <span className="relative z-10 flex items-center gap-3">
-                    {displayReady ? (
-                        <><Check className="w-5 h-5" weight="bold" /> JE SUIS PRÊT</>
-                    ) : isSoonReady ? (
-                        <><Warning className="w-5 h-5" /> BIENTÔT PRÊT !</>
-                    ) : timeLeft ? (
-                        <><Timer className="w-5 h-5 text-[var(--v2-primary)]" /> PRÊT DANS <span className="tabular-nums">{timeLeft}</span></>
-                    ) : (
-                        <><Clock className="w-5 h-5 text-[var(--v2-primary)]" /> PAS ENCORE PRÊT</>
+                <span className="relative z-10 flex flex-col items-center gap-1">
+                    <span className="flex items-center gap-3">
+                        {displayReady ? (
+                            <><Check className="w-5 h-5" weight="bold" /> JE SUIS PRÊT</>
+                        ) : isSoonReady ? (
+                            <><Warning className="w-5 h-5" /> BIENTÔT PRÊT !</>
+                        ) : timeLeft ? (
+                            <><Timer className="w-5 h-5 text-[var(--v2-primary)]" /> PRÊT DANS <span className="tabular-nums">{timeLeft}</span></>
+                        ) : formattedProposedTime ? (
+                            <><Clock className="w-5 h-5" /> ARRIVÉE PRÉVUE · {formattedProposedTime}</>
+                        ) : (
+                            <><Check className="w-5 h-5 text-[var(--v2-primary)]" weight="bold" /> INDIQUER QUE JE SUIS PRÊT</>
+                        )}
+                    </span>
+                    {/* Contextual hint — only on the default not-ready state */}
+                    {isDefaultNotReady && (
+                        <span className="text-[11px] font-medium normal-case tracking-normal text-white/30">
+                            Appuie quand tu quittes la maison
+                        </span>
                     )}
                 </span>
             </button>

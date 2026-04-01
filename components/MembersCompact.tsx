@@ -123,17 +123,39 @@ export function MembersCompact({
 
                                     {/* Name */}
                                     <span className={cn(
-                                        'flex-1 text-sm font-bold truncate flex items-center gap-1.5',
+                                        'flex-1 text-sm font-bold truncate flex items-center gap-1.5 min-w-0',
                                         m.is_ready ? 'text-white' : 'text-white/55'
                                     )}>
-                                        {m.name}
+                                        <span className="truncate">{m.name}</span>
                                         {isCurrentUser && (
-                                            <span className="text-[11px] font-black text-white/30 uppercase tracking-wider">toi</span>
+                                            <span className="text-[11px] font-black text-white/30 uppercase tracking-wider shrink-0">toi</span>
                                         )}
                                         {isAdminMember && (
-                                            <Crown className="w-3 h-3 text-amber-400/70" weight="fill" />
+                                            <Crown className="w-3 h-3 text-amber-400/70 shrink-0" weight="fill" />
                                         )}
                                     </span>
+
+                                    {/* Timer or proposed time badge */}
+                                    {(() => {
+                                        const timerEnd = m.timer_end_time ? new Date(m.timer_end_time) : null;
+                                        const timerActive = timerEnd && timerEnd > new Date();
+                                        if (timerActive) {
+                                            const hhmm = timerEnd.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                                            return (
+                                                <span className="text-[11px] font-black text-[var(--v2-primary)]/70 shrink-0 tabular-nums">
+                                                    ⏱ {hhmm}
+                                                </span>
+                                            );
+                                        }
+                                        if (m.proposed_time) {
+                                            return (
+                                                <span className="text-[11px] font-black text-sky-400/70 shrink-0 tabular-nums">
+                                                    → {m.proposed_time.slice(0, 5)}
+                                                </span>
+                                            );
+                                        }
+                                        return null;
+                                    })()}
 
                                     {/* Status */}
                                     <span className={cn(

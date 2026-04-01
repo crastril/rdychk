@@ -164,8 +164,10 @@ export function HomeTab({
                     memberId={memberId}
                     isReady={isReady}
                     timerEndTime={timerEndTime}
+                    proposedTime={currentMember?.proposed_time ?? null}
                     readyCount={readyCount}
                     totalCount={members.length}
+                    members={members}
                     localOptimisticReady={localOptimisticReady}
                     onOptimisticChange={onSetLocalOptimisticReady}
                 />

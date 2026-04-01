@@ -68,8 +68,8 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
                             <span className="truncate">HORAIRE : {currentProposedTime}</span>
                         ) : (
                             <span className="truncate">
-                                <span className="sm:hidden">PROPOSER</span>
-                                <span className="hidden sm:inline">PROPOSER UN HORAIRE</span>
+                                <span className="sm:hidden">INDIQUER</span>
+                                <span className="hidden sm:inline">INDIQUER UN HORAIRE</span>
                             </span>
                         )}
                     </button>
@@ -90,9 +90,9 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--v2-primary)] to-[var(--v2-accent)]"></div>
                 <div className="p-8">
                     <DialogHeader className="mb-4">
-                        <DialogTitle className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Proposer un horaire</DialogTitle>
+                        <DialogTitle className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Indiquer un horaire</DialogTitle>
                         <DialogDescription className="text-[12px] text-slate-400 leading-relaxed">
-                            Indiquez l'heure à laquelle vous pensez être présent.
+                            Indique l'heure à laquelle tu penses arriver. Les autres membres du groupe le verront.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="flex items-center justify-center py-8">
