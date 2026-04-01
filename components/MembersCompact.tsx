@@ -31,12 +31,19 @@ export function MembersCompact({
     if (loading && members.length === 0) {
         return (
             <div
-                className="flex items-center gap-2 px-4 py-3 rounded-2xl border-2 border-white/8"
-                style={{ background: '#0c0c0c' }}
+                className="flex items-center gap-1.5 px-4 py-3 rounded-2xl border-2 border-white/8"
+                style={{ background: '#0c0c0c', boxShadow: '3px 3px 0px #000' }}
             >
-                {[1, 2, 3, 4].map(i => (
-                    <div key={i} className="w-8 h-8 rounded-full bg-white/5 animate-pulse shrink-0" />
+                {[0, 1, 2, 3, 4].map(i => (
+                    <div
+                        key={i}
+                        className="w-8 h-8 rounded-full bg-white/5 animate-pulse shrink-0"
+                        style={{ animationDelay: `${i * 40}ms` }}
+                    />
                 ))}
+                <div className="flex-1" />
+                <div className="h-2.5 w-10 rounded bg-white/5 animate-pulse" />
+                <div className="w-3 h-3 rounded bg-white/5 animate-pulse shrink-0" />
             </div>
         );
     }
