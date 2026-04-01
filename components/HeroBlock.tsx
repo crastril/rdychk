@@ -160,8 +160,8 @@ export function HeroBlock({
                 style={{ background: allReady ? '#052010' : '#0f0f0f' }}
             >
                 <span className={cn(
-                    'text-[10px] font-black uppercase tracking-[0.18em] shrink-0 tabular-nums transition-colors duration-300',
-                    allReady ? 'text-green-400' : 'text-white/40'
+                    'text-xs font-black uppercase tracking-[0.18em] shrink-0 tabular-nums transition-colors duration-300',
+                    allReady ? 'text-green-400' : 'text-white/50'
                 )}>
                     {allReady
                         ? allReadyMsg
@@ -185,7 +185,7 @@ export function HeroBlock({
                 </div>
 
                 {!allReady && (
-                    <span className="text-[10px] font-black text-white/20 tracking-tight shrink-0 tabular-nums">
+                    <span className="text-xs font-black text-white/35 tracking-tight shrink-0 tabular-nums">
                         PRÊTS
                     </span>
                 )}

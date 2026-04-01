@@ -115,16 +115,16 @@ export function HomeTab({
                     {displayDate && (
                         <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5">
                             <CalendarBlank className="w-3 h-3 text-[var(--v2-primary)] shrink-0" weight="fill" />
-                            <span className="text-[11px] font-black text-white/65 capitalize">{displayDate}</span>
+                            <span className="text-xs font-black text-white/75 capitalize">{displayDate}</span>
                             {confirmedDate && (
-                                <span className="text-[8px] font-black text-green-400 ml-0.5">✓</span>
+                                <span className="text-[11px] font-black text-green-400 ml-0.5">✓</span>
                             )}
                         </div>
                     )}
                     {displayLocation && (
                         <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5">
                             <MapPin className="w-3 h-3 text-[var(--v2-accent)] shrink-0" weight="fill" />
-                            <span className="text-[11px] font-black text-white/65 truncate max-w-[130px]">{displayLocation}</span>
+                            <span className="text-xs font-black text-white/75 truncate max-w-[130px]">{displayLocation}</span>
                         </div>
                     )}
                     {isAdmin && !locationEnabled && !group.location?.name && (
@@ -133,7 +133,7 @@ export function HomeTab({
                             className="flex items-center gap-1.5 bg-[var(--v2-primary)]/8 border border-[var(--v2-primary)]/20 rounded-full px-3 py-1.5 hover:bg-[var(--v2-primary)]/15 transition-colors"
                         >
                             <MapPin className="w-3 h-3 text-[var(--v2-primary)] shrink-0" />
-                            <span className="text-[11px] font-black text-[var(--v2-primary)]/80">+ Lieu</span>
+                            <span className="text-xs font-black text-[var(--v2-primary)]/90">+ Lieu</span>
                         </button>
                     )}
                     {isAdmin && !locationEnabled && group.location?.name && (
@@ -141,7 +141,7 @@ export function HomeTab({
                             onClick={() => setShowLocationModal(true)}
                             className="flex items-center gap-1.5 bg-white/4 border border-white/8 rounded-full px-3 py-1.5 hover:bg-white/8 transition-colors"
                         >
-                            <span className="text-[11px] font-black text-white/30">Modifier →</span>
+                            <span className="text-xs font-black text-white/40">Modifier →</span>
                         </button>
                     )}
                 </div>
@@ -150,7 +150,7 @@ export function HomeTab({
                 <div className="flex items-center gap-2 px-0.5">
                     <div className="flex items-center gap-2">
                         <span className="w-1.5 h-1.5 rounded-full bg-[var(--v2-primary)] animate-pulse shrink-0" />
-                        <span className="text-[11px] font-black text-white/25">
+                        <span className="text-xs font-black text-white/40">
                             Commence par voter une date ↓
                         </span>
                     </div>
@@ -175,7 +175,7 @@ export function HomeTab({
             {showInviteNudge && (
                 <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-dashed border-white/10 bg-white/2">
                     <UserPlus className="w-4 h-4 text-white/25 shrink-0" />
-                    <span className="text-[11px] font-black text-white/25 flex-1">
+                    <span className="text-xs font-black text-white/40 flex-1">
                         Invite tes amis à rejoindre
                     </span>
                     <ShareMenu
@@ -216,7 +216,7 @@ export function HomeTab({
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-1.5">
                                         <CalendarBlank className="w-3.5 h-3.5 text-[var(--v2-primary)]" weight="fill" />
-                                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">
+                                        <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/50">
                                             Calendrier
                                         </span>
                                         {/* Nudge dot: hasn't voted yet */}
@@ -232,11 +232,11 @@ export function HomeTab({
                                 {displayDate ? (
                                     <p className="text-sm font-black text-white capitalize leading-tight mt-0.5">{displayDate}</p>
                                 ) : (
-                                    <p className="text-xs text-white/25 mt-0.5">
+                                    <p className="text-xs text-white/40 mt-0.5">
                                         {needsCalendarVote ? 'Vote ta dispo !' : 'Aucun vote'}
                                     </p>
                                 )}
-                                <p className="text-[9px] text-white/20 uppercase tracking-wider">
+                                <p className="text-[11px] text-white/35 uppercase tracking-wider">
                                     {uniqueVotedDates} date{uniqueVotedDates !== 1 ? 's' : ''} · {myVoteCount} vote{myVoteCount !== 1 ? 's' : ''}
                                 </p>
                             </button>
@@ -281,7 +281,7 @@ export function HomeTab({
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-1.5">
                                         <MapPin className="w-3.5 h-3.5 text-[var(--v2-accent)]" weight="fill" />
-                                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">
+                                        <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/50">
                                             Lieux
                                         </span>
                                         {/* Nudge dot: has proposals but user hasn't participated */}
@@ -297,9 +297,9 @@ export function HomeTab({
                                 {displayLocation ? (
                                     <p className="text-sm font-black text-white truncate leading-tight mt-0.5">{displayLocation}</p>
                                 ) : (
-                                    <p className="text-xs text-white/25 mt-0.5">Aucune prop.</p>
+                                    <p className="text-xs text-white/40 mt-0.5">Aucune prop.</p>
                                 )}
-                                <p className="text-[9px] text-white/20 uppercase tracking-wider">
+                                <p className="text-[11px] text-white/35 uppercase tracking-wider">
                                     {proposals.length} proposition{proposals.length !== 1 ? 's' : ''}
                                 </p>
                             </button>
@@ -339,7 +339,7 @@ export function HomeTab({
                         className="flex items-center gap-3 py-1.5 group"
                     >
                         <div className="h-px flex-1 bg-white/5 group-hover:bg-white/8 transition-colors" />
-                        <span className="text-[9px] font-black uppercase tracking-[0.25em] text-white/18 group-hover:text-white/30 transition-colors flex items-center gap-1.5">
+                        <span className="text-[11px] font-black uppercase tracking-[0.22em] text-white/28 group-hover:text-white/45 transition-colors flex items-center gap-1.5">
                             Options
                             <CaretDown className={cn('w-3 h-3 transition-transform duration-200', isOptionsOpen && 'rotate-180')} />
                         </span>
