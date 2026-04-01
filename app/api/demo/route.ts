@@ -3,12 +3,12 @@ import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 
 const DEMO_SLUG = 'demo-rdychk';
-const RESET_AFTER_MS = 24 * 60 * 60 * 1000; // reset demo group every 24h
+const RESET_AFTER_MS = 24 * 60 * 60 * 1000;
 
 function getDb() {
     return createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 }
 
@@ -21,7 +21,6 @@ function signMemberId(memberId: string): string {
 }
 
 async function seedDemoGroup(db: ReturnType<typeof getDb>, groupId: string) {
-    // Wipe existing data
     const { data: existingProposals } = await db
         .from('location_proposals')
         .select('id')
@@ -34,7 +33,6 @@ async function seedDemoGroup(db: ReturnType<typeof getDb>, groupId: string) {
     await db.from('date_votes').delete().eq('group_id', groupId);
     await db.from('members').delete().eq('group_id', groupId);
 
-    // Create fixed admin member
     const { data: adminMember, error: adminError } = await db
         .from('members')
         .insert({ group_id: groupId, name: 'Toi (Admin)', is_ready: true, role: 'admin' })
@@ -45,18 +43,16 @@ async function seedDemoGroup(db: ReturnType<typeof getDb>, groupId: string) {
         throw new Error(`Failed to create admin member: ${adminError?.message}`);
     }
 
-    // Create 4 fixed fake members
     const { data: fakeMembers } = await db
         .from('members')
         .insert([
-            { group_id: groupId, name: 'Mathieu', is_ready: true, role: 'member' },
+            { group_id: groupId, name: 'Mathieu', is_ready: true,  role: 'member' },
             { group_id: groupId, name: 'Camille', is_ready: false, role: 'member' },
-            { group_id: groupId, name: 'Théo', is_ready: true, role: 'member' },
-            { group_id: groupId, name: 'Sophie', is_ready: false, role: 'member' },
+            { group_id: groupId, name: 'Théo',    is_ready: true,  role: 'member' },
+            { group_id: groupId, name: 'Sophie',  is_ready: false, role: 'member' },
         ])
         .select();
 
-    // Add date votes
     const today = new Date();
     const dates = [1, 3, 5].map(d => {
         const date = new Date(today);
@@ -76,7 +72,6 @@ async function seedDemoGroup(db: ReturnType<typeof getDb>, groupId: string) {
         await db.from('date_votes').insert(dateVotes);
     }
 
-    // Add location proposals
     await db.from('location_proposals').insert([
         {
             group_id: groupId,
@@ -103,7 +98,6 @@ export async function POST() {
     try {
         const db = getDb();
 
-        // 1. Upsert demo group (never changes its settings)
         const { data: group, error: groupError } = await db
             .from('groups')
             .upsert(
@@ -124,7 +118,6 @@ export async function POST() {
             return NextResponse.json({ error: 'Failed to upsert demo group', detail: groupError?.message }, { status: 500 });
         }
 
-        // 2. Check if the demo group is still fresh (has a recent admin member)
         const { data: existingAdmin } = await db
             .from('members')
             .select('*')
@@ -136,14 +129,10 @@ export async function POST() {
             !existingAdmin ||
             Date.now() - new Date(existingAdmin.updated_at).getTime() > RESET_AFTER_MS;
 
-        let adminMember = existingAdmin;
+        const adminMember = isStale
+            ? await seedDemoGroup(db, group.id)
+            : existingAdmin;
 
-        if (isStale) {
-            // 3. Reseed — wipe and recreate all members/votes/proposals
-            adminMember = await seedDemoGroup(db, group.id);
-        }
-
-        // 4. Set HMAC session cookie and return
         const signature = signMemberId(adminMember.id);
         const cookieValue = `${adminMember.id}.${signature}`;
 

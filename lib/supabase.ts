@@ -13,4 +13,11 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     }
 });
 
+// Fix 5: eagerly start the session check at module load time (before React mounts)
+// so the network request is in-flight while the JS bundle finishes parsing.
+// The auth-provider will pick up the same cached result from the Supabase client.
+if (typeof window !== 'undefined') {
+    supabase.auth.getSession();
+}
+
 

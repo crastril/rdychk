@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { CaretRight, GameController, MapPin, Terminal, Confetti, CircleNotch, Check, CalendarBlank } from '@phosphor-icons/react';
 import { AuthButton } from '@/components/auth-button';
+import { PageLoader } from '@/components/PageLoader';
 import { cn } from '@/lib/utils';
 import { createSlug } from '@/lib/slug';
 import { FRENCH_CITIES } from '@/lib/cities';
@@ -161,6 +162,17 @@ const LiquidWaves = ({ mobile = false }: { mobile?: boolean }) => {
 export default function Home() {
   const { user } = useAuth();
   const router = useRouter();
+
+  // Fix 3: skip loader if user has a cached Supabase session (returning visitor)
+  const [showLoader, setShowLoader] = useState(true);
+  useEffect(() => {
+    try {
+      const hasCachedSession = Object.keys(localStorage).some(
+        k => k.startsWith('sb-') && k.endsWith('-auth-token')
+      );
+      if (hasCachedSession) setShowLoader(false);
+    } catch { /* localStorage unavailable */ }
+  }, []);
 
   // Detect mobile to skip heavy animations
   const [isMobile, setIsMobile] = useState(false);
@@ -373,6 +385,7 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen overflow-x-hidden overflow-y-auto custom-scroll bg-black text-slate-100 font-display selection:bg-purple-500/30">
+      {showLoader && <PageLoader onComplete={() => setShowLoader(false)} />}
 
       {/* Top Navigation */}
       <nav className="fixed top-0 left-0 w-full z-50 flex justify-between items-center py-6 px-4 md:px-12 pointer-events-none">
@@ -444,7 +457,8 @@ export default function Home() {
 
           <div className="absolute inset-0 bg-noise opacity-30 pointer-events-none mix-blend-overlay z-0"></div>
 
-          <LiquidWaves mobile={isMobile} />
+          {/* Fix 4: defer canvas animation until loader is gone */}
+          {!showLoader && <LiquidWaves mobile={isMobile} />}
 
           {!isMobile && mode === 'in_person' && (
             <>

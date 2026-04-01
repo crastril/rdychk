@@ -77,12 +77,12 @@ export function HomeTab({
     // Formatted dates
     const confirmedDate = group.confirmed_date
         ? new Date(group.confirmed_date + 'T00:00:00').toLocaleDateString('fr-FR', {
-            weekday: 'short', day: 'numeric', month: 'short',
+            weekday: 'long', day: 'numeric', month: 'long',
         })
         : null;
     const formattedPopularDate = popularDate
         ? new Date(popularDate + 'T00:00:00').toLocaleDateString('fr-FR', {
-            weekday: 'short', day: 'numeric', month: 'short',
+            weekday: 'long', day: 'numeric', month: 'long',
         })
         : null;
 
@@ -116,18 +116,18 @@ export function HomeTab({
             {(displayDate || displayLocation || (isAdmin && !locationEnabled)) ? (
                 <div className="flex items-center gap-2 flex-wrap px-0.5">
                     {displayDate && (
-                        <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5">
+                        <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full">
                             <CalendarDots className="w-3 h-3 text-[var(--v2-primary)] shrink-0" weight="fill" />
-                            <span className="text-xs font-black text-white/75 capitalize">{displayDate}</span>
+                            <span className="text-xs font-black text-white/75 capitalize truncate">{displayDate}</span>
                             {confirmedDate && (
-                                <span className="text-[11px] font-black text-green-400 ml-0.5">✓</span>
+                                <span className="text-[11px] font-black text-green-400 ml-0.5 shrink-0">✓</span>
                             )}
                         </div>
                     )}
                     {displayLocation && (
-                        <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5">
+                        <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full">
                             <MapTrifold className="w-3 h-3 text-[var(--v2-accent)] shrink-0" weight="fill" />
-                            <span className="text-xs font-black text-white/75 truncate max-w-[130px]">{displayLocation}</span>
+                            <span className="text-xs font-black text-white/75 truncate">{displayLocation}</span>
                         </div>
                     )}
                     {isAdmin && !locationEnabled && !group.location?.name && (
