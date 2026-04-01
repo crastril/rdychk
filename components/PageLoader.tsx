@@ -2,21 +2,17 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { useAuth } from '@/components/auth-provider';
 
 const LETTERS = ['r', 'd', 'y', 'c', 'h', 'k'];
-const MIN_SHOW_MS = 1700;
+const MIN_SHOW_MS = 1000;
 
 // Color constants matching the two themes
 const RED    = '#ff2e2e';
 const PURPLE = '#a855f7';
 
 export function PageLoader({ onComplete }: { onComplete: () => void }) {
-    const { loading: authLoading } = useAuth();
     const [phase, setPhase] = useState<'letters' | 'orbiting' | 'exit'>('letters');
     const [hidden, setHidden] = useState(false);
-    const startMs = useRef(Date.now());
-    const authReady = useRef(!authLoading);
     const onCompleteRef = useRef(onComplete);
     useEffect(() => { onCompleteRef.current = onComplete; }, [onComplete]);
 
@@ -26,21 +22,12 @@ export function PageLoader({ onComplete }: { onComplete: () => void }) {
         return () => clearTimeout(t);
     }, []);
 
-    // Track auth completion
-    useEffect(() => {
-        if (!authLoading) authReady.current = true;
-    }, [authLoading]);
-
-    // Phase 2 → Phase 3: once auth ready + minimum time elapsed
+    // Phase 2 → Phase 3: once minimum time elapsed (no auth dependency)
     useEffect(() => {
         if (phase !== 'orbiting') return;
-        const poll = setInterval(() => {
-            if (authReady.current && Date.now() - startMs.current >= MIN_SHOW_MS) {
-                setPhase('exit');
-                clearInterval(poll);
-            }
-        }, 100);
-        return () => clearInterval(poll);
+        const remaining = MIN_SHOW_MS - 950;
+        const t = setTimeout(() => setPhase('exit'), Math.max(0, remaining));
+        return () => clearTimeout(t);
     }, [phase]);
 
     // Phase 3 → done
@@ -49,7 +36,7 @@ export function PageLoader({ onComplete }: { onComplete: () => void }) {
         const t = setTimeout(() => {
             setHidden(true);
             onCompleteRef.current();
-        }, 900);
+        }, 500);
         return () => clearTimeout(t);
     }, [phase]);
 
@@ -63,7 +50,7 @@ export function PageLoader({ onComplete }: { onComplete: () => void }) {
             className="fixed inset-0 z-[200] flex items-center justify-center"
             style={{ background: '#000' }}
             animate={{ opacity: isExit ? 0 : 1 }}
-            transition={{ duration: 0.45, delay: isExit ? 0.6 : 0 }}
+            transition={{ duration: 0.35, delay: isExit ? 0.3 : 0 }}
         >
             {/* Logo group — shrinks toward header position on exit */}
             <motion.div

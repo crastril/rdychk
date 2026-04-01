@@ -163,7 +163,16 @@ export default function Home() {
   const { user } = useAuth();
   const router = useRouter();
 
+  // Fix 3: skip loader if user has a cached Supabase session (returning visitor)
   const [showLoader, setShowLoader] = useState(true);
+  useEffect(() => {
+    try {
+      const hasCachedSession = Object.keys(localStorage).some(
+        k => k.startsWith('sb-') && k.endsWith('-auth-token')
+      );
+      if (hasCachedSession) setShowLoader(false);
+    } catch { /* localStorage unavailable */ }
+  }, []);
 
   // Detect mobile to skip heavy animations
   const [isMobile, setIsMobile] = useState(false);
@@ -448,7 +457,8 @@ export default function Home() {
 
           <div className="absolute inset-0 bg-noise opacity-30 pointer-events-none mix-blend-overlay z-0"></div>
 
-          <LiquidWaves mobile={isMobile} />
+          {/* Fix 4: defer canvas animation until loader is gone */}
+          {!showLoader && <LiquidWaves mobile={isMobile} />}
 
           {!isMobile && mode === 'in_person' && (
             <>
