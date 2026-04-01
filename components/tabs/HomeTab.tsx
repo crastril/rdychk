@@ -177,12 +177,7 @@ export function HomeTab({
             )}
 
             {/* ── PRÉVOIR MON DÉPART ── hidden when user is ready */}
-            {memberId && (
-                <div className={cn(
-                    'grid transition-all duration-300 ease-in-out',
-                    !effectiveReady ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-                )}>
-                <div className="overflow-hidden">
+            {memberId && !effectiveReady && (
                 <div
                     className="rounded-2xl border-2 border-white/8 overflow-hidden"
                     style={{ background: '#0c0c0c', boxShadow: '3px 3px 0px #000' }}
@@ -231,8 +226,6 @@ export function HomeTab({
                             </div>
                         </div>
                     </div>
-                </div>
-                </div>
                 </div>
             )}
 
