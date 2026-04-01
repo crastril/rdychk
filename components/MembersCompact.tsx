@@ -72,7 +72,7 @@ export function MembersCompact({
 
                 {/* Summary */}
                 <div className="flex-1 text-left min-w-0">
-                    <p className="text-xs font-black uppercase tracking-[0.16em] text-white/45">
+                    <p className="text-xs font-black uppercase tracking-[0.16em] text-white/70">
                         {readyCount}/{members.length} prêts
                     </p>
                 </div>

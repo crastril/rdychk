@@ -12,6 +12,7 @@ import { updateMemberAction } from '@/app/actions/member';
 import { updateLocationAction } from '@/app/actions/group';
 import { CalendarDots, MapTrifold, CaretDown, UserPlus, PersonSimpleWalk } from '@phosphor-icons/react';
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { AddLocationProposalModal } from '@/components/AddLocationProposalModal';
 import { ShareMenu } from '@/components/ShareMenu';
 
@@ -101,10 +102,7 @@ export function HomeTab({
     const hasVotedLocation = Object.keys(myLocationVotes).length > 0;
     const needsLocationAction = locationEnabled && proposals.length > 0 && !hasProposedLocation && !hasVotedLocation && !!memberId;
 
-    // Grid: single column when a card is expanded (avoids cramped calendar)
     const bothEnabled = calendarEnabled && locationEnabled;
-    const anyOpen = isCalendarOpen || isLocationOpen;
-    const gridClass = bothEnabled && !anyOpen ? 'grid-cols-2' : 'grid-cols-1';
 
     // Invite nudge: group is small and no pending actions
     const showInviteNudge = members.length < 4 && !!memberId;
@@ -176,8 +174,17 @@ export function HomeTab({
                 />
             )}
 
-            {/* ── PRÉVOIR MON DÉPART ── hidden when user is ready */}
+            {/* ── PRÉVOIR MON DÉPART ── slides out when user is ready */}
+            <AnimatePresence initial={false}>
             {memberId && !effectiveReady && (
+                <motion.div
+                    key="depart-block"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+                    style={{ overflow: 'hidden' }}
+                >
                 <div
                     className="rounded-2xl border-2 border-white/8 overflow-hidden"
                     style={{ background: '#0c0c0c', boxShadow: '3px 3px 0px #000' }}
@@ -189,7 +196,7 @@ export function HomeTab({
                         aria-expanded={isOptionsOpen}
                     >
                         <PersonSimpleWalk className="w-3.5 h-3.5 text-[var(--v2-primary)] shrink-0" />
-                        <span className="flex-1 text-left text-[11px] font-black uppercase tracking-[0.18em] text-white/50">
+                        <span className="flex-1 text-left text-[11px] font-black uppercase tracking-[0.18em] text-white/70">
                             Prévoir mon départ
                         </span>
                         <CaretDown
@@ -227,7 +234,9 @@ export function HomeTab({
                         </div>
                     </div>
                 </div>
+                </motion.div>
             )}
+            </AnimatePresence>
 
             {/* ── INVITE NUDGE ── shown when group is small */}
             {showInviteNudge && (
@@ -255,12 +264,22 @@ export function HomeTab({
 
             {/* ── ACTION CARDS ── Calendar + Location */}
             {(calendarEnabled || locationEnabled || (isAdmin && !locationEnabled)) && (
-                <div className={cn('grid gap-3 transition-all duration-300', gridClass)}>
+                <div className="flex flex-wrap gap-3">
 
                     {/* Calendar card */}
                     {calendarEnabled && (
+                        <motion.div
+                            layout
+                            key="calendar-card"
+                            className="min-w-0"
+                            style={{
+                                width: bothEnabled && !isCalendarOpen && !isLocationOpen ? 'calc(50% - 6px)' : '100%',
+                                order: isLocationOpen && !isCalendarOpen ? 1 : 0,
+                            }}
+                            transition={{ layout: { duration: 0.35, ease: [0.4, 0, 0.2, 1] } }}
+                        >
                         <div
-                            className="flex flex-col rounded-2xl border-2 border-white/8 overflow-hidden"
+                            className="flex flex-col rounded-2xl border-2 border-white/8 overflow-hidden h-full"
                             style={{ background: '#0c0c0c', boxShadow: '3px 3px 0px #000' }}
                         >
                             <button
@@ -274,7 +293,7 @@ export function HomeTab({
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-1.5">
                                         <CalendarDots className="w-3.5 h-3.5 text-[var(--v2-primary)]" weight="fill" />
-                                        <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/50">
+                                        <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/70">
                                             Calendrier
                                         </span>
                                         {/* Nudge dot: hasn't voted yet */}
@@ -320,12 +339,23 @@ export function HomeTab({
                                 </div>
                             </div>
                         </div>
+                        </motion.div>
                     )}
 
                     {/* Location card */}
                     {locationEnabled && (
+                        <motion.div
+                            layout
+                            key="location-card"
+                            className="min-w-0"
+                            style={{
+                                width: bothEnabled && !isCalendarOpen && !isLocationOpen ? 'calc(50% - 6px)' : '100%',
+                                order: isCalendarOpen && !isLocationOpen ? 1 : 0,
+                            }}
+                            transition={{ layout: { duration: 0.35, ease: [0.4, 0, 0.2, 1] } }}
+                        >
                         <div
-                            className="flex flex-col rounded-2xl border-2 border-white/8 overflow-hidden"
+                            className="flex flex-col rounded-2xl border-2 border-white/8 overflow-hidden h-full"
                             style={{ background: '#0c0c0c', boxShadow: '3px 3px 0px #000' }}
                         >
                             <button
@@ -339,7 +369,7 @@ export function HomeTab({
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-1.5">
                                         <MapTrifold className="w-3.5 h-3.5 text-[var(--v2-accent)]" weight="fill" />
-                                        <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/50">
+                                        <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/70">
                                             Lieux
                                         </span>
                                         {/* Nudge dot: has proposals but user hasn't participated */}
@@ -384,6 +414,7 @@ export function HomeTab({
                                 </div>
                             </div>
                         </div>
+                        </motion.div>
                     )}
                 </div>
             )}

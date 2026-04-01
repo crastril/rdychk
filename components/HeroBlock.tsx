@@ -148,7 +148,7 @@ export function HeroBlock({
             >
                 <span className={cn(
                     'text-xs font-black uppercase tracking-[0.18em] shrink-0 tabular-nums transition-colors duration-300',
-                    allReady ? 'text-green-400' : socialPressureMsg ? 'text-amber-400' : 'text-white/50'
+                    allReady ? 'text-green-400' : socialPressureMsg ? 'text-amber-400' : 'text-white/65'
                 )}>
                     {allReady
                         ? allReadyMsg
@@ -174,7 +174,7 @@ export function HeroBlock({
                 </div>
 
                 {!allReady && !socialPressureMsg && (
-                    <span className="text-xs font-black text-white/35 tracking-tight shrink-0 tabular-nums">
+                    <span className="text-xs font-black text-white/50 tracking-tight shrink-0 tabular-nums">
                         PRÊTS
                     </span>
                 )}
