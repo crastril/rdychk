@@ -235,7 +235,7 @@ export function HeroBlock({
                         : timeLeft
                         ? 'bg-[#111] text-white'
                         : formattedProposedTime
-                        ? 'bg-[#111] text-[var(--v2-primary)] hover:bg-[#161616]'
+                        ? 'bg-[#111] text-sky-400 hover:bg-[#161616]'
                         : 'bg-[#111] text-white/90 hover:bg-[#161616]',
                     isPending && 'opacity-70 pointer-events-none'
                 )}
@@ -262,7 +262,7 @@ export function HeroBlock({
                     {/* Contextual hint — only on the default not-ready state */}
                     {isDefaultNotReady && (
                         <span className="text-[11px] font-medium normal-case tracking-normal text-white/30">
-                            Appuie quand tu quittes la maison
+                            Appuie quand tu es prêt à quitter la maison
                         </span>
                     )}
                 </span>

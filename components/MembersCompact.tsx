@@ -135,35 +135,37 @@ export function MembersCompact({
                                         )}
                                     </span>
 
-                                    {/* Timer or proposed time badge */}
+                                    {/* Status — shows timer/proposed time when set */}
                                     {(() => {
+                                        if (m.is_ready) {
+                                            return (
+                                                <span className="text-[11px] font-black uppercase tracking-[0.14em] shrink-0 text-green-400/90">
+                                                    ✓ Prêt
+                                                </span>
+                                            );
+                                        }
                                         const timerEnd = m.timer_end_time ? new Date(m.timer_end_time) : null;
-                                        const timerActive = timerEnd && timerEnd > new Date();
-                                        if (timerActive) {
+                                        if (timerEnd && timerEnd > new Date()) {
                                             const hhmm = timerEnd.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
                                             return (
-                                                <span className="text-[11px] font-black text-[var(--v2-primary)]/70 shrink-0 tabular-nums">
-                                                    ⏱ {hhmm}
+                                                <span className="text-[11px] font-black shrink-0 tabular-nums text-amber-400/80">
+                                                    → {hhmm}h
                                                 </span>
                                             );
                                         }
                                         if (m.proposed_time) {
                                             return (
-                                                <span className="text-[11px] font-black text-sky-400/70 shrink-0 tabular-nums">
-                                                    → {m.proposed_time.slice(0, 5)}
+                                                <span className="text-[11px] font-black shrink-0 tabular-nums text-sky-400/80">
+                                                    → {m.proposed_time.slice(0, 5)}h
                                                 </span>
                                             );
                                         }
-                                        return null;
+                                        return (
+                                            <span className="text-[11px] font-black uppercase tracking-[0.14em] shrink-0 text-white/30">
+                                                En attente
+                                            </span>
+                                        );
                                     })()}
-
-                                    {/* Status */}
-                                    <span className={cn(
-                                        'text-[11px] font-black uppercase tracking-[0.14em] shrink-0',
-                                        m.is_ready ? 'text-green-400/90' : 'text-white/30'
-                                    )}>
-                                        {m.is_ready ? '✓ Prêt' : 'En attente'}
-                                    </span>
                                 </div>
                             );
                         })}

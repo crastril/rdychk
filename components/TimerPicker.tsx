@@ -54,14 +54,17 @@ export function TimerPicker({ currentTimerEnd, onUpdate }: TimerPickerProps) {
             <PopoverTrigger asChild>
                 <button
                     className={cn(
-                        "flex w-full items-center justify-center py-4 px-2 rounded-xl text-[11px] uppercase tracking-[0.2em] font-black transition-all duration-300 group",
+                        "flex w-full flex-col items-center justify-center gap-1 py-3 px-3 rounded-xl",
+                        "border-[2px] font-black text-[11px] uppercase tracking-[0.18em]",
+                        "transition-all duration-100 active:translate-y-[1px]",
                         isActive
-                            ? "bg-amber-500/10 border-amber-500/30 text-amber-500 shadow-neon-secondary/20 border-2"
-                            : "bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white"
+                            ? "border-amber-500/50 bg-amber-500/10 text-amber-400"
+                            : "border-white/15 bg-[#161616] text-white/55 hover:text-white/80 hover:border-white/25"
                     )}
+                    style={{ boxShadow: isActive ? '2px 2px 0px rgba(245,158,11,0.25)' : '2px 2px 0px rgba(0,0,0,0.5)' }}
                 >
-                    <Timer className={cn("w-4 h-4 mr-2 transition-transform shrink-0", isActive ? "animate-pulse" : "text-[var(--v2-primary)] group-hover:rotate-12")} />
-                    <span className="truncate">{isActive ? "Départ imminent" : "Bientôt prêt"}</span>
+                    <Timer className={cn("w-4 h-4 shrink-0", isActive && "animate-pulse")} />
+                    <span className="truncate">{isActive ? "Départ imminent" : "Minuteur"}</span>
                 </button>
             </PopoverTrigger>
             <PopoverContent
