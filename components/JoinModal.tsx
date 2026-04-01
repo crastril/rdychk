@@ -58,72 +58,7 @@ export default function JoinModal({ onJoin, onReclaim, groupName, existingGuests
 
 
     if (isAutoJoining) {
-        return (
-            <div className="fixed inset-0 z-[100] bg-[#050505] text-slate-100 flex flex-col items-center overflow-y-auto">
-                {/* Background Glows */}
-                <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-                    <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-[var(--v2-primary)] opacity-10 rounded-full blur-[120px]"></div>
-                    <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-[var(--v2-accent)] opacity-10 rounded-full blur-[100px]"></div>
-                </div>
-
-                <nav className="w-full border-b border-white/5 bg-black/50 backdrop-blur-md sticky top-0 z-50">
-                    <div className="max-w-xl mx-auto px-4 h-16 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <span className="text-2xl font-black tracking-tighter text-white">
-                                rdychk<span className="text-[var(--v2-primary)]">.</span>
-                            </span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <div className="w-10 h-10 rounded-md skeleton" />
-                        </div>
-                    </div>
-                </nav>
-
-                <div className="w-full max-w-xl mx-auto flex flex-col gap-6 relative z-10 p-4 mt-2">
-                    <div className="flex items-center justify-between -mb-2">
-                        <div className="flex-1 w-full">
-                            <div className="h-8 w-[200px] sm:w-[250px] rounded-lg skeleton mb-2" />
-                            <div className="flex items-center gap-2 mt-1">
-                                <span className="w-1.5 h-1.5 rounded-full skeleton"></span>
-                                <div className="h-3 w-20 rounded-lg skeleton" />
-                            </div>
-                        </div>
-                        <div className="w-10 h-10 rounded-xl skeleton" />
-                    </div>
-
-                    <div className="flex justify-center mb-2">
-                        <div className="relative w-48 h-48 flex items-center justify-center -my-2 overflow-visible">
-                            <svg className="w-full h-full transform -rotate-90 overflow-visible" viewBox="0 0 100 100">
-                                <circle className="text-white/5 stroke-current" cx="50" cy="50" r={45} fill="none" strokeWidth="8" />
-                            </svg>
-                            <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                <div className="h-10 w-24 skeleton rounded-lg mb-2" />
-                                <div className="h-3 w-12 skeleton rounded-full" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col gap-3">
-                        <div className="h-16 w-full rounded-xl skeleton" />
-                    </div>
-
-                    <div className="flex flex-col items-end w-full mt-2">
-                        <div className="w-full space-y-3 relative mb-8">
-                            <h2 className="h-4 w-24 rounded skeleton mb-4" />
-                            {[1, 2, 3].map(i => (
-                                <div key={i} className="glass-panel p-3 rounded-2xl flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-xl skeleton shrink-0" />
-                                    <div className="flex-1 min-w-0">
-                                        <div className="h-5 w-32 rounded skeleton mb-2" />
-                                        <div className="h-3 w-20 rounded skeleton" />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
+        return null;
     }
 
     const handleSubmitCreate = async (e: React.FormEvent) => {
