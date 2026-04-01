@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { CaretRight, GameController, MapPin, Terminal, Confetti, CircleNotch, Check, CalendarBlank } from '@phosphor-icons/react';
 import { AuthButton } from '@/components/auth-button';
+import { PageLoader } from '@/components/PageLoader';
 import { cn } from '@/lib/utils';
 import { createSlug } from '@/lib/slug';
 import { FRENCH_CITIES } from '@/lib/cities';
@@ -161,6 +162,8 @@ const LiquidWaves = ({ mobile = false }: { mobile?: boolean }) => {
 export default function Home() {
   const { user } = useAuth();
   const router = useRouter();
+
+  const [showLoader, setShowLoader] = useState(true);
 
   // Detect mobile to skip heavy animations
   const [isMobile, setIsMobile] = useState(false);
@@ -373,6 +376,7 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen overflow-x-hidden overflow-y-auto custom-scroll bg-black text-slate-100 font-display selection:bg-purple-500/30">
+      {showLoader && <PageLoader onComplete={() => setShowLoader(false)} />}
 
       {/* Top Navigation */}
       <nav className="fixed top-0 left-0 w-full z-50 flex justify-between items-center py-6 px-4 md:px-12 pointer-events-none">
