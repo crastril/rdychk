@@ -21,7 +21,18 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     }
 
     return {
-        title: group.name,
+        title: `${group.name} · rdychk`,
+        description: 'Rejoins le groupe et indique quand tu es prêt.',
+        openGraph: {
+            title: `${group.name} · rdychk`,
+            description: 'Rejoins le groupe et indique quand tu es prêt.',
+            siteName: 'rdychk',
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: `${group.name} · rdychk`,
+            description: 'Rejoins le groupe et indique quand tu es prêt.',
+        },
     };
 }
 
