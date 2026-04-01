@@ -14,7 +14,7 @@ import {
     DialogClose
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Clock, X } from '@phosphor-icons/react';
+import { Alarm, X } from '@phosphor-icons/react';
 
 interface TimeProposalModalProps {
     currentProposedTime: string | null;
@@ -74,7 +74,7 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
                         )}
                         style={{ boxShadow: currentProposedTime ? '2px 2px 0px rgba(14,165,233,0.25)' : '2px 2px 0px rgba(0,0,0,0.5)' }}
                     >
-                        <Clock className="w-4 h-4 shrink-0" />
+                        <Alarm className="w-4 h-4 shrink-0" />
                         {currentProposedTime ? (
                             <span className="truncate tabular-nums">{currentProposedTime.slice(0, 5)}h</span>
                         ) : (

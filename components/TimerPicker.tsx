@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Slider } from '@/components/ui/slider';
-import { Timer, Clock, CircleNotch } from '@phosphor-icons/react';
+import { Hourglass, CircleNotch } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 
 interface TimerPickerProps {
@@ -63,7 +63,7 @@ export function TimerPicker({ currentTimerEnd, onUpdate }: TimerPickerProps) {
                     )}
                     style={{ boxShadow: isActive ? '2px 2px 0px rgba(245,158,11,0.25)' : '2px 2px 0px rgba(0,0,0,0.5)' }}
                 >
-                    <Timer className={cn("w-4 h-4 shrink-0", isActive && "animate-pulse")} />
+                    <Hourglass className={cn("w-4 h-4 shrink-0", isActive && "animate-pulse")} />
                     <span className="truncate">{isActive ? "Départ imminent" : "Minuteur"}</span>
                 </button>
             </PopoverTrigger>
@@ -76,7 +76,7 @@ export function TimerPicker({ currentTimerEnd, onUpdate }: TimerPickerProps) {
                     <div className="space-y-1">
                         <div className="flex items-center justify-between">
                             <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2">
-                                <Clock className="w-3.5 h-3.5 text-[var(--v2-primary)]" />
+                                <Hourglass className="w-3.5 h-3.5 text-[var(--v2-primary)]" />
                                 Temps estimé
                             </h4>
                             <span className="text-xl font-black text-white tabular-nums">

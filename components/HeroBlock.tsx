@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { Check, Clock, Timer, Warning } from '@phosphor-icons/react';
+import { Check, Alarm, Hourglass, Warning } from '@phosphor-icons/react';
 import { useState, useEffect, useRef } from 'react';
 import { toggleReadyAction } from '@/app/actions/member';
 import type { Member } from '@/types/database';
@@ -252,9 +252,9 @@ export function HeroBlock({
                         ) : isSoonReady ? (
                             <><Warning className="w-5 h-5" /> BIENTÔT PRÊT !</>
                         ) : timeLeft ? (
-                            <><Timer className="w-5 h-5 text-[var(--v2-primary)]" /> PRÊT DANS <span className="tabular-nums">{timeLeft}</span></>
+                            <><Hourglass className="w-5 h-5 text-[var(--v2-primary)]" /> PRÊT DANS <span className="tabular-nums">{timeLeft}</span></>
                         ) : formattedProposedTime ? (
-                            <><Clock className="w-5 h-5" /> ARRIVÉE PRÉVUE · {formattedProposedTime}</>
+                            <><Alarm className="w-5 h-5" /> ARRIVÉE PRÉVUE · {formattedProposedTime}</>
                         ) : (
                             <><Check className="w-5 h-5 text-[var(--v2-primary)]" weight="bold" /> INDIQUER QUE JE SUIS PRÊT</>
                         )}

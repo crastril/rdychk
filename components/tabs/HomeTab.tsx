@@ -10,7 +10,7 @@ import { TimerPicker } from '@/components/TimerPicker';
 import { TimeProposalModal } from '@/components/TimeProposalModal';
 import { updateMemberAction } from '@/app/actions/member';
 import { updateLocationAction } from '@/app/actions/group';
-import { CalendarBlank, MapPin, CaretDown, UserPlus, Timer } from '@phosphor-icons/react';
+import { CalendarDots, MapTrifold, CaretDown, UserPlus, PersonSimpleWalk } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { AddLocationProposalModal } from '@/components/AddLocationProposalModal';
 import { ShareMenu } from '@/components/ShareMenu';
@@ -114,7 +114,7 @@ export function HomeTab({
                 <div className="flex items-center gap-2 flex-wrap px-0.5">
                     {displayDate && (
                         <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5">
-                            <CalendarBlank className="w-3 h-3 text-[var(--v2-primary)] shrink-0" weight="fill" />
+                            <CalendarDots className="w-3 h-3 text-[var(--v2-primary)] shrink-0" weight="fill" />
                             <span className="text-xs font-black text-white/75 capitalize">{displayDate}</span>
                             {confirmedDate && (
                                 <span className="text-[11px] font-black text-green-400 ml-0.5">✓</span>
@@ -123,7 +123,7 @@ export function HomeTab({
                     )}
                     {displayLocation && (
                         <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5">
-                            <MapPin className="w-3 h-3 text-[var(--v2-accent)] shrink-0" weight="fill" />
+                            <MapTrifold className="w-3 h-3 text-[var(--v2-accent)] shrink-0" weight="fill" />
                             <span className="text-xs font-black text-white/75 truncate max-w-[130px]">{displayLocation}</span>
                         </div>
                     )}
@@ -132,7 +132,7 @@ export function HomeTab({
                             onClick={() => setShowLocationModal(true)}
                             className="flex items-center gap-1.5 bg-[var(--v2-primary)]/8 border border-[var(--v2-primary)]/20 rounded-full px-3 py-1.5 hover:bg-[var(--v2-primary)]/15 transition-colors"
                         >
-                            <MapPin className="w-3 h-3 text-[var(--v2-primary)] shrink-0" />
+                            <MapTrifold className="w-3 h-3 text-[var(--v2-primary)] shrink-0" />
                             <span className="text-xs font-black text-[var(--v2-primary)]/90">+ Lieu</span>
                         </button>
                     )}
@@ -185,7 +185,7 @@ export function HomeTab({
                         onClick={() => setIsOptionsOpen(v => !v)}
                         aria-expanded={isOptionsOpen}
                     >
-                        <Timer className="w-3.5 h-3.5 text-[var(--v2-primary)] shrink-0" />
+                        <PersonSimpleWalk className="w-3.5 h-3.5 text-[var(--v2-primary)] shrink-0" />
                         <span className="flex-1 text-left text-[11px] font-black uppercase tracking-[0.18em] text-white/50">
                             Prévoir mon départ
                         </span>
@@ -270,7 +270,7 @@ export function HomeTab({
                             >
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-1.5">
-                                        <CalendarBlank className="w-3.5 h-3.5 text-[var(--v2-primary)]" weight="fill" />
+                                        <CalendarDots className="w-3.5 h-3.5 text-[var(--v2-primary)]" weight="fill" />
                                         <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/50">
                                             Calendrier
                                         </span>
@@ -335,7 +335,7 @@ export function HomeTab({
                             >
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-1.5">
-                                        <MapPin className="w-3.5 h-3.5 text-[var(--v2-accent)]" weight="fill" />
+                                        <MapTrifold className="w-3.5 h-3.5 text-[var(--v2-accent)]" weight="fill" />
                                         <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/50">
                                             Lieux
                                         </span>
