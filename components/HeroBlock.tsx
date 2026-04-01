@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils';
 import { Check, Alarm, Hourglass, Warning } from '@phosphor-icons/react';
 import { useState, useEffect, useRef } from 'react';
+import confetti from 'canvas-confetti';
 import { toggleReadyAction } from '@/app/actions/member';
 import type { Member } from '@/types/database';
 
@@ -28,10 +29,6 @@ const ALL_READY_MSGS = [
     'YALLAH 🚀',
 ];
 
-const CELEBRATION_EMOJIS = ['🎉', '🔥', '💪', '🚀', '⚡', '💥', '🎯', '🥂', '🎊', '👊', '✅', '🤝'];
-
-type Particle = { id: number; emoji: string; x: number; delay: number; dur: number };
-
 export function HeroBlock({
     slug,
     memberId,
@@ -48,7 +45,6 @@ export function HeroBlock({
     const [isSoonReady, setIsSoonReady] = useState(false);
     const [optimisticReady, setOptimisticReady] = useState<boolean | null>(null);
     const [isPending, setIsPending] = useState(false);
-    const [particles, setParticles] = useState<Particle[]>([]);
     const [allReadyMsg] = useState(
         () => ALL_READY_MSGS[Math.floor(Math.random() * ALL_READY_MSGS.length)]
     );
@@ -75,16 +71,12 @@ export function HeroBlock({
     // Celebration burst when everyone becomes ready
     useEffect(() => {
         if (allReady && !prevAllReadyRef.current) {
-            const burst: Particle[] = Array.from({ length: 16 }, (_, i) => ({
-                id: i,
-                emoji: CELEBRATION_EMOJIS[i % CELEBRATION_EMOJIS.length],
-                x: 5 + (i * 6) % 90,
-                delay: i * 0.07,
-                dur: 1.2 + Math.random() * 0.6,
-            }));
-            setParticles(burst);
-            const t = setTimeout(() => setParticles([]), 2800);
-            return () => clearTimeout(t);
+            confetti({
+                particleCount: 120,
+                spread: 80,
+                origin: { y: 0.8 },
+                colors: ['#22c55e', '#4ade80', '#ffffff', '#fbbf24', '#34d399'],
+            });
         }
         prevAllReadyRef.current = allReady;
     }, [allReady]);
@@ -149,33 +141,6 @@ export function HeroBlock({
     return (
         // box-shadow instead of filter:drop-shadow to avoid stacking-context glow clipping
         <div className="flex flex-col w-full relative rounded-2xl" style={{ boxShadow: '5px 5px 0px #000' }}>
-            {/* Celebration particles */}
-            {particles.length > 0 && (
-                <>
-                    <style>{`
-                        @keyframes celebrate-burst {
-                            0%   { transform: translateY(0)    scale(1)   rotate(0deg);   opacity: 1; }
-                            70%  { opacity: 1; }
-                            100% { transform: translateY(-160px) scale(0.3) rotate(540deg); opacity: 0; }
-                        }
-                    `}</style>
-                    <div className="absolute inset-0 pointer-events-none overflow-visible z-30">
-                        {particles.map(p => (
-                            <span
-                                key={p.id}
-                                className="absolute bottom-4 text-xl select-none"
-                                style={{
-                                    left: `${p.x}%`,
-                                    animation: `celebrate-burst ${p.dur}s ease-out ${p.delay}s both`,
-                                }}
-                            >
-                                {p.emoji}
-                            </span>
-                        ))}
-                    </div>
-                </>
-            )}
-
             {/* Progress header bar */}
             <div
                 className="flex items-center gap-3 px-4 py-3 rounded-t-2xl border-x-[3px] border-t-[3px] border-black transition-colors duration-500"
