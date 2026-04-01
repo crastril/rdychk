@@ -71,6 +71,9 @@ export function HomeTab({
 
     const currentMember = members.find(m => m.id === memberId);
 
+    // Effective ready state (mirrors HeroBlock's optimistic logic)
+    const effectiveReady = localOptimisticReady !== null ? localOptimisticReady : isReady;
+
     // Formatted dates
     const confirmedDate = group.confirmed_date
         ? new Date(group.confirmed_date + 'T00:00:00').toLocaleDateString('fr-FR', {
@@ -173,8 +176,13 @@ export function HomeTab({
                 />
             )}
 
-            {/* ── PRÉVOIR MON DÉPART ── right below the ready button */}
+            {/* ── PRÉVOIR MON DÉPART ── hidden when user is ready */}
             {memberId && (
+                <div className={cn(
+                    'grid transition-all duration-300 ease-in-out',
+                    !effectiveReady ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                )}>
+                <div className="overflow-hidden">
                 <div
                     className="rounded-2xl border-2 border-white/8 overflow-hidden"
                     style={{ background: '#0c0c0c', boxShadow: '3px 3px 0px #000' }}
@@ -223,6 +231,8 @@ export function HomeTab({
                             </div>
                         </div>
                     </div>
+                </div>
+                </div>
                 </div>
             )}
 
