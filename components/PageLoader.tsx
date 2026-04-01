@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 
 const LETTERS = ['r', 'd', 'y', 'c', 'h', 'k'];
-const MIN_SHOW_MS = 1000;
+const MIN_SHOW_MS = 3500;
 
 // Color constants matching the two themes
 const RED    = '#ff2e2e';
