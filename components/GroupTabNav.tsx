@@ -1,21 +1,22 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { Calendar, Home, MapPin } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { CalendarBlank, House, MapPin } from '@phosphor-icons/react';
 
 export type GroupTab = 'calendar' | 'home' | 'location';
+
+type PhosphorIcon = React.ComponentType<{ className?: string; weight?: 'fill' | 'regular' | 'bold' | 'duotone' | 'light' | 'thin' }>;
 
 interface TabItem {
     id: GroupTab;
     label: string;
-    icon: React.ReactNode;
+    icon: PhosphorIcon;
 }
 
 const TABS: TabItem[] = [
-    { id: 'calendar', label: 'Calendrier', icon: <Calendar className="w-5 h-5" /> },
-    { id: 'home', label: 'Accueil', icon: <Home className="w-5 h-5" /> },
-    { id: 'location', label: 'Lieux', icon: <MapPin className="w-5 h-5" /> },
+    { id: 'calendar', label: 'Calendrier', icon: CalendarBlank },
+    { id: 'home',     label: 'Accueil',    icon: House },
+    { id: 'location', label: 'Lieux',      icon: MapPin },
 ];
 
 interface GroupTabNavProps {
@@ -26,84 +27,97 @@ interface GroupTabNavProps {
 }
 
 export function GroupTabNav({ activeTab, onTabChange, calendarEnabled = true, locationEnabled = true }: GroupTabNavProps) {
-    const activeTabs = TABS.filter(t => {
+    const visibleTabs = TABS.filter(t => {
         if (t.id === 'calendar') return calendarEnabled;
         if (t.id === 'location') return locationEnabled;
         return true;
     });
 
-    if (activeTabs.length <= 1) return null;
+    if (visibleTabs.length <= 1) return null;
 
     return (
         <>
-            {/* Desktop: floating glass component under header */}
+            {/* ── Desktop ── */}
             <nav className="hidden sm:flex items-center justify-center w-full max-w-xl mx-auto px-4 py-3">
-                <div className="flex items-center gap-1 p-1.5 rounded-2xl frost-glass shadow-2xl relative">
-                    {activeTabs.map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => onTabChange(tab.id)}
-                            className={cn(
-                                'flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-colors duration-300 relative z-10',
-                                activeTab === tab.id
-                                    ? 'text-white'
-                                    : 'text-slate-400 hover:text-white hover:bg-white/5'
-                            )}
-                        >
-                            {activeTab === tab.id && (
-                                <motion.div
-                                    layoutId="desktop-active-tab"
-                                    className="absolute inset-0 rounded-xl bg-white/10 border border-white/20 shadow-[0_4px_12px_rgba(0,0,0,0.5)] backdrop-blur-md -z-10"
-                                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                <div className="flex items-center gap-2 p-1.5 bg-[#0c0c0c] border-2 border-white/12 rounded-2xl shadow-[4px_4px_0px_#000]">
+                    {visibleTabs.map((tab) => {
+                        const Icon = tab.icon;
+                        const active = activeTab === tab.id;
+                        return (
+                            <button
+                                key={tab.id}
+                                onClick={() => onTabChange(tab.id)}
+                                className={cn(
+                                    'relative flex items-center gap-2 px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-[0.18em] transition-all duration-100 select-none',
+                                    active
+                                        ? [
+                                            'bg-[var(--v2-primary)] text-white',
+                                            'border-2 border-black/80',
+                                            'shadow-[3px_3px_0px_rgba(0,0,0,0.85)]',
+                                            '-translate-x-px -translate-y-px',
+                                          ]
+                                        : [
+                                            'text-white/35 border-2 border-transparent',
+                                            'hover:text-white/65 hover:bg-white/5 hover:border-white/10',
+                                            'active:translate-y-px',
+                                          ]
+                                )}
+                            >
+                                <Icon
+                                    className={cn('w-4 h-4 transition-transform duration-100', active && 'scale-110')}
+                                    weight={active ? 'fill' : 'regular'}
                                 />
-                            )}
-                            <div className={cn(
-                                'transition-all duration-300',
-                                activeTab === tab.id ? 'scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]' : 'scale-100'
-                            )}>
-                                {tab.icon}
-                            </div>
-                            {tab.label}
-                        </button>
-                    ))}
+                                {tab.label}
+                            </button>
+                        );
+                    })}
                 </div>
             </nav>
 
-            {/* Mobile: floating glass bottom bar */}
-            <nav className="sm:hidden fixed bottom-6 left-4 right-4 z-50 transition-all duration-300">
-                <div className="frost-glass flex items-stretch h-16 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] px-1 py-1 relative">
-                    {activeTabs.map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => onTabChange(tab.id)}
-                            className={cn(
-                                'flex-1 flex flex-col items-center justify-center gap-1 transition-colors duration-300 rounded-xl relative z-10',
-                                activeTab === tab.id
-                                    ? 'text-white'
-                                    : 'text-slate-400 hover:text-white hover:bg-white/5'
-                            )}
-                        >
-                            {activeTab === tab.id && (
-                                <motion.div
-                                    layoutId="mobile-active-tab"
-                                    className="absolute inset-0 rounded-xl bg-white/10 border border-white/20 shadow-[0_4px_12px_rgba(0,0,0,0.5)] backdrop-blur-md -z-10"
-                                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            {/* ── Mobile bottom bar ── */}
+            <nav className="sm:hidden fixed bottom-5 left-3 right-3 z-50">
+                {/* outer hard-shadow frame */}
+                <div
+                    className="flex items-stretch gap-1.5 p-1.5 rounded-2xl"
+                    style={{
+                        background: '#0c0c0c',
+                        border: '2px solid rgba(255,255,255,0.1)',
+                        boxShadow: '5px 5px 0px #000, inset 0 1px 0 rgba(255,255,255,0.06)',
+                    }}
+                >
+                    {visibleTabs.map((tab) => {
+                        const Icon = tab.icon;
+                        const active = activeTab === tab.id;
+                        return (
+                            <button
+                                key={tab.id}
+                                onClick={() => onTabChange(tab.id)}
+                                className={cn(
+                                    'flex-1 flex flex-col items-center justify-center gap-1 rounded-xl h-14 transition-all duration-100 select-none',
+                                    active
+                                        ? [
+                                            'bg-[var(--v2-primary)] text-white',
+                                            'border-2 border-black/80',
+                                            'shadow-[2px_2px_0px_rgba(0,0,0,0.9)]',
+                                            '-translate-x-px -translate-y-px',
+                                          ]
+                                        : [
+                                            'text-white/35 border-2 border-transparent',
+                                            'hover:text-white/60 hover:bg-white/5',
+                                            'active:translate-y-px active:shadow-none',
+                                          ]
+                                )}
+                            >
+                                <Icon
+                                    className={cn('w-5 h-5 transition-transform duration-100', active && 'scale-110')}
+                                    weight={active ? 'fill' : 'regular'}
                                 />
-                            )}
-                            <div className={cn(
-                                'transition-all duration-300 transform',
-                                activeTab === tab.id ? 'scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] -translate-y-0.5' : 'scale-100'
-                            )}>
-                                {tab.icon}
-                            </div>
-                            <span className={cn(
-                                "text-[10px] font-bold uppercase tracking-wider leading-none transition-all duration-300",
-                                activeTab === tab.id ? "opacity-100" : "opacity-70"
-                            )}>
-                                {tab.label}
-                            </span>
-                        </button>
-                    ))}
+                                <span className="text-[8.5px] font-black uppercase tracking-[0.16em] leading-none">
+                                    {tab.label}
+                                </span>
+                            </button>
+                        );
+                    })}
                 </div>
             </nav>
         </>

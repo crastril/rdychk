@@ -50,6 +50,7 @@ export function HomeTab({
     onOpenManage,
 }: HomeTabProps) {
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+    const [isBriefingOpen, setIsBriefingOpen] = useState(false);
     const totalCount = members.length;
     const currentMember = members.find(m => m.id === memberId);
     const [showLocationModal, setShowLocationModal] = useState(false);
@@ -69,68 +70,113 @@ export function HomeTab({
 
     return (
         <div className="flex flex-col gap-6">
-            {/* Summary block (when there's useful info) */}
+            {/* ── BRIEFING RAPIDE (pour les flemmards) ── */}
             {(confirmedDate || formattedPopularDate || topLocationProposal || group.location?.name || (isAdmin && !group.location_voting_enabled)) && (
-                <div className="glass-panel rounded-2xl border border-white/5 p-4 space-y-3">
-                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Pour les flemmards :</h3>
+                    <div
+                        className="rounded-2xl overflow-hidden border-2 border-white/12"
+                        style={{ background: '#0c0c0c', boxShadow: '4px 4px 0px #000' }}
+                    >
+                        {/* Header tape — clickable toggle */}
+                        <button
+                            type="button"
+                            onClick={() => setIsBriefingOpen(v => !v)}
+                            className="w-full flex items-center gap-2.5 px-4 py-3 transition-colors hover:bg-white/5"
+                            style={{ background: isBriefingOpen ? 'rgba(255,255,255,0.03)' : 'transparent' }}
+                        >
+                            <span className="w-2 h-2 rounded-full bg-[var(--v2-primary)] shrink-0" style={{ boxShadow: '0 0 6px var(--v2-primary)' }} />
+                            <span className="text-[11px] font-black text-white/60 flex-1 text-left">
+                                T&apos;as rien suivi ? Clique ici
+                            </span>
+                            <CaretDown
+                                className={cn('w-4 h-4 text-white/30 transition-transform duration-200', isBriefingOpen && 'rotate-180')}
+                                weight="bold"
+                            />
+                        </button>
 
-                    {/* Date Section */}
-                    {(confirmedDate || formattedPopularDate) ? (
-                        <div className="flex items-center gap-3">
-                            <div className="w-7 h-7 rounded-lg bg-[var(--v2-primary)]/10 flex items-center justify-center shrink-0">
-                                <CalendarBlank className="w-3.5 h-3.5 text-[var(--v2-primary)]" />
-                            </div>
-                            <div>
-                                <p className="text-xs text-slate-500 font-medium">Date</p>
-                                <p className="text-sm font-bold text-white capitalize">{confirmedDate || formattedPopularDate}</p>
-                            </div>
-                        </div>
-                    ) : null}
+                        {/* Info rows — collapsible */}
+                        <div className={cn(
+                            'grid transition-all duration-200 ease-in-out',
+                            isBriefingOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                        )}>
+                        <div className="overflow-hidden">
+                        <div className="border-t-2 border-white/8 p-4 space-y-3">
+                            {/* Date */}
+                            {(confirmedDate || formattedPopularDate) && (
+                                <div className="flex items-center gap-3">
+                                    <div
+                                        className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border-2 border-[var(--v2-primary)]/30"
+                                        style={{ background: 'rgba(255,46,46,0.08)', boxShadow: '2px 2px 0px rgba(0,0,0,0.6)' }}
+                                    >
+                                        <CalendarBlank className="w-4 h-4 text-[var(--v2-primary)]" weight="fill" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/30">QUAND</p>
+                                        <p className="text-sm font-black text-white capitalize truncate">{confirmedDate || formattedPopularDate}</p>
+                                    </div>
+                                    {confirmedDate && (
+                                        <span
+                                            className="text-[8px] font-black uppercase tracking-wider px-2 py-1 rounded-lg border-2 shrink-0"
+                                            style={{ color: '#4ade80', borderColor: 'rgba(74,222,128,0.35)', background: 'rgba(74,222,128,0.07)', boxShadow: '1px 1px 0px #000' }}
+                                        >
+                                            CONFIRMÉ
+                                        </span>
+                                    )}
+                                </div>
+                            )}
 
-                    {/* Location Section */}
-                    {(group.location?.name || topLocationProposal) ? (
-                        <div className="flex items-center gap-3">
-                            <div className="w-7 h-7 rounded-lg bg-[var(--v2-accent)]/10 flex items-center justify-center shrink-0">
-                                <MapPin className="w-3.5 h-3.5 text-[var(--v2-accent)]" />
-                            </div>
-                            <div>
-                                <p className="text-xs text-slate-500 font-medium">Lieu</p>
-                                <p className="text-sm font-bold text-white flex flex-col sm:flex-row sm:items-center sm:gap-2">
-                                    {group.location?.name || topLocationProposal?.name}
+                            {/* Location */}
+                            {(group.location?.name || topLocationProposal) ? (
+                                <div className="flex items-center gap-3">
+                                    <div
+                                        className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border-2 border-[var(--v2-accent)]/30"
+                                        style={{ background: 'rgba(255,255,255,0.05)', boxShadow: '2px 2px 0px rgba(0,0,0,0.6)' }}
+                                    >
+                                        <MapPin className="w-4 h-4 text-[var(--v2-accent)]" weight="fill" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/30">OÙ</p>
+                                        <p className="text-sm font-black text-white truncate">
+                                            {group.location?.name || topLocationProposal?.name}
+                                        </p>
+                                    </div>
                                     {isAdmin && !group.location_voting_enabled && group.location?.name && (
                                         <button
                                             onClick={() => setShowLocationModal(true)}
-                                            className="text-[10px] text-[var(--v2-primary)] hover:underline mt-0.5 sm:mt-0"
+                                            className="text-[9px] font-black uppercase tracking-wider text-[var(--v2-primary)] border-2 border-[var(--v2-primary)]/40 px-2 py-1 rounded-lg hover:bg-[var(--v2-primary)]/10 transition-colors shrink-0"
+                                            style={{ boxShadow: '1px 1px 0px #000' }}
                                         >
                                             Modifier
                                         </button>
                                     )}
-                                </p>
-                            </div>
-                        </div>
-                    ) : (
-                        isAdmin && !group.location_voting_enabled && !group.location && (
-                            <div className="flex items-center gap-3">
-                                <div className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
-                                    <MapPin className="w-3.5 h-3.5 text-slate-500" />
                                 </div>
-                                <div className="flex-1 flex justify-between items-center">
-                                    <div>
-                                        <p className="text-xs text-slate-500">Lieu</p>
-                                        <p className="text-sm font-medium text-slate-400">Non défini</p>
+                            ) : (
+                                isAdmin && !group.location_voting_enabled && !group.location && (
+                                    <div className="flex items-center gap-3">
+                                        <div
+                                            className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border-2 border-white/10"
+                                            style={{ background: 'rgba(255,255,255,0.03)', boxShadow: '2px 2px 0px rgba(0,0,0,0.6)' }}
+                                        >
+                                            <MapPin className="w-4 h-4 text-white/25" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/30">OÙ</p>
+                                            <p className="text-sm font-black text-white/30">Non défini</p>
+                                        </div>
+                                        <button
+                                            onClick={() => setShowLocationModal(true)}
+                                            className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--v2-primary)] border-2 border-[var(--v2-primary)]/40 px-2.5 py-1.5 rounded-lg hover:bg-[var(--v2-primary)]/10 transition-colors shrink-0"
+                                            style={{ boxShadow: '2px 2px 0px #000' }}
+                                        >
+                                            <Plus className="w-3 h-3" />
+                                            Ajouter
+                                        </button>
                                     </div>
-                                    <button
-                                        onClick={() => setShowLocationModal(true)}
-                                        className="text-xs font-bold text-[var(--v2-primary)] hover:bg-[var(--v2-primary)]/10 px-2 py-1 rounded-md transition-colors flex items-center gap-1"
-                                    >
-                                        <Plus className="w-3 h-3" />
-                                        Ajouter
-                                    </button>
-                                </div>
-                            </div>
-                        )
-                    )}
-                </div>
+                                )
+                            )}
+                        </div>
+                        </div>
+                        </div>
+                    </div>
             )}
 
             {/* Progress Circle */}
@@ -217,6 +263,7 @@ export function HomeTab({
                 <AddLocationProposalModal
                     isOpen={showLocationModal}
                     onClose={() => setShowLocationModal(false)}
+                    city={group.city}
                     baseLat={group.base_lat}
                     baseLng={group.base_lng}
                     onSubmit={async (data) => {
