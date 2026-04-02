@@ -147,6 +147,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
         .sort(([, a], [, b]) => b - a)
         .slice(0, 6);
 
+
     // ── Calendrier désactivé ─────────────────────────────────────────────────
     if (!group.calendar_voting_enabled) {
         return (
@@ -307,17 +308,13 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                 </div>
             )}
 
-            {/* ── Fix #5 : synthèse créneaux — grid accordion évite le layout jump ── */}
-            <div className={cn(
-                'grid transition-[grid-template-rows] duration-300 ease-out',
-                topDates.length > 0 ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
-            )}>
-                <div className="overflow-hidden">
-                <div className="border-t border-white/5 pt-3 flex flex-col gap-1.5">
-                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/20 mb-1">
-                        Créneaux disponibles
-                    </p>
-                    {topDates.map(([dateStr, count]) => {
+            {/* ── Fix #5 : synthèse créneaux (remplace liste participants) ── */}
+            {topDates.length > 0 && (
+            <div className="border-t border-white/5 pt-3 flex flex-col gap-1.5">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/20 mb-1">
+                    Créneaux disponibles
+                </p>
+                {topDates.map(([dateStr, count]) => {
                         const dateMembers = membersByDate[dateStr] || [];
                         const isConf = confirmedDate === dateStr;
                         const pct = Math.round((count / totalMembers) * 100);
@@ -396,10 +393,9 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                 {isConf && <Check className="w-3.5 h-3.5 text-green-400 shrink-0" />}
                             </div>
                         );
-                    })}
-                </div>
-                </div>
+                })}
             </div>
+            )}
 
             {/* ── Fix #10 : bouton admin discret en bas ────────────────────── */}
             {isAdmin && allDatesWithVotes.length > 0 && (
