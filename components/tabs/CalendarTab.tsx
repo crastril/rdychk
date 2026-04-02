@@ -39,7 +39,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
 
     const [viewDate, setViewDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
     const [confirmedDate, setConfirmedDate] = useState<string | null>(group.confirmed_date ?? null);
-    const [votingDate, setVotingDate] = useState<string | null>(null);
+    const [pendingDates, setPendingDates] = useState<Set<string>>(new Set());
     const [confirmingDate, setConfirmingDate] = useState<string | null>(null);
     const [isOverrideModalOpen, setIsOverrideModalOpen] = useState(false);
 
@@ -52,10 +52,10 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
     );
 
     const handleVote = async (dateStr: string) => {
-        if (!memberId) return;
+        if (!memberId || pendingDates.has(dateStr)) return;
         const wasVoted = myVotes.has(dateStr);
-        setVotingDate(dateStr);
 
+        // Optimistic update — show immediately, no spinner
         if (wasVoted) {
             onVotesChange(votes.filter(v => !(v.date === dateStr && v.member_id === memberId)));
         } else {
@@ -68,8 +68,9 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
             } as DateVote]);
         }
 
+        setPendingDates(prev => new Set(prev).add(dateStr));
         await voteDateAction(slug, memberId, dateStr);
-        setVotingDate(null);
+        setPendingDates(prev => { const next = new Set(prev); next.delete(dateStr); return next; });
     };
 
     const handleConfirmDate = async (dateStr: string) => {
@@ -222,18 +223,16 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                     const isConfirmed = confirmedDate === dateStr;
                     const isPast = dateStr < todayStr;
                     const isToday = dateStr === todayStr;
-                    const isVoting = votingDate === dateStr;
+                    const isPending = pendingDates.has(dateStr);
 
                     return (
                         <button
                             key={dateStr}
                             onClick={() => !isPast && handleVote(dateStr)}
-                            disabled={isPast || isVoting || !memberId}
+                            disabled={isPast || isPending || !memberId}
                             className={cn(
                                 'relative flex flex-col items-center justify-center min-h-[44px] rounded-xl font-bold transition-all duration-150',
-                                // Fix #9 : passé = discret, cursor-not-allowed sans aucun feedback
                                 isPast ? 'opacity-20 cursor-not-allowed' : 'active:scale-95 cursor-pointer',
-                                // Fix #7 : confirmed = vert
                                 isConfirmed && 'bg-green-500/15 border-2 border-green-500',
                                 isBestMatch && !isConfirmed && 'bg-amber-500/10 border-2 border-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.2)]',
                                 isMine && !isBestMatch && !isConfirmed && 'border-2 border-white/60 bg-white/5',
@@ -242,32 +241,25 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                 !isMine && !isBestMatch && !isConfirmed && isPast && 'border border-transparent',
                             )}
                         >
-                            {isVoting ? (
-                                <CircleNotch className="w-3.5 h-3.5 animate-spin text-white/30" />
-                            ) : (
-                                <>
-                                    <span className={cn(
-                                        'text-[13px] leading-none',
-                                        isConfirmed ? 'text-green-400' :
-                                            isBestMatch ? 'text-amber-300' :
-                                                isMine ? 'text-white' :
-                                                    isToday ? 'text-[var(--v2-primary)]' :
-                                                        isPast ? 'text-white/30' : 'text-white/55',
-                                    )}>
-                                        {day}
-                                    </span>
-                                    {/* Fix #3 : compteur X/Y au lieu de User+"+N" */}
-                                    {voteCount > 0 && (
-                                        <span className={cn(
-                                            'text-[8px] font-black tabular-nums mt-0.5 leading-none',
-                                            isConfirmed ? 'text-green-400/60' :
-                                                isBestMatch ? 'text-amber-400/70' :
-                                                    'text-white/25',
-                                        )}>
-                                            {voteCount}/{totalMembers}
-                                        </span>
-                                    )}
-                                </>
+                            <span className={cn(
+                                'text-[13px] leading-none',
+                                isConfirmed ? 'text-green-400' :
+                                    isBestMatch ? 'text-amber-300' :
+                                        isMine ? 'text-white' :
+                                            isToday ? 'text-[var(--v2-primary)]' :
+                                                isPast ? 'text-white/30' : 'text-white/55',
+                            )}>
+                                {day}
+                            </span>
+                            {voteCount > 0 && (
+                                <span className={cn(
+                                    'text-[8px] font-black tabular-nums mt-0.5 leading-none',
+                                    isConfirmed ? 'text-green-400/60' :
+                                        isBestMatch ? 'text-amber-400/70' :
+                                            'text-white/25',
+                                )}>
+                                    {voteCount}/{totalMembers}
+                                </span>
                             )}
                         </button>
                     );
