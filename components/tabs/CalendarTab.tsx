@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import type { Group, Member, DateVote } from '@/types/database';
 import { voteDateAction, confirmDateAction } from '@/app/actions/calendar';
@@ -308,8 +309,17 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                 </div>
             )}
 
-            {/* ── Fix #5 : synthèse créneaux (remplace liste participants) ── */}
+            {/* ── Fix #5 : synthèse créneaux — AnimatePresence étend vers le bas sans bouger le haut ── */}
+            <AnimatePresence initial={false}>
             {topDates.length > 0 && (
+            <motion.div
+                key="top-dates"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                style={{ overflow: 'hidden' }}
+            >
             <div className="border-t border-white/5 pt-3 flex flex-col gap-1.5">
                 <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/20 mb-1">
                     Créneaux disponibles
@@ -395,7 +405,9 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                         );
                 })}
             </div>
+            </motion.div>
             )}
+            </AnimatePresence>
 
             {/* ── Fix #10 : bouton admin discret en bas ────────────────────── */}
             {isAdmin && allDatesWithVotes.length > 0 && (
