@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import type { Group, Member, DateVote } from '@/types/database';
 import { voteDateAction, confirmDateAction } from '@/app/actions/calendar';
@@ -15,7 +15,7 @@ interface CalendarTabProps {
     isAdmin: boolean;
     onGroupChange?: () => void;
     votes: DateVote[];
-    onVotesChange: (votes: DateVote[]) => void;
+    onVotesChange: (updater: DateVote[] | ((prev: DateVote[]) => DateVote[])) => void;
 }
 
 // ── Fix #1 : semaine commence le lundi ──────────────────────────────────────
@@ -45,31 +45,42 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
 
     const totalMembers = members.length;
 
-    // ── Fix #11 : dériver myVotes directement (pas de useState+useEffect) ───
-    const myVotes = useMemo(
-        () => new Set(votes.filter(v => v.member_id === memberId).map(v => v.date)),
-        [votes, memberId],
+    // Local set for MY votes — updates instantly, not derived from parent prop.
+    // This prevents the fetchVotes() Supabase revalidation from flickering
+    // intermediate states back during rapid multi-date selection.
+    const [myVotes, setMyVotes] = useState<Set<string>>(
+        () => new Set(votes.filter(v => v.member_id === memberId).map(v => v.date))
     );
+    const pendingCountRef = useRef(0); // number of in-flight vote requests
+
+    // Sync from server only when no ops are in flight
+    useEffect(() => {
+        if (pendingCountRef.current === 0) {
+            setMyVotes(new Set(votes.filter(v => v.member_id === memberId).map(v => v.date)));
+        }
+    }, [votes, memberId]);
 
     const handleVote = async (dateStr: string) => {
         if (!memberId || pendingDates.has(dateStr)) return;
         const wasVoted = myVotes.has(dateStr);
 
-        // Optimistic update — show immediately, no spinner
-        if (wasVoted) {
-            onVotesChange(votes.filter(v => !(v.date === dateStr && v.member_id === memberId)));
-        } else {
-            onVotesChange([...votes, {
-                id: 'temp-' + Date.now(),
-                group_id: group.id,
-                member_id: memberId,
-                date: dateStr,
-                created_at: new Date().toISOString(),
-            } as DateVote]);
-        }
+        // Instant local update — functional updater avoids stale closure on rapid clicks
+        setMyVotes(prev => {
+            const next = new Set(prev);
+            if (wasVoted) next.delete(dateStr); else next.add(dateStr);
+            return next;
+        });
 
+        // Update parent vote counts with functional updater (fixes stale closure)
+        onVotesChange(prev => wasVoted
+            ? prev.filter(v => !(v.date === dateStr && v.member_id === memberId))
+            : [...prev, { id: 'temp-' + Date.now(), group_id: group.id, member_id: memberId, date: dateStr, created_at: new Date().toISOString() } as DateVote]
+        );
+
+        pendingCountRef.current++;
         setPendingDates(prev => new Set(prev).add(dateStr));
         await voteDateAction(slug, memberId, dateStr);
+        pendingCountRef.current--;
         setPendingDates(prev => { const next = new Set(prev); next.delete(dateStr); return next; });
     };
 
@@ -296,8 +307,12 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                 </div>
             )}
 
-            {/* ── Fix #5 : synthèse créneaux (remplace liste participants) ── */}
-            {topDates.length > 0 && (
+            {/* ── Fix #5 : synthèse créneaux — grid accordion évite le layout jump ── */}
+            <div className={cn(
+                'grid transition-[grid-template-rows] duration-300 ease-out',
+                topDates.length > 0 ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+            )}>
+                <div className="overflow-hidden">
                 <div className="border-t border-white/5 pt-3 flex flex-col gap-1.5">
                     <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/20 mb-1">
                         Créneaux disponibles
@@ -383,7 +398,8 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                         );
                     })}
                 </div>
-            )}
+                </div>
+            </div>
 
             {/* ── Fix #10 : bouton admin discret en bas ────────────────────── */}
             {isAdmin && allDatesWithVotes.length > 0 && (

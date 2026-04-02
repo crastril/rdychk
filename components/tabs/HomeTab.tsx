@@ -34,7 +34,7 @@ interface HomeTabProps {
     onOpenManage: () => void;
     // Calendar data (passed inline)
     votes: DateVote[];
-    onVotesChange: (votes: DateVote[]) => void;
+    onVotesChange: (updater: DateVote[] | ((prev: DateVote[]) => DateVote[])) => void;
     // Location data (passed inline)
     proposals: LocationProposal[];
     myLocationVotes: Record<string, 1 | -1>;
