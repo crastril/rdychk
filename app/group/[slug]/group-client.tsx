@@ -566,11 +566,22 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                     <div className="absolute inset-0 bg-gradient-to-b from-purple-900/10 via-transparent to-purple-900/10 pointer-events-none"></div>
                 </div>
             ) : (
-                <div style={{ background: 'radial-gradient(circle at center, #2e0808, #0a0101)' }} className="fixed inset-0 z-[-1]">
-                    <div className="absolute inset-0 bg-noise opacity-20 pointer-events-none mix-blend-overlay z-0"></div>
+                <div style={{ background: 'radial-gradient(ellipse at 50% 40%, #3a0a0a 0%, #180303 45%, #060000 100%)' }} className="fixed inset-0 z-[-1]">
+                    {/* Grain — heavier opacity for texture */}
+                    <div className="absolute inset-0 bg-noise opacity-35 pointer-events-none mix-blend-overlay z-0"></div>
+                    {/* Liquid wave animation */}
                     <LiquidWaves />
-                    <div className="absolute top-[-10%] left-[20%] w-[600px] h-[600px] bg-red-700/10 rounded-full blur-[120px] pointer-events-none mix-blend-screen animate-pulse z-0"></div>
-                    <div className="absolute bottom-[10%] right-[20%] w-[400px] h-[400px] bg-red-900/15 rounded-full blur-[100px] pointer-events-none mix-blend-screen z-0"></div>
+                    {/* Main center glow — more intense */}
+                    <div className="absolute top-[-5%] left-[15%] w-[700px] h-[700px] bg-red-600/20 rounded-full blur-[140px] pointer-events-none mix-blend-screen animate-pulse z-0"></div>
+                    {/* Secondary off-center glow */}
+                    <div className="absolute top-[30%] right-[5%] w-[500px] h-[500px] bg-red-900/25 rounded-full blur-[110px] pointer-events-none mix-blend-screen z-0"></div>
+                    {/* Deep accent — warm ember at the bottom */}
+                    <div className="absolute bottom-[-10%] left-[35%] w-[600px] h-[400px] bg-orange-950/30 rounded-full blur-[120px] pointer-events-none mix-blend-screen z-0"></div>
+                    {/* Vignette — dark edges, open center */}
+                    <div
+                        className="absolute inset-0 pointer-events-none z-1"
+                        style={{ background: 'radial-gradient(ellipse at 50% 35%, transparent 25%, rgba(0,0,0,0.55) 70%, rgba(0,0,0,0.85) 100%)' }}
+                    />
                 </div>
             )}
 
@@ -619,15 +630,18 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                 {/* Group header — compact */}
                 <div className="flex items-center gap-3">
                     <div className="flex-1 min-w-0">
-                        <h1 className="text-white font-black text-xl leading-tight truncate">
+                        <h1
+                            className="text-white leading-none truncate uppercase"
+                            style={{
+                                fontFamily: 'var(--font-barlow-condensed)',
+                                fontWeight: 900,
+                                fontSize: '1.85rem',
+                                letterSpacing: '-0.01em',
+                            }}
+                        >
                             {group.name}
                         </h1>
                     </div>
-                    <ShareMenu
-                        groupName={group.name}
-                        url={typeof window !== 'undefined' ? window.location.href : ''}
-                        variant="button"
-                    />
                 </div>
 
                 {/* Single-scroll home view */}

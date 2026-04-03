@@ -155,7 +155,7 @@ export function HeroBlock({
                         : socialPressureMsg
                         ? socialPressureMsg
                         : remaining === 1
-                        ? `encore 1 à convaincre 👀`
+                        ? `encore 1 à attendre 👀`
                         : `${readyCount} / ${totalCount}`}
                 </span>
 

@@ -11,7 +11,7 @@ import { TimeProposalModal } from '@/components/TimeProposalModal';
 import { updateMemberAction } from '@/app/actions/member';
 import { updateLocationAction } from '@/app/actions/group';
 import { CalendarDots, MapTrifold, CaretDown, UserPlus, PersonSimpleWalk } from '@phosphor-icons/react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AddLocationProposalModal } from '@/components/AddLocationProposalModal';
 import { ShareMenu } from '@/components/ShareMenu';
@@ -70,6 +70,33 @@ export function HomeTab({
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
     const [showLocationModal, setShowLocationModal] = useState(false);
 
+    const optionsRef = useRef<HTMLDivElement>(null);
+    const calendarRef = useRef<HTMLDivElement>(null);
+    const locationRef = useRef<HTMLDivElement>(null);
+
+    const scrollIntoViewIfNeeded = (ref: React.RefObject<HTMLDivElement>, delay: number) => {
+        setTimeout(() => {
+            const el = ref.current;
+            if (!el) return;
+            const rect = el.getBoundingClientRect();
+            if (rect.bottom > window.innerHeight) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, delay);
+    };
+
+    useEffect(() => {
+        if (isOptionsOpen) scrollIntoViewIfNeeded(optionsRef, 230);
+    }, [isOptionsOpen]);
+
+    useEffect(() => {
+        if (isCalendarOpen) scrollIntoViewIfNeeded(calendarRef, 330);
+    }, [isCalendarOpen]);
+
+    useEffect(() => {
+        if (isLocationOpen) scrollIntoViewIfNeeded(locationRef, 330);
+    }, [isLocationOpen]);
+
     const currentMember = members.find(m => m.id === memberId);
 
     // Effective ready state (mirrors HeroBlock's optimistic logic)
@@ -89,6 +116,12 @@ export function HomeTab({
 
     const displayDate = confirmedDate || formattedPopularDate;
     const displayLocation = group.location?.name || topLocationProposal?.name;
+    const locationMapsUrl = (() => {
+        const link = group.location?.link || topLocationProposal?.link;
+        if (link) return link;
+        const query = group.location?.address || group.location?.name || topLocationProposal?.description || topLocationProposal?.name;
+        return query ? `https://maps.google.com/?q=${encodeURIComponent(query)}` : null;
+    })();
 
     const calendarEnabled = group.calendar_voting_enabled;
     const locationEnabled = group.location_voting_enabled;
@@ -123,10 +156,22 @@ export function HomeTab({
                         </div>
                     )}
                     {displayLocation && (
-                        <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full">
-                            <MapTrifold className="w-3 h-3 text-[var(--v2-accent)] shrink-0" weight="fill" />
-                            <span className="text-xs font-black text-white/75 truncate">{displayLocation}</span>
-                        </div>
+                        locationMapsUrl ? (
+                            <a
+                                href={locationMapsUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full hover:bg-white/10 hover:border-white/15 active:scale-95 transition-all duration-150"
+                            >
+                                <MapTrifold className="w-3 h-3 text-[var(--v2-accent)] shrink-0" weight="fill" />
+                                <span className="text-xs font-black text-white/75 truncate">{displayLocation}</span>
+                            </a>
+                        ) : (
+                            <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full">
+                                <MapTrifold className="w-3 h-3 text-[var(--v2-accent)] shrink-0" weight="fill" />
+                                <span className="text-xs font-black text-white/75 truncate">{displayLocation}</span>
+                            </div>
+                        )
                     )}
                     {isAdmin && !locationEnabled && !group.location?.name && (
                         <button
@@ -186,6 +231,7 @@ export function HomeTab({
                     style={{ overflow: 'hidden' }}
                 >
                 <div
+                    ref={optionsRef}
                     className="rounded-2xl border-2 border-white/8 overflow-hidden"
                     style={{ background: '#0c0c0c', boxShadow: '3px 3px 0px #000' }}
                 >
@@ -238,6 +284,15 @@ export function HomeTab({
             )}
             </AnimatePresence>
 
+            {/* ── MEMBERS COMPACT ── */}
+            <MembersCompact
+                members={members}
+                currentMemberId={memberId}
+                loading={loadingMembers}
+                onOpenManage={onOpenManage}
+                isAdmin={isAdmin}
+            />
+
             {/* ── INVITE NUDGE ── shown when group is small */}
             {showInviteNudge && (
                 <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-dashed border-white/10 bg-white/2">
@@ -252,15 +307,6 @@ export function HomeTab({
                     />
                 </div>
             )}
-
-            {/* ── MEMBERS COMPACT ── */}
-            <MembersCompact
-                members={members}
-                currentMemberId={memberId}
-                loading={loadingMembers}
-                onOpenManage={onOpenManage}
-                isAdmin={isAdmin}
-            />
 
             {/* ── ACTION CARDS ── Calendar + Location */}
             {(calendarEnabled || locationEnabled || (isAdmin && !locationEnabled)) && (
@@ -279,6 +325,7 @@ export function HomeTab({
                             transition={{ layout: { duration: 0.35, ease: [0.4, 0, 0.2, 1] } }}
                         >
                         <div
+                            ref={calendarRef}
                             className="flex flex-col rounded-2xl border-2 border-white/8 overflow-hidden h-full"
                             style={{ background: '#0c0c0c', boxShadow: '3px 3px 0px #000' }}
                         >
@@ -355,6 +402,7 @@ export function HomeTab({
                             transition={{ layout: { duration: 0.35, ease: [0.4, 0, 0.2, 1] } }}
                         >
                         <div
+                            ref={locationRef}
                             className="flex flex-col rounded-2xl border-2 border-white/8 overflow-hidden h-full"
                             style={{ background: '#0c0c0c', boxShadow: '3px 3px 0px #000' }}
                         >
