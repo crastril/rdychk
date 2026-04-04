@@ -192,8 +192,8 @@ export default function Home() {
   // Form State
   const [groupName, setGroupName] = useState('');
   const [step, setStep] = useState<'name' | 'options' | 'city'>('name');
-  const [calendarEnabled, setCalendarEnabled] = useState(true);
-  const [locationEnabled, setLocationEnabled] = useState(true);
+  const [knowsWhen, setKnowsWhen] = useState(false);
+  const [knowsWhere, setKnowsWhere] = useState(false);
   const [baseLocation, setBaseLocation] = useState<{ name: string; lat: number; lng: number } | null>(null);
   const [locationSearch, setLocationSearch] = useState('');
   const [locationResults, setLocationResults] = useState<any[]>([]);
@@ -360,8 +360,8 @@ export default function Home() {
           slug: uniqueSlug,
           created_by: user?.id,
           type: mode,
-          calendar_voting_enabled: calendarEnabled,
-          location_voting_enabled: locationEnabled,
+          calendar_voting_enabled: !knowsWhen,
+          location_voting_enabled: !knowsWhere,
           city: baseLocation?.name ?? null,
           location: null,
           base_lat: null,
@@ -581,47 +581,52 @@ export default function Home() {
 
                     ) : step === 'options' ? (
                       <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-right duration-500">
-                        <p className="text-xs font-bold text-white/40 uppercase tracking-widest text-center">Activer les fonctions</p>
-                        <div className="grid grid-cols-2 gap-3">
-                          {/* Calendar toggle card */}
-                          <button
-                            type="button"
-                            onClick={() => setCalendarEnabled(v => !v)}
-                            className={cn(
-                              "relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all duration-200 select-none",
-                              calendarEnabled
-                                ? "bg-red-500/15 border-red-400/70 text-white"
-                                : "bg-black/20 border-white/8 text-white/35 hover:border-white/20 hover:text-white/55"
-                            )}
-                          >
-                            {calendarEnabled && (
-                              <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-red-400" />
-                            )}
-                            <CalendarBlank className="w-7 h-7" weight={calendarEnabled ? 'fill' : 'regular'} />
-                            <span className="text-xs font-bold uppercase tracking-wide text-center leading-tight">
-                              Voter<br/>une date
-                            </span>
-                          </button>
+                        <p className="text-xs font-bold text-white/40 uppercase tracking-widest text-center">Vous savez déjà…</p>
+                        <div className="space-y-2">
+                          {/* On sait quand */}
+                          <label className="flex items-center gap-3 p-3.5 rounded-xl border border-white/8 bg-white/3 cursor-pointer hover:bg-white/6 transition-colors select-none">
+                            <div
+                              className={cn('w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all', knowsWhen ? 'bg-red-500 border-red-500' : 'border-white/20 bg-transparent')}
+                              onClick={() => setKnowsWhen(v => !v)}
+                            >
+                              {knowsWhen && <span className="text-white text-[11px] font-black">✓</span>}
+                            </div>
+                            <div className="flex-1 min-w-0" onClick={() => setKnowsWhen(v => !v)}>
+                              <p className="text-sm font-bold text-white/80">On sait quand</p>
+                              <p className="text-[11px] text-white/35">Pas besoin de voter pour la date</p>
+                            </div>
+                            <span className="text-xl shrink-0">📅</span>
+                          </label>
 
-                          {/* Location toggle card */}
-                          <button
-                            type="button"
-                            onClick={() => setLocationEnabled(v => !v)}
-                            className={cn(
-                              "relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all duration-200 select-none",
-                              locationEnabled
-                                ? "bg-red-500/15 border-red-400/70 text-white"
-                                : "bg-black/20 border-white/8 text-white/35 hover:border-white/20 hover:text-white/55"
-                            )}
-                          >
-                            {locationEnabled && (
-                              <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-red-400" />
-                            )}
-                            <MapPin className="w-7 h-7" weight={locationEnabled ? 'fill' : 'regular'} />
-                            <span className="text-xs font-bold uppercase tracking-wide text-center leading-tight">
-                              Voter<br/>un lieu
-                            </span>
-                          </button>
+                          {/* On sait où */}
+                          <label className="flex items-center gap-3 p-3.5 rounded-xl border border-white/8 bg-white/3 cursor-pointer hover:bg-white/6 transition-colors select-none">
+                            <div
+                              className={cn('w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all', knowsWhere ? 'bg-red-500 border-red-500' : 'border-white/20 bg-transparent')}
+                              onClick={() => setKnowsWhere(v => !v)}
+                            >
+                              {knowsWhere && <span className="text-white text-[11px] font-black">✓</span>}
+                            </div>
+                            <div className="flex-1 min-w-0" onClick={() => setKnowsWhere(v => !v)}>
+                              <p className="text-sm font-bold text-white/80">On sait où</p>
+                              <p className="text-[11px] text-white/35">Pas besoin de voter pour le lieu</p>
+                            </div>
+                            <span className="text-xl shrink-0">📍</span>
+                          </label>
+
+                          {/* Aucun des deux */}
+                          <label className="flex items-center gap-3 p-3.5 rounded-xl border border-white/8 bg-white/3 cursor-pointer hover:bg-white/6 transition-colors select-none">
+                            <div
+                              className={cn('w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all', (!knowsWhen && !knowsWhere) ? 'bg-red-500 border-red-500' : 'border-white/20 bg-transparent')}
+                              onClick={() => { setKnowsWhen(false); setKnowsWhere(false); }}
+                            >
+                              {(!knowsWhen && !knowsWhere) && <span className="text-white text-[11px] font-black">✓</span>}
+                            </div>
+                            <div className="flex-1 min-w-0" onClick={() => { setKnowsWhen(false); setKnowsWhere(false); }}>
+                              <p className="text-sm font-bold text-white/80">Aucun des deux</p>
+                              <p className="text-[11px] text-white/35">On va voter pour la date et le lieu</p>
+                            </div>
+                            <span className="text-xl shrink-0">🗳️</span>
+                          </label>
                         </div>
                         <button
                           type="button"
@@ -883,28 +888,33 @@ export default function Home() {
                     </div>
                   ) : (
                     <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-right duration-500">
-                      {/* Toggles */}
-                      <div className="flex flex-col gap-3">
-                        <label className="flex items-center justify-between p-4 rounded-lg bg-black/60 border border-purple-500/30 cursor-pointer hover:bg-purple-500/10 transition-all group/toggle">
-                          <span className="text-xs font-mono text-purple-300 uppercase tracking-widest">Election_date_active</span>
+                      <p className="text-[10px] font-mono text-purple-400/60 uppercase tracking-[3px] text-right md:text-center">VOUS_SAVEZ_DÉJÀ &gt;</p>
+                      <div className="flex flex-col gap-2">
+                        <label className="flex items-center justify-between p-3.5 rounded-lg bg-black/60 border border-purple-500/30 cursor-pointer hover:bg-purple-500/10 transition-all">
+                          <div>
+                            <p className="text-xs font-mono text-purple-300 uppercase tracking-widest">On_sait_quand</p>
+                            <p className="text-[10px] text-purple-500/50 font-mono">Pas de vote pour la date</p>
+                          </div>
                           <input
                             type="checkbox"
-                            checked={calendarEnabled}
-                            onChange={(e) => setCalendarEnabled(e.target.checked)}
+                            checked={knowsWhen}
+                            onChange={(e) => setKnowsWhen(e.target.checked)}
                             className="w-5 h-5 rounded accent-purple-500 bg-black border-purple-500/50"
                           />
                         </label>
-                        <label className="flex items-center justify-between p-4 rounded-lg bg-black/60 border border-purple-500/30 cursor-pointer hover:bg-purple-500/10 transition-all group/toggle">
-                          <span className="text-xs font-mono text-purple-300 uppercase tracking-widest">Options_vote_active</span>
+                        <label className="flex items-center justify-between p-3.5 rounded-lg bg-black/60 border border-purple-500/30 cursor-pointer hover:bg-purple-500/10 transition-all">
+                          <div>
+                            <p className="text-xs font-mono text-purple-300 uppercase tracking-widest">On_sait_où</p>
+                            <p className="text-[10px] text-purple-500/50 font-mono">Pas de vote pour le lieu</p>
+                          </div>
                           <input
                             type="checkbox"
-                            checked={locationEnabled}
-                            onChange={(e) => setLocationEnabled(e.target.checked)}
+                            checked={knowsWhere}
+                            onChange={(e) => setKnowsWhere(e.target.checked)}
                             className="w-5 h-5 rounded accent-purple-500 bg-black border-purple-500/50"
                           />
                         </label>
                       </div>
-
                       <button
                         type="button"
                         onClick={() => setStep('name')}

@@ -9,7 +9,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { supabase } from '@/lib/supabase';
-import { CircleNotch, SignOut, MapPin } from '@phosphor-icons/react';
+import { CircleNotch, SignOut, MapPin, CalendarDots, CheckSquare } from '@phosphor-icons/react';
 import { GroupTypeSelector } from '@/components/GroupTypeSelector';
 import { FRENCH_CITIES } from '@/lib/cities';
 import { Input } from '@/components/ui/input';
@@ -49,7 +49,7 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
             .select('type, city, calendar_voting_enabled, location_voting_enabled')
             .eq('id', groupId)
             .single();
-            
+
         if (data) {
             setGroupType((data.type as 'remote' | 'in_person') || 'remote');
             setLocation(data.city || '');
@@ -65,7 +65,7 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
             setLocationResults([]);
             return;
         }
-        const filtered = FRENCH_CITIES.filter(city => 
+        const filtered = FRENCH_CITIES.filter(city =>
             city.toLowerCase().includes(query.toLowerCase())
         ).slice(0, 10);
         setLocationResults(filtered);
@@ -74,17 +74,15 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
     const handleSave = async () => {
         setSaving(true);
         try {
-            // Check if city is required but missing
             if (groupType === 'in_person' && !location) {
                 alert("Veuillez sélectionner une ville pour un groupe en personne.");
                 setSaving(false);
                 return;
             }
 
-            // Update group type and location
             const { error: typeError } = await supabase
                 .from('groups')
-                .update({ 
+                .update({
                     type: groupType,
                     city: groupType === 'in_person' ? location : null,
                     calendar_voting_enabled: calendarEnabled,
@@ -101,6 +99,19 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
         } finally {
             setSaving(false);
         }
+    };
+
+    // Derived mode: "day-of" when both voting features are off
+    const isInPlanningMode = calendarEnabled || locationEnabled;
+
+    const setModePlanning = () => {
+        setCalendarEnabled(true);
+        setLocationEnabled(true);
+    };
+
+    const setModeDayOf = () => {
+        setCalendarEnabled(false);
+        setLocationEnabled(false);
     };
 
     return (
@@ -149,7 +160,7 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                             disabled={!isAdmin}
                                             className="bg-white/5 border-white/10 rounded-xl h-11 focus:ring-[var(--v2-primary)]/50"
                                         />
-                                        
+
                                         {locationResults.length > 0 && isAdmin && (
                                             <div className="absolute top-full left-0 w-full mt-2 bg-black border border-white/10 rounded-xl overflow-hidden z-50 shadow-2xl max-h-48 overflow-y-auto">
                                                 {locationResults.map((cityName) => (
@@ -176,18 +187,60 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                     )}
                                 </div>
                             )}
-                            
+
+                            {/* ── MODE TOGGLE ── */}
+                            <div>
+                                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3">
+                                    Phase du groupe
+                                </h3>
+                                <div className="grid grid-cols-2 gap-2 p-1 bg-black/40 rounded-xl border border-white/5">
+                                    <button
+                                        type="button"
+                                        disabled={!isAdmin}
+                                        onClick={setModePlanning}
+                                        className={cn(
+                                            'flex flex-col items-center gap-1.5 py-3 px-2 rounded-lg transition-all text-center',
+                                            isInPlanningMode
+                                                ? 'bg-[var(--v2-primary)]/15 text-white'
+                                                : 'text-slate-400 hover:text-slate-200',
+                                            !isAdmin && 'opacity-50 cursor-not-allowed'
+                                        )}
+                                    >
+                                        <CalendarDots className={cn('w-4 h-4', isInPlanningMode ? 'text-[var(--v2-primary)]' : 'text-slate-500')} weight="fill" />
+                                        <span className="text-xs font-bold">Planification</span>
+                                        <span className="text-[10px] text-white/35 leading-tight">On se met d'accord</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        disabled={!isAdmin}
+                                        onClick={setModeDayOf}
+                                        className={cn(
+                                            'flex flex-col items-center gap-1.5 py-3 px-2 rounded-lg transition-all text-center',
+                                            !isInPlanningMode
+                                                ? 'bg-green-500/15 text-white'
+                                                : 'text-slate-400 hover:text-slate-200',
+                                            !isAdmin && 'opacity-50 cursor-not-allowed'
+                                        )}
+                                    >
+                                        <CheckSquare className={cn('w-4 h-4', !isInPlanningMode ? 'text-green-400' : 'text-slate-500')} weight="fill" />
+                                        <span className="text-xs font-bold">Jour J</span>
+                                        <span className="text-[10px] text-white/35 leading-tight">C'est décidé</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* ── FEATURE TOGGLES ── */}
                             <div className="pt-2">
                                 <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">
                                     Fonctionnalités
                                 </h3>
                                 <div className="space-y-3">
-                                    <div 
+                                    <div
                                         onClick={() => isAdmin && setCalendarEnabled(!calendarEnabled)}
                                         className={cn(
                                             "flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 cursor-pointer",
-                                            calendarEnabled 
-                                                ? "bg-[var(--v2-primary)]/10 border-[var(--v2-primary)]/40 shadow-[0_0_15px_rgba(var(--v2-primary-rgb),0.1)]" 
+                                            calendarEnabled
+                                                ? "bg-[var(--v2-primary)]/10 border-[var(--v2-primary)]/40 shadow-[0_0_15px_rgba(var(--v2-primary-rgb),0.1)]"
                                                 : "bg-white/5 border-white/5 hover:bg-white/10"
                                         )}
                                     >
@@ -196,14 +249,13 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                                 "size-10 rounded-xl flex items-center justify-center transition-colors",
                                                 calendarEnabled ? "bg-[var(--v2-primary)]/20 text-[var(--v2-primary)]" : "bg-white/5 text-slate-400"
                                             )}>
-                                                <CircleNotch className={cn("size-5", calendarEnabled && "animate-spin[slow]")} />
+                                                <CalendarDots className="size-5" weight="fill" />
                                             </div>
                                             <div>
                                                 <p className={cn("font-bold text-sm", calendarEnabled ? "text-white" : "text-slate-300")}>Calendrier</p>
                                                 <p className="text-[11px] text-slate-500">Voter pour des dates</p>
                                             </div>
                                         </div>
-                                        {/* Toggle Switch */}
                                         <div className={cn(
                                             "w-10 h-6 rounded-full relative transition-colors duration-300",
                                             calendarEnabled ? "bg-[var(--v2-primary)]" : "bg-white/10"
@@ -216,12 +268,12 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                         </div>
                                     </div>
 
-                                    <div 
+                                    <div
                                         onClick={() => isAdmin && setLocationEnabled(!locationEnabled)}
                                         className={cn(
                                             "flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 cursor-pointer",
-                                            locationEnabled 
-                                                ? "bg-[var(--v2-primary)]/10 border-[var(--v2-primary)]/40 shadow-[0_0_15px_rgba(var(--v2-primary-rgb),0.1)]" 
+                                            locationEnabled
+                                                ? "bg-[var(--v2-primary)]/10 border-[var(--v2-primary)]/40 shadow-[0_0_15px_rgba(var(--v2-primary-rgb),0.1)]"
                                                 : "bg-white/5 border-white/5 hover:bg-white/10"
                                         )}
                                     >
@@ -237,7 +289,6 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                                 <p className="text-[11px] text-slate-500">Proposer et voter pour des lieux</p>
                                             </div>
                                         </div>
-                                        {/* Toggle Switch */}
                                         <div className={cn(
                                             "w-10 h-6 rounded-full relative transition-colors duration-300",
                                             locationEnabled ? "bg-[var(--v2-primary)]" : "bg-white/10"
