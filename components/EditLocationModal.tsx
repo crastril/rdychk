@@ -9,7 +9,6 @@ import {
     DialogTitle,
     DialogDescription,
 } from '@/components/ui/dialog';
-import { supabase } from '@/lib/supabase';
 import { CircleNotch, MagnifyingGlass, MapPin, Check, Crosshair, PencilSimple } from '@phosphor-icons/react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
