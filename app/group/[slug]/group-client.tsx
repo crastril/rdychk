@@ -3,12 +3,10 @@
 import { useEffect, useState } from 'react';
 import { notFound, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/auth-provider';
 import { joinGroupAction, reclaimSessionAction, leaveGroupAction, promoteToAdminAction, linkGuestToUserAction } from '@/app/actions/member';
 import JoinModal from '@/components/JoinModal';
-import { ShareMenu } from '@/components/ShareMenu';
 import { NotificationManager } from '@/components/NotificationManager';
 import { ManageGroupModal } from '@/components/ManageGroupModal';
 import { Button } from '@/components/ui/button';
