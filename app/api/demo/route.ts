@@ -13,7 +13,10 @@ function getDb() {
 }
 
 function getSecret() {
-    return process.env.SESSION_SECRET || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'default_secret';
+    if (!process.env.SESSION_SECRET) {
+        throw new Error('CRITICAL SECURITY ERROR: SESSION_SECRET environment variable is missing.');
+    }
+    return process.env.SESSION_SECRET;
 }
 
 function signMemberId(memberId: string): string {
