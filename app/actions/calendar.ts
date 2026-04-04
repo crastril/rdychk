@@ -4,6 +4,40 @@ import { supabase } from '@/lib/supabase';
 import { verifyGuestSession } from './member';
 
 /**
+ * Cleanup past date votes and reset confirmed_date if it has passed.
+ * Should be called on group page load.
+ * Returns the updated confirmed_date (null if it was reset).
+ */
+export async function cleanupPastDatesAction(groupId: string): Promise<{ confirmed_date: string | null }> {
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD UTC
+
+    // Delete all votes for dates strictly before today
+    await supabase
+        .from('date_votes')
+        .delete()
+        .eq('group_id', groupId)
+        .lt('date', today);
+
+    // Fetch current confirmed_date
+    const { data: group } = await supabase
+        .from('groups')
+        .select('confirmed_date')
+        .eq('id', groupId)
+        .single();
+
+    // Reset confirmed_date if it has passed
+    if (group?.confirmed_date && group.confirmed_date < today) {
+        await supabase
+            .from('groups')
+            .update({ confirmed_date: null })
+            .eq('id', groupId);
+        return { confirmed_date: null };
+    }
+
+    return { confirmed_date: group?.confirmed_date ?? null };
+}
+
+/**
  * Toggle a date vote for a member. If the member already voted for this date, remove it.
  */
 export async function voteDateAction(

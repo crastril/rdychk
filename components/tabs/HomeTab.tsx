@@ -74,7 +74,7 @@ export function HomeTab({
     const calendarRef = useRef<HTMLDivElement>(null);
     const locationRef = useRef<HTMLDivElement>(null);
 
-    const scrollIntoViewIfNeeded = (ref: React.RefObject<HTMLDivElement>, delay: number) => {
+    const scrollIntoViewIfNeeded = (ref: React.RefObject<HTMLDivElement | null>, delay: number) => {
         setTimeout(() => {
             const el = ref.current;
             if (!el) return;
@@ -115,6 +115,37 @@ export function HomeTab({
         : null;
 
     const displayDate = confirmedDate || formattedPopularDate;
+    const rawCalendarDate = group.confirmed_date || popularDate;
+
+    const addToCalendar = () => {
+        if (!rawCalendarDate) return;
+        const dateStr = rawCalendarDate.replace(/-/g, '');
+        const next = new Date(rawCalendarDate + 'T00:00:00');
+        next.setDate(next.getDate() + 1);
+        const nextStr = next.toISOString().slice(0, 10).replace(/-/g, '');
+        const loc = displayLocation || '';
+        const ics = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//rdychk//FR',
+            'BEGIN:VEVENT',
+            `DTSTART;VALUE=DATE:${dateStr}`,
+            `DTEND;VALUE=DATE:${nextStr}`,
+            `SUMMARY:${group.name}`,
+            loc ? `LOCATION:${loc}` : '',
+            'END:VEVENT',
+            'END:VCALENDAR',
+        ].filter(Boolean).join('\r\n');
+        const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${group.name}.ics`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
     const displayLocation = group.location?.name || topLocationProposal?.name;
     const locationMapsUrl = (() => {
         const link = group.location?.link || topLocationProposal?.link;
@@ -147,13 +178,17 @@ export function HomeTab({
             {(displayDate || displayLocation || (isAdmin && !locationEnabled)) ? (
                 <div className="flex items-center gap-2 flex-wrap px-0.5">
                     {displayDate && (
-                        <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full">
+                        <button
+                            type="button"
+                            onClick={addToCalendar}
+                            className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full hover:bg-white/10 hover:border-white/15 active:scale-95 transition-all duration-150"
+                        >
                             <CalendarDots className="w-3 h-3 text-[var(--v2-primary)] shrink-0" weight="fill" />
                             <span className="text-xs font-black text-white/75 capitalize truncate">{displayDate}</span>
                             {confirmedDate && (
                                 <span className="text-[11px] font-black text-green-400 ml-0.5 shrink-0">✓</span>
                             )}
-                        </div>
+                        </button>
                     )}
                     {displayLocation && (
                         locationMapsUrl ? (
@@ -242,9 +277,14 @@ export function HomeTab({
                         aria-expanded={isOptionsOpen}
                     >
                         <PersonSimpleWalk className="w-3.5 h-3.5 text-[var(--v2-primary)] shrink-0" />
-                        <span className="flex-1 text-left text-[11px] font-black uppercase tracking-[0.18em] text-white/70">
-                            Prévoir mon départ
-                        </span>
+                        <div className="flex-1 flex flex-col gap-0.5 text-left">
+                            <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/70">
+                                Prévoir mon départ
+                            </span>
+                            <span className="text-xs text-white/35">
+                                Indique quand tu prévoies de quitter la maison
+                            </span>
+                        </div>
                         <CaretDown
                             className={cn('w-3.5 h-3.5 text-white/30 transition-transform duration-200 shrink-0', isOptionsOpen && 'rotate-180')}
                             weight="bold"
@@ -255,7 +295,14 @@ export function HomeTab({
                         isOptionsOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
                     )}>
                         <div className="overflow-hidden">
-                            <div className="border-t border-white/6 px-4 py-3 flex gap-3">
+                            <div className="border-t border-white/6 px-4 py-3 space-y-3">
+                                <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/5">
+                                    <span className="text-base leading-none mt-0.5">⏱️</span>
+                                    <p className="text-[11px] text-white/35 font-medium leading-relaxed">
+                                        Lance un minuteur visible par tous les membres du groupe ou indique l'horaire à partir de laquelle tu es dispo — les autres membres du groupe verront ce que tu as choisi.
+                                    </p>
+                                </div>
+                                <div className="flex gap-3">
                                 <div className="flex-1">
                                     <TimerPicker
                                         currentTimerEnd={timerEndTime}
@@ -276,6 +323,7 @@ export function HomeTab({
                                         />
                                     </div>
                                 )}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -311,6 +359,11 @@ export function HomeTab({
             {/* ── ACTION CARDS ── Calendar + Location */}
             {(calendarEnabled || locationEnabled || (isAdmin && !locationEnabled)) && (
                 <div className="flex flex-wrap gap-3">
+                    {(calendarEnabled || locationEnabled) && (
+                        <p className="w-full text-[11px] font-black uppercase tracking-[0.18em] text-white/30 px-0.5">
+                            Choisi ce que tu préf
+                        </p>
+                    )}
 
                     {/* Calendar card */}
                     {calendarEnabled && (
@@ -326,8 +379,17 @@ export function HomeTab({
                         >
                         <div
                             ref={calendarRef}
-                            className="flex flex-col rounded-2xl border-2 border-white/8 overflow-hidden h-full"
-                            style={{ background: '#0c0c0c', boxShadow: '3px 3px 0px #000' }}
+                            className={cn(
+                                'flex flex-col rounded-2xl border-2 overflow-hidden h-full transition-all duration-500',
+                                needsCalendarVote ? 'animate-vote-nudge' : ''
+                            )}
+                            style={{
+                                background: '#0c0c0c',
+                                borderColor: needsCalendarVote ? 'rgba(255,46,46,0.45)' : 'rgba(255,255,255,0.08)',
+                                boxShadow: needsCalendarVote
+                                    ? '0 0 18px rgba(255,46,46,0.18), 3px 3px 0px #000'
+                                    : '3px 3px 0px #000',
+                            }}
                         >
                             <button
                                 type="button"
@@ -341,28 +403,25 @@ export function HomeTab({
                                     <div className="flex items-center gap-1.5">
                                         <CalendarDots className="w-3.5 h-3.5 text-[var(--v2-primary)]" weight="fill" />
                                         <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/70">
-                                            Calendrier
+                                            Quand ?
                                         </span>
-                                        {/* Nudge dot: hasn't voted yet */}
-                                        {needsCalendarVote && (
-                                            <span className="w-1.5 h-1.5 rounded-full bg-[var(--v2-primary)] animate-pulse" />
-                                        )}
                                     </div>
                                     <CaretDown
                                         className={cn('w-3 h-3 text-white/20 transition-transform duration-200', isCalendarOpen && 'rotate-180')}
                                         weight="bold"
                                     />
                                 </div>
-                                {displayDate ? (
+                                {displayDate && (
                                     <p className="text-sm font-black text-white capitalize leading-tight mt-0.5">{displayDate}</p>
-                                ) : (
-                                    <p className="text-xs text-white/40 mt-0.5">
-                                        {needsCalendarVote ? 'Vote ta dispo !' : 'Aucun vote'}
-                                    </p>
                                 )}
                                 <p className="text-[11px] text-white/35 uppercase tracking-wider">
                                     {uniqueVotedDates} date{uniqueVotedDates !== 1 ? 's' : ''} · {myVoteCount} vote{myVoteCount !== 1 ? 's' : ''}
                                 </p>
+                                {needsCalendarVote && (
+                                    <span className="self-start mt-1 text-[10px] font-black uppercase tracking-[0.1em] bg-[var(--v2-primary)]/15 text-[var(--v2-primary)] border border-[var(--v2-primary)]/35 rounded-full px-2 py-0.5">
+                                        Ton vote →
+                                    </span>
+                                )}
                             </button>
 
                             {/* Inline calendar */}
@@ -403,8 +462,17 @@ export function HomeTab({
                         >
                         <div
                             ref={locationRef}
-                            className="flex flex-col rounded-2xl border-2 border-white/8 overflow-hidden h-full"
-                            style={{ background: '#0c0c0c', boxShadow: '3px 3px 0px #000' }}
+                            className={cn(
+                                'flex flex-col rounded-2xl border-2 overflow-hidden h-full transition-all duration-500',
+                                needsLocationAction ? 'animate-vote-nudge' : ''
+                            )}
+                            style={{
+                                background: '#0c0c0c',
+                                borderColor: needsLocationAction ? 'rgba(251,191,36,0.45)' : 'rgba(255,255,255,0.08)',
+                                boxShadow: needsLocationAction
+                                    ? '0 0 18px rgba(251,191,36,0.18), 3px 3px 0px #000'
+                                    : '3px 3px 0px #000',
+                            }}
                         >
                             <button
                                 type="button"
@@ -418,12 +486,8 @@ export function HomeTab({
                                     <div className="flex items-center gap-1.5">
                                         <MapTrifold className="w-3.5 h-3.5 text-[var(--v2-accent)]" weight="fill" />
                                         <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/70">
-                                            Lieux
+                                            Où ?
                                         </span>
-                                        {/* Nudge dot: has proposals but user hasn't participated */}
-                                        {needsLocationAction && (
-                                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                                        )}
                                     </div>
                                     <CaretDown
                                         className={cn('w-3 h-3 text-white/20 transition-transform duration-200', isLocationOpen && 'rotate-180')}
@@ -433,11 +497,16 @@ export function HomeTab({
                                 {displayLocation ? (
                                     <p className="text-sm font-black text-white truncate leading-tight mt-0.5">{displayLocation}</p>
                                 ) : (
-                                    <p className="text-xs text-white/40 mt-0.5">Aucune prop.</p>
+                                    <p className="text-xs text-white/40 mt-0.5">{needsLocationAction ? 'Vote pour un endroit !' : 'Aucune prop.'}</p>
                                 )}
                                 <p className="text-[11px] text-white/35 uppercase tracking-wider">
                                     {proposals.length} proposition{proposals.length !== 1 ? 's' : ''}
                                 </p>
+                                {needsLocationAction && (
+                                    <span className="self-start mt-1 text-[10px] font-black uppercase tracking-[0.1em] bg-amber-400/15 text-amber-400 border border-amber-400/35 rounded-full px-2 py-0.5">
+                                        Ton vote →
+                                    </span>
+                                )}
                             </button>
 
                             {/* Inline location */}

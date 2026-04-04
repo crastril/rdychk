@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls .env*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(grep -rn \"ROCKWOOD\\\\|topLocation\\\\|location_name\\\\|proposal.name\\\\|winning\" C:Userscyci_OneDriveDocumentsrdychkrdychk.claudeworktreespensive-shtern --include=*.tsx --include=*.ts)"
+    ]
+  }
+}

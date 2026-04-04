@@ -980,3 +980,16 @@
     clip: rect(45px, 9999px, 33px, 0);
   }
 }
+
+@keyframes vote-nudge {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  18%       { transform: translateX(-4px) rotate(-1deg); }
+  36%       { transform: translateX(4px) rotate(1deg); }
+  54%       { transform: translateX(-2px) rotate(-0.5deg); }
+  72%       { transform: translateX(2px) rotate(0.5deg); }
+  88%       { transform: translateX(-1px); }
+}
+
+.animate-vote-nudge {
+  animation: vote-nudge 0.55s ease-in-out 1s both;
+}

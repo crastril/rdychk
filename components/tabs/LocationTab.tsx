@@ -256,9 +256,11 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
             </div>
 
             {proposals.length === 0 && (
-                <div className="text-center py-12 text-slate-600 text-sm">
-                    <MapPin className="w-8 h-8 mx-auto mb-3 opacity-30" />
-                    Aucune proposition pour l'instant.
+                <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/5">
+                    <span className="text-base leading-none mt-0.5">📍</span>
+                    <p className="text-[11px] text-white/35 font-medium leading-relaxed">
+                        Propose un lieu — le groupe votera pour le meilleur endroit.
+                    </p>
                 </div>
             )}
 

@@ -34,11 +34,22 @@ function getInitials(name: string): string {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 }
 
+type ViewMode = 'week' | 'month';
+
+function getMondayOf(date: Date): Date {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    const diff = (d.getDay() + 6) % 7; // Mon=0 … Sun=6
+    d.setDate(d.getDate() - diff);
+    return d;
+}
+
 export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupChange, votes, onVotesChange }: CalendarTabProps) {
     const today = new Date();
     const todayStr = toDateStr(today);
 
-    const [viewDate, setViewDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
+    const [viewMode, setViewMode] = useState<ViewMode>('week');
+    const [viewDate, setViewDate] = useState(today);
     const [confirmedDate, setConfirmedDate] = useState<string | null>(group.confirmed_date ?? null);
     const [pendingDates, setPendingDates] = useState<Set<string>>(new Set());
     const [confirmingDate, setConfirmingDate] = useState<string | null>(null);
@@ -102,14 +113,44 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
     const year = viewDate.getFullYear();
     const month = viewDate.getMonth();
 
-    // ── Fix #1 : JS getDay() → 0=Dim ; (n+6)%7 → 0=Lun ────────────────────
+    // Week view: 7 days starting from the Monday of viewDate
+    const weekStart = getMondayOf(viewDate);
+    const weekDays: Date[] = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(weekStart);
+        d.setDate(d.getDate() + i);
+        return d;
+    });
+
+    // Month view
     const jsFirstDay = new Date(year, month, 1).getDay();
     const firstDay = (jsFirstDay + 6) % 7;
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    const isCurrentMonth =
-        viewDate.getMonth() === today.getMonth() &&
-        viewDate.getFullYear() === today.getFullYear();
+    const isCurrentPeriod = viewMode === 'week'
+        ? weekDays.some(d => toDateStr(d) === todayStr)
+        : (viewDate.getMonth() === today.getMonth() && viewDate.getFullYear() === today.getFullYear());
+
+    const navPrev = () => {
+        if (viewMode === 'week') {
+            const d = new Date(weekStart);
+            d.setDate(d.getDate() - 7);
+            setViewDate(d);
+        } else {
+            setViewDate(new Date(year, month - 1, 1));
+        }
+    };
+
+    const navNext = () => {
+        if (viewMode === 'week') {
+            const d = new Date(weekStart);
+            d.setDate(d.getDate() + 7);
+            setViewDate(d);
+        } else {
+            setViewDate(new Date(year, month + 1, 1));
+        }
+    };
+
+    const navToday = () => setViewDate(today);
 
     // ── Comptages ────────────────────────────────────────────────────────────
     const votesByDate = useMemo(() => {
@@ -174,31 +215,92 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
         );
     }
 
+    // Build day cells for rendering (shared logic)
+    const renderDayCell = (dateStr: string, day: number) => {
+        const voteCount = votesByDate[dateStr] || 0;
+        const isMine = myVotes.has(dateStr);
+        const isBestMatch = bestMatchDates.has(dateStr);
+        const isConfirmed = confirmedDate === dateStr;
+        const isPast = dateStr < todayStr;
+        const isToday = dateStr === todayStr;
+        const isPending = pendingDates.has(dateStr);
+
+        return (
+            <button
+                key={dateStr}
+                onClick={() => !isPast && handleVote(dateStr)}
+                disabled={isPast || isPending || !memberId}
+                className={cn(
+                    'relative flex flex-col items-center justify-center min-h-[44px] rounded-xl font-bold transition-all duration-150',
+                    isPast ? 'opacity-20 cursor-not-allowed' : 'active:scale-95 cursor-pointer',
+                    isConfirmed && 'bg-green-500/15 border-2 border-green-500',
+                    isBestMatch && !isConfirmed && 'bg-amber-500/10 border-2 border-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.2)]',
+                    isMine && !isBestMatch && !isConfirmed && 'border-2 border-white/60 bg-white/5',
+                    !isMine && !isBestMatch && !isConfirmed && !isPast && !isToday && 'border border-white/5 hover:border-white/15 hover:bg-white/[0.03]',
+                    isToday && !isMine && !isBestMatch && !isConfirmed && !isPast && 'border border-[var(--v2-primary)]/40',
+                    !isMine && !isBestMatch && !isConfirmed && isPast && 'border border-transparent',
+                )}
+            >
+                <span className={cn(
+                    'text-[13px] leading-none',
+                    isConfirmed ? 'text-green-400' :
+                        isBestMatch ? 'text-amber-300' :
+                            isMine ? 'text-white' :
+                                isToday ? 'text-[var(--v2-primary)]' :
+                                    isPast ? 'text-white/30' : 'text-white/55',
+                )}>
+                    {day}
+                </span>
+                {voteCount > 0 && (
+                    <span className={cn(
+                        'text-[8px] font-black tabular-nums mt-0.5 leading-none',
+                        isConfirmed ? 'text-green-400/60' :
+                            isBestMatch ? 'text-amber-400/70' :
+                                'text-white/25',
+                    )}>
+                        {voteCount}/{totalMembers}
+                    </span>
+                )}
+            </button>
+        );
+    };
+
+    // Week label e.g. "4 – 10 Avr"
+    const weekLabel = (() => {
+        const end = weekDays[6];
+        const startDay = weekStart.getDate();
+        const endDay = end.getDate();
+        const startMonth = MONTHS_FR[weekStart.getMonth()].slice(0, 4);
+        const endMonth = MONTHS_FR[end.getMonth()].slice(0, 4);
+        return weekStart.getMonth() === end.getMonth()
+            ? `${startDay} – ${endDay} ${endMonth}`
+            : `${startDay} ${startMonth} – ${endDay} ${endMonth}`;
+    })();
+
     return (
         <div className="flex flex-col gap-3">
 
-            {/* ── Header : navigation + hint ─────────────────────────────── */}
+            {/* ── Header : navigation + vue toggle ───────────────────────── */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-0.5">
                     <button
-                        onClick={() => setViewDate(new Date(year, month - 1, 1))}
+                        onClick={navPrev}
                         className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 transition-colors text-white/30 hover:text-white/60"
                     >
                         <CaretLeft className="w-3.5 h-3.5" />
                     </button>
                     <span className="text-sm font-black text-white min-w-[110px] text-center">
-                        {MONTHS_FR[month]} {year}
+                        {viewMode === 'week' ? weekLabel : `${MONTHS_FR[month]} ${year}`}
                     </span>
                     <button
-                        onClick={() => setViewDate(new Date(year, month + 1, 1))}
+                        onClick={navNext}
                         className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 transition-colors text-white/30 hover:text-white/60"
                     >
                         <CaretRight className="w-3.5 h-3.5" />
                     </button>
-                    {/* ── Fix #8 : raccourci "Auj." ──────────────────────── */}
-                    {!isCurrentMonth && (
+                    {!isCurrentPeriod && (
                         <button
-                            onClick={() => setViewDate(new Date(today.getFullYear(), today.getMonth(), 1))}
+                            onClick={navToday}
                             className="text-[10px] font-black text-[var(--v2-primary)] hover:bg-[var(--v2-primary)]/10 px-2 py-1 rounded-lg transition-colors ml-0.5"
                         >
                             Auj.
@@ -206,12 +308,27 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                     )}
                 </div>
 
-                {/* ── Fix #11 : micro-hint contextuel ────────────────────── */}
-                <span className="text-[10px] font-medium text-white/25 shrink-0">
-                    {myVotes.size > 0
-                        ? `${myVotes.size} dispo sélectionnée${myVotes.size > 1 ? 's' : ''}`
-                        : 'Tap = je suis dispo'}
-                </span>
+                {/* Vue toggle */}
+                <div className="flex items-center gap-0.5 bg-white/5 rounded-lg p-0.5">
+                    <button
+                        onClick={() => setViewMode('week')}
+                        className={cn(
+                            'text-[10px] font-black px-2 py-1 rounded-md transition-colors',
+                            viewMode === 'week' ? 'bg-white/15 text-white' : 'text-white/30 hover:text-white/60'
+                        )}
+                    >
+                        Sem.
+                    </button>
+                    <button
+                        onClick={() => setViewMode('month')}
+                        className={cn(
+                            'text-[10px] font-black px-2 py-1 rounded-md transition-colors',
+                            viewMode === 'month' ? 'bg-white/15 text-white' : 'text-white/30 hover:text-white/60'
+                        )}
+                    >
+                        Mois
+                    </button>
+                </div>
             </div>
 
             {/* ── En-têtes jours (Lun → Dim) ─────────────────────────────── */}
@@ -223,61 +340,28 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                 ))}
             </div>
 
-            {/* ── Grille des jours ────────────────────────────────────────── */}
-            {/* Fix #2 : min-h-[44px] au lieu de aspect-square + gap-0.5 */}
-            <div className="grid grid-cols-7 gap-0.5">
-                {cells.map((day, i) => {
-                    if (!day) return <div key={`empty-${i}`} />;
-
-                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                    const voteCount = votesByDate[dateStr] || 0;
-                    const isMine = myVotes.has(dateStr);
-                    const isBestMatch = bestMatchDates.has(dateStr);
-                    const isConfirmed = confirmedDate === dateStr;
-                    const isPast = dateStr < todayStr;
-                    const isToday = dateStr === todayStr;
-                    const isPending = pendingDates.has(dateStr);
-
-                    return (
-                        <button
-                            key={dateStr}
-                            onClick={() => !isPast && handleVote(dateStr)}
-                            disabled={isPast || isPending || !memberId}
-                            className={cn(
-                                'relative flex flex-col items-center justify-center min-h-[44px] rounded-xl font-bold transition-all duration-150',
-                                isPast ? 'opacity-20 cursor-not-allowed' : 'active:scale-95 cursor-pointer',
-                                isConfirmed && 'bg-green-500/15 border-2 border-green-500',
-                                isBestMatch && !isConfirmed && 'bg-amber-500/10 border-2 border-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.2)]',
-                                isMine && !isBestMatch && !isConfirmed && 'border-2 border-white/60 bg-white/5',
-                                !isMine && !isBestMatch && !isConfirmed && !isPast && !isToday && 'border border-white/5 hover:border-white/15 hover:bg-white/[0.03]',
-                                isToday && !isMine && !isBestMatch && !isConfirmed && !isPast && 'border border-[var(--v2-primary)]/40',
-                                !isMine && !isBestMatch && !isConfirmed && isPast && 'border border-transparent',
-                            )}
-                        >
-                            <span className={cn(
-                                'text-[13px] leading-none',
-                                isConfirmed ? 'text-green-400' :
-                                    isBestMatch ? 'text-amber-300' :
-                                        isMine ? 'text-white' :
-                                            isToday ? 'text-[var(--v2-primary)]' :
-                                                isPast ? 'text-white/30' : 'text-white/55',
-                            )}>
-                                {day}
-                            </span>
-                            {voteCount > 0 && (
-                                <span className={cn(
-                                    'text-[8px] font-black tabular-nums mt-0.5 leading-none',
-                                    isConfirmed ? 'text-green-400/60' :
-                                        isBestMatch ? 'text-amber-400/70' :
-                                            'text-white/25',
-                                )}>
-                                    {voteCount}/{totalMembers}
-                                </span>
-                            )}
-                        </button>
-                    );
-                })}
-            </div>
+            {/* ── Grille ──────────────────────────────────────────────────── */}
+            {viewMode === 'week' ? (
+                <div className="grid grid-cols-7 gap-0.5">
+                    {weekDays.map(d => {
+                        const dateStr = toDateStr(d);
+                        return renderDayCell(dateStr, d.getDate());
+                    })}
+                </div>
+            ) : (
+                <div className="grid grid-cols-7 gap-0.5">
+                    {(() => {
+                        const cells: (null | number)[] = [];
+                        for (let i = 0; i < firstDay; i++) cells.push(null);
+                        for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+                        return cells.map((day, i) => {
+                            if (!day) return <div key={`empty-${i}`} />;
+                            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                            return renderDayCell(dateStr, day);
+                        });
+                    })()}
+                </div>
+            )}
 
             {/* ── Légende ─────────────────────────────────────────────────── */}
             <div className="flex items-center gap-3 text-[10px] text-white/20 justify-center">

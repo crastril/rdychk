@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import GroupClient from './group-client';
 import { Metadata } from 'next';
+import { cleanupPastDatesAction } from '@/app/actions/calendar';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
     const resolvedParams = await params;
@@ -50,5 +51,9 @@ export default async function GroupPage({ params }: { params: Promise<{ slug: st
         notFound();
     }
 
-    return <GroupClient initialGroup={group} slug={slug} />;
+    // Cleanup past date votes and reset confirmed_date if it has passed
+    const { confirmed_date } = await cleanupPastDatesAction(group.id);
+    const cleanGroup = { ...group, confirmed_date };
+
+    return <GroupClient initialGroup={cleanGroup} slug={slug} />;
 }
