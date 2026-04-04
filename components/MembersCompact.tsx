@@ -11,6 +11,8 @@ interface MembersCompactProps {
     loading?: boolean;
     onOpenManage?: () => void;
     isAdmin?: boolean;
+    mode?: 'planning' | 'day-of';
+    votedMemberIds?: Set<string>;
 }
 
 const getInitials = (name: string) =>
@@ -30,6 +32,8 @@ export function MembersCompact({
     loading,
     onOpenManage,
     isAdmin,
+    mode = 'day-of',
+    votedMemberIds,
 }: MembersCompactProps) {
     const [expanded, setExpanded] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -47,10 +51,16 @@ export function MembersCompact({
         }
     }, [expanded]);
 
-    const readyCount = members.filter(m => m.is_ready).length;
+    const isPlanning = mode === 'planning';
     const total = members.length;
-    const ratio = total > 0 ? readyCount / total : 0;
-    const isAllReady = ratio === 1 && total > 0;
+
+    // Day-of: count ready members; Planning: count voted members
+    const activeCount = isPlanning
+        ? (votedMemberIds ? members.filter(m => votedMemberIds.has(m.id)).length : 0)
+        : members.filter(m => m.is_ready).length;
+
+    const ratio = total > 0 ? activeCount / total : 0;
+    const isAllActive = ratio === 1 && total > 0;
     const MAX_VISIBLE = 5;
 
     // Border & glow color: neutral → amber (50%) → green (100%)
@@ -88,30 +98,35 @@ export function MembersCompact({
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/[0.02] transition-colors"
                 onClick={() => setExpanded(v => !v)}
                 aria-expanded={expanded}
-                aria-label={`Membres du groupe, ${readyCount} sur ${total} prêts. ${expanded ? 'Réduire' : 'Développer'}`}
+                aria-label={`Membres du groupe, ${activeCount} sur ${total} ${isPlanning ? 'ont voté' : 'prêts'}. ${expanded ? 'Réduire' : 'Développer'}`}
             >
                 {/* Avatar row */}
                 <div className="flex items-center gap-1 shrink-0">
-                    {members.slice(0, MAX_VISIBLE).map(m => (
-                        <div
-                            key={m.id}
-                            title={m.name}
-                            className={cn(
-                                'w-7 h-7 rounded-full border-2 flex items-center justify-center',
-                                'text-[10px] font-black shrink-0 overflow-hidden transition-all duration-300',
-                                m.is_ready
-                                    ? 'border-green-500 bg-green-500/15 text-green-300'
-                                    : 'border-white/12 bg-white/6 text-white/45',
-                                m.id === currentMemberId && 'ring-2 ring-[var(--v2-primary)]/60 ring-offset-1 ring-offset-[#0c0c0c]'
-                            )}
-                        >
-                            {m.avatar_url ? (
-                                <img src={m.avatar_url} alt={m.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                            ) : (
-                                getInitials(m.name)
-                            )}
-                        </div>
-                    ))}
+                    {members.slice(0, MAX_VISIBLE).map(m => {
+                        const isActive = isPlanning
+                            ? (votedMemberIds?.has(m.id) ?? false)
+                            : m.is_ready;
+                        return (
+                            <div
+                                key={m.id}
+                                title={m.name}
+                                className={cn(
+                                    'w-7 h-7 rounded-full border-2 flex items-center justify-center',
+                                    'text-[10px] font-black shrink-0 overflow-hidden transition-all duration-300',
+                                    isActive
+                                        ? 'border-green-500 bg-green-500/15 text-green-300'
+                                        : 'border-white/12 bg-white/6 text-white/45',
+                                    m.id === currentMemberId && 'ring-2 ring-[var(--v2-primary)]/60 ring-offset-1 ring-offset-[#0c0c0c]'
+                                )}
+                            >
+                                {m.avatar_url ? (
+                                    <img src={m.avatar_url} alt={m.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                ) : (
+                                    getInitials(m.name)
+                                )}
+                            </div>
+                        );
+                    })}
                     {members.length > MAX_VISIBLE && (
                         <div className="w-7 h-7 rounded-full border-2 border-white/12 bg-white/4 flex items-center justify-center text-[10px] font-black text-white/35 shrink-0">
                             +{members.length - MAX_VISIBLE}
@@ -127,14 +142,14 @@ export function MembersCompact({
                             fontFamily: 'var(--font-barlow-condensed)',
                             fontWeight: 900,
                             fontSize: '1.75rem',
-                            color: isAllReady ? '#22c55e' : ratio >= 0.5 ? '#fbbf24' : 'rgba(255,255,255,0.9)',
+                            color: isAllActive ? '#22c55e' : ratio >= 0.5 ? '#fbbf24' : 'rgba(255,255,255,0.9)',
                             letterSpacing: '-0.02em',
                         }}
                     >
-                        {readyCount}/{total}
+                        {isPlanning ? total : `${activeCount}/${total}`}
                     </span>
                     <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white/40 pb-0.5">
-                        prêts
+                        {isPlanning ? `membre${total !== 1 ? 's' : ''}` : 'prêts'}
                     </span>
                 </div>
 
@@ -144,17 +159,19 @@ export function MembersCompact({
                 />
             </button>
 
-            {/* Progress bar */}
-            <div className="h-[3px] bg-white/5 relative overflow-hidden">
-                <div
-                    className="absolute left-0 top-0 h-full transition-all duration-700 ease-out"
-                    style={{
-                        width: `${ratio * 100}%`,
-                        background: `rgba(${progressRgb},0.9)`,
-                        boxShadow: ratio > 0.05 ? `0 0 8px rgba(${progressRgb},0.6)` : 'none',
-                    }}
-                />
-            </div>
+            {/* Progress bar — only in day-of mode */}
+            {!isPlanning && (
+                <div className="h-[3px] bg-white/5 relative overflow-hidden">
+                    <div
+                        className="absolute left-0 top-0 h-full transition-all duration-700 ease-out"
+                        style={{
+                            width: `${ratio * 100}%`,
+                            background: `rgba(${progressRgb},0.9)`,
+                            boxShadow: ratio > 0.05 ? `0 0 8px rgba(${progressRgb},0.6)` : 'none',
+                        }}
+                    />
+                </div>
+            )}
 
             {/* Expanded member list */}
             <div className={cn(
@@ -166,14 +183,15 @@ export function MembersCompact({
                         {members.map(m => {
                             const isCurrentUser = m.id === currentMemberId;
                             const isAdminMember = m.role === 'admin';
+                            const hasVoted = votedMemberIds?.has(m.id) ?? false;
                             return (
                                 <div key={m.id} className="flex items-center gap-3 py-1">
                                     {/* Avatar */}
                                     <div className={cn(
                                         'w-8 h-8 rounded-full border flex items-center justify-center text-[11px] font-black shrink-0 overflow-hidden transition-colors duration-300',
-                                        m.is_ready
-                                            ? 'border-green-500/40 bg-green-500/10 text-green-400'
-                                            : 'border-white/15 bg-white/5 text-white/45'
+                                        isPlanning
+                                            ? (hasVoted ? 'border-green-500/40 bg-green-500/10 text-green-400' : 'border-white/15 bg-white/5 text-white/45')
+                                            : (m.is_ready ? 'border-green-500/40 bg-green-500/10 text-green-400' : 'border-white/15 bg-white/5 text-white/45')
                                     )}>
                                         {m.avatar_url
                                             ? <img src={m.avatar_url} alt={m.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
@@ -184,7 +202,7 @@ export function MembersCompact({
                                     {/* Name */}
                                     <span className={cn(
                                         'flex-1 text-sm font-bold truncate flex items-center gap-1.5 min-w-0',
-                                        m.is_ready ? 'text-white' : 'text-white/55'
+                                        (isPlanning ? hasVoted : m.is_ready) ? 'text-white' : 'text-white/55'
                                     )}>
                                         <span className="truncate">{m.name}</span>
                                         {isCurrentUser && (
@@ -196,36 +214,48 @@ export function MembersCompact({
                                     </span>
 
                                     {/* Status */}
-                                    {(() => {
-                                        if (m.is_ready) {
-                                            return (
-                                                <span className="text-[11px] font-black uppercase tracking-[0.14em] shrink-0 text-green-400/90">
-                                                    ✓ Prêt
-                                                </span>
-                                            );
-                                        }
-                                        const timerEnd = m.timer_end_time ? new Date(m.timer_end_time) : null;
-                                        if (timerEnd && timerEnd > new Date()) {
-                                            const hhmm = timerEnd.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-                                            return (
-                                                <span className="text-[11px] font-black shrink-0 tabular-nums text-amber-400/80">
-                                                    → {hhmm}h
-                                                </span>
-                                            );
-                                        }
-                                        if (m.proposed_time) {
-                                            return (
-                                                <span className="text-[11px] font-black shrink-0 tabular-nums text-sky-400/80">
-                                                    → {m.proposed_time.slice(0, 5)}h
-                                                </span>
-                                            );
-                                        }
-                                        return (
+                                    {isPlanning ? (
+                                        hasVoted ? (
+                                            <span className="text-[11px] font-black uppercase tracking-[0.14em] shrink-0 text-green-400/90">
+                                                ✓ A voté
+                                            </span>
+                                        ) : (
                                             <span className="text-[11px] font-black uppercase tracking-[0.14em] shrink-0 text-white/30">
                                                 En attente
                                             </span>
-                                        );
-                                    })()}
+                                        )
+                                    ) : (
+                                        (() => {
+                                            if (m.is_ready) {
+                                                return (
+                                                    <span className="text-[11px] font-black uppercase tracking-[0.14em] shrink-0 text-green-400/90">
+                                                        ✓ Prêt
+                                                    </span>
+                                                );
+                                            }
+                                            const timerEnd = m.timer_end_time ? new Date(m.timer_end_time) : null;
+                                            if (timerEnd && timerEnd > new Date()) {
+                                                const hhmm = timerEnd.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                                                return (
+                                                    <span className="text-[11px] font-black shrink-0 tabular-nums text-amber-400/80">
+                                                        → {hhmm}h
+                                                    </span>
+                                                );
+                                            }
+                                            if (m.proposed_time) {
+                                                return (
+                                                    <span className="text-[11px] font-black shrink-0 tabular-nums text-sky-400/80">
+                                                        → {m.proposed_time.slice(0, 5)}h
+                                                    </span>
+                                                );
+                                            }
+                                            return (
+                                                <span className="text-[11px] font-black uppercase tracking-[0.14em] shrink-0 text-white/30">
+                                                    En attente
+                                                </span>
+                                            );
+                                        })()
+                                    )}
                                 </div>
                             );
                         })}

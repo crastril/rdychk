@@ -8,8 +8,10 @@ import { CalendarTab } from '@/components/tabs/CalendarTab';
 import { LocationTab } from '@/components/tabs/LocationTab';
 import { TimerPicker } from '@/components/TimerPicker';
 import { TimeProposalModal } from '@/components/TimeProposalModal';
+import { ConfirmedSummary } from '@/components/ConfirmedSummary';
 import { updateMemberAction } from '@/app/actions/member';
 import { updateLocationAction } from '@/app/actions/group';
+import { getGroupMode } from '@/lib/group-mode';
 import { CalendarDots, MapTrifold, CaretDown, UserPlus, PersonSimpleWalk } from '@phosphor-icons/react';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -32,10 +34,8 @@ interface HomeTabProps {
     topLocationProposal: LocationProposal | null;
     popularDate?: string | null;
     onOpenManage: () => void;
-    // Calendar data (passed inline)
     votes: DateVote[];
     onVotesChange: (updater: DateVote[] | ((prev: DateVote[]) => DateVote[])) => void;
-    // Location data (passed inline)
     proposals: LocationProposal[];
     myLocationVotes: Record<string, 1 | -1>;
     onProposalsChange: (proposals: LocationProposal[]) => void;
@@ -98,9 +98,21 @@ export function HomeTab({
     }, [isLocationOpen]);
 
     const currentMember = members.find(m => m.id === memberId);
-
-    // Effective ready state (mirrors HeroBlock's optimistic logic)
     const effectiveReady = localOptimisticReady !== null ? localOptimisticReady : isReady;
+
+    const calendarEnabled = group.calendar_voting_enabled;
+    const locationEnabled = group.location_voting_enabled;
+
+    // Mode dérivé de confirmed_date + flags de vote
+    const mode = getGroupMode(group.confirmed_date, calendarEnabled, locationEnabled);
+    const isDayOf = mode === 'day-of';
+
+    // Reset accordion states when mode changes
+    useEffect(() => {
+        setIsCalendarOpen(false);
+        setIsLocationOpen(false);
+        setIsOptionsOpen(false);
+    }, [mode]);
 
     // Formatted dates
     const confirmedDate = group.confirmed_date
@@ -146,6 +158,7 @@ export function HomeTab({
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     };
+
     const displayLocation = group.location?.name || topLocationProposal?.name;
     const locationMapsUrl = (() => {
         const link = group.location?.link || topLocationProposal?.link;
@@ -154,8 +167,7 @@ export function HomeTab({
         return query ? `https://maps.google.com/?q=${encodeURIComponent(query)}` : null;
     })();
 
-    const calendarEnabled = group.calendar_voting_enabled;
-    const locationEnabled = group.location_voting_enabled;
+    const bothEnabled = calendarEnabled && locationEnabled;
 
     // Vote nudge indicators
     const myVoteCount = votes.filter(v => v.member_id === memberId).length;
@@ -166,375 +178,425 @@ export function HomeTab({
     const hasVotedLocation = Object.keys(myLocationVotes).length > 0;
     const needsLocationAction = locationEnabled && proposals.length > 0 && !hasProposedLocation && !hasVotedLocation && !!memberId;
 
-    const bothEnabled = calendarEnabled && locationEnabled;
+    // Members who voted on any date (for planning mode)
+    const votedMemberIds = new Set(votes.map(v => v.member_id));
 
-    // Invite nudge: group is small and no pending actions
     const showInviteNudge = members.length < 4 && !!memberId;
+
+    // ── SHARED: ACTION CARDS ──
+    const actionCards = (calendarEnabled || locationEnabled || (isAdmin && !locationEnabled)) && (
+        <div className="flex flex-wrap gap-3">
+            {(calendarEnabled || locationEnabled) && (
+                <p className="w-full text-[11px] font-black uppercase tracking-[0.18em] text-white/30 px-0.5">
+                    Choisi ce que tu préf
+                </p>
+            )}
+
+            {calendarEnabled && (
+                <motion.div
+                    layout
+                    key="calendar-card"
+                    className="min-w-0"
+                    style={{
+                        width: bothEnabled && !isCalendarOpen && !isLocationOpen ? 'calc(50% - 6px)' : '100%',
+                        order: isLocationOpen && !isCalendarOpen ? 1 : 0,
+                    }}
+                    transition={{ layout: { duration: 0.35, ease: [0.4, 0, 0.2, 1] } }}
+                >
+                    <div
+                        ref={calendarRef}
+                        className={cn(
+                            'flex flex-col rounded-2xl border-2 overflow-hidden h-full transition-all duration-500',
+                            needsCalendarVote ? 'animate-vote-nudge' : ''
+                        )}
+                        style={{
+                            background: '#0c0c0c',
+                            borderColor: needsCalendarVote ? 'rgba(255,46,46,0.45)' : 'rgba(255,255,255,0.08)',
+                            boxShadow: needsCalendarVote
+                                ? '0 0 18px rgba(255,46,46,0.18), 3px 3px 0px #000'
+                                : '3px 3px 0px #000',
+                        }}
+                    >
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setIsCalendarOpen(v => !v);
+                                if (!isCalendarOpen) setIsLocationOpen(false);
+                            }}
+                            className="flex flex-col gap-1 p-3.5 text-left hover:bg-white/[0.02] transition-colors"
+                        >
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-1.5">
+                                    <CalendarDots className="w-3.5 h-3.5 text-[var(--v2-primary)]" weight="fill" />
+                                    <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/70">
+                                        Quand ?
+                                    </span>
+                                </div>
+                                <CaretDown
+                                    className={cn('w-3 h-3 text-white/20 transition-transform duration-200', isCalendarOpen && 'rotate-180')}
+                                    weight="bold"
+                                />
+                            </div>
+                            {displayDate && (
+                                <p className="text-sm font-black text-white capitalize leading-tight mt-0.5">{displayDate}</p>
+                            )}
+                            <p className="text-[11px] text-white/35 uppercase tracking-wider">
+                                {uniqueVotedDates} date{uniqueVotedDates !== 1 ? 's' : ''} · {myVoteCount} vote{myVoteCount !== 1 ? 's' : ''}
+                            </p>
+                            {needsCalendarVote && (
+                                <span className="self-start mt-1 text-[10px] font-black uppercase tracking-[0.1em] bg-[var(--v2-primary)]/15 text-[var(--v2-primary)] border border-[var(--v2-primary)]/35 rounded-full px-2 py-0.5">
+                                    Ton vote →
+                                </span>
+                            )}
+                        </button>
+                        <div className={cn(
+                            'grid transition-all duration-300 ease-in-out',
+                            isCalendarOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                        )}>
+                            <div className="overflow-hidden">
+                                <div className="border-t-2 border-white/6 p-3">
+                                    <CalendarTab
+                                        group={group}
+                                        slug={slug}
+                                        memberId={memberId}
+                                        members={members}
+                                        isAdmin={isAdmin}
+                                        onGroupChange={onGroupChange}
+                                        votes={votes}
+                                        onVotesChange={onVotesChange}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+            )}
+
+            {locationEnabled && (
+                <motion.div
+                    layout
+                    key="location-card"
+                    className="min-w-0"
+                    style={{
+                        width: bothEnabled && !isCalendarOpen && !isLocationOpen ? 'calc(50% - 6px)' : '100%',
+                        order: isCalendarOpen && !isLocationOpen ? 1 : 0,
+                    }}
+                    transition={{ layout: { duration: 0.35, ease: [0.4, 0, 0.2, 1] } }}
+                >
+                    <div
+                        ref={locationRef}
+                        className={cn(
+                            'flex flex-col rounded-2xl border-2 overflow-hidden h-full transition-all duration-500',
+                            needsLocationAction ? 'animate-vote-nudge' : ''
+                        )}
+                        style={{
+                            background: '#0c0c0c',
+                            borderColor: needsLocationAction ? 'rgba(251,191,36,0.45)' : 'rgba(255,255,255,0.08)',
+                            boxShadow: needsLocationAction
+                                ? '0 0 18px rgba(251,191,36,0.18), 3px 3px 0px #000'
+                                : '3px 3px 0px #000',
+                        }}
+                    >
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setIsLocationOpen(v => !v);
+                                if (!isLocationOpen) setIsCalendarOpen(false);
+                            }}
+                            className="flex flex-col gap-1 p-3.5 text-left hover:bg-white/[0.02] transition-colors"
+                        >
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-1.5">
+                                    <MapTrifold className="w-3.5 h-3.5 text-[var(--v2-accent)]" weight="fill" />
+                                    <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/70">
+                                        Où ?
+                                    </span>
+                                </div>
+                                <CaretDown
+                                    className={cn('w-3 h-3 text-white/20 transition-transform duration-200', isLocationOpen && 'rotate-180')}
+                                    weight="bold"
+                                />
+                            </div>
+                            {displayLocation ? (
+                                <p className="text-sm font-black text-white truncate leading-tight mt-0.5">{displayLocation}</p>
+                            ) : (
+                                <p className="text-xs text-white/40 mt-0.5">{needsLocationAction ? 'Vote pour un endroit !' : 'Aucune prop.'}</p>
+                            )}
+                            <p className="text-[11px] text-white/35 uppercase tracking-wider">
+                                {proposals.length} proposition{proposals.length !== 1 ? 's' : ''}
+                            </p>
+                            {needsLocationAction && (
+                                <span className="self-start mt-1 text-[10px] font-black uppercase tracking-[0.1em] bg-amber-400/15 text-amber-400 border border-amber-400/35 rounded-full px-2 py-0.5">
+                                    Ton vote →
+                                </span>
+                            )}
+                        </button>
+                        <div className={cn(
+                            'grid transition-all duration-300 ease-in-out',
+                            isLocationOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                        )}>
+                            <div className="overflow-hidden">
+                                <div className="border-t-2 border-white/6 p-3">
+                                    <LocationTab
+                                        group={group}
+                                        slug={slug}
+                                        memberId={memberId}
+                                        isAdmin={isAdmin}
+                                        proposals={proposals}
+                                        myVotes={myLocationVotes}
+                                        onProposalsChange={onProposalsChange}
+                                        members={members}
+                                        onGroupChange={onGroupChange}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+            )}
+        </div>
+    );
 
     return (
         <div className="flex flex-col gap-4">
-
-            {/* ── STATUS STRIP ── */}
-            {(displayDate || displayLocation || (isAdmin && !locationEnabled)) ? (
-                <div className="flex items-center gap-2 flex-wrap px-0.5">
-                    {displayDate && (
-                        <button
-                            type="button"
-                            onClick={addToCalendar}
-                            className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full hover:bg-white/10 hover:border-white/15 active:scale-95 transition-all duration-150"
-                        >
-                            <CalendarDots className="w-3 h-3 text-[var(--v2-primary)] shrink-0" weight="fill" />
-                            <span className="text-xs font-black text-white/75 capitalize truncate">{displayDate}</span>
-                            {confirmedDate && (
-                                <span className="text-[11px] font-black text-green-400 ml-0.5 shrink-0">✓</span>
-                            )}
-                        </button>
-                    )}
-                    {displayLocation && (
-                        locationMapsUrl ? (
-                            <a
-                                href={locationMapsUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full hover:bg-white/10 hover:border-white/15 active:scale-95 transition-all duration-150"
-                            >
-                                <MapTrifold className="w-3 h-3 text-[var(--v2-accent)] shrink-0" weight="fill" />
-                                <span className="text-xs font-black text-white/75 truncate">{displayLocation}</span>
-                            </a>
-                        ) : (
-                            <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full">
-                                <MapTrifold className="w-3 h-3 text-[var(--v2-accent)] shrink-0" weight="fill" />
-                                <span className="text-xs font-black text-white/75 truncate">{displayLocation}</span>
-                            </div>
-                        )
-                    )}
-                    {isAdmin && !locationEnabled && !group.location?.name && (
-                        <button
-                            onClick={() => setShowLocationModal(true)}
-                            className="flex items-center gap-1.5 bg-[var(--v2-primary)]/8 border border-[var(--v2-primary)]/20 rounded-full px-3 py-1.5 hover:bg-[var(--v2-primary)]/15 transition-colors"
-                        >
-                            <MapTrifold className="w-3 h-3 text-[var(--v2-primary)] shrink-0" />
-                            <span className="text-xs font-black text-[var(--v2-primary)]/90">+ Lieu</span>
-                        </button>
-                    )}
-                    {isAdmin && !locationEnabled && group.location?.name && (
-                        <button
-                            onClick={() => setShowLocationModal(true)}
-                            className="flex items-center gap-1.5 bg-white/4 border border-white/8 rounded-full px-3 py-1.5 hover:bg-white/8 transition-colors"
-                        >
-                            <span className="text-xs font-black text-white/40">Modifier →</span>
-                        </button>
-                    )}
-                </div>
-            ) : memberId && calendarEnabled && (
-                /* Empty state nudge: nothing set yet → prompt to vote */
-                <div className="flex items-center gap-2 px-0.5">
-                    <div className="flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--v2-primary)] animate-pulse shrink-0" />
-                        <span className="text-xs font-black text-white/40">
-                            Commence par voter une date ↓
-                        </span>
-                    </div>
-                </div>
-            )}
-
-            {/* ── HERO BLOCK ── */}
-            {memberId && (
-                <HeroBlock
-                    slug={slug}
-                    memberId={memberId}
-                    isReady={isReady}
-                    timerEndTime={timerEndTime}
-                    proposedTime={currentMember?.proposed_time ?? null}
-                    readyCount={readyCount}
-                    totalCount={members.length}
-                    members={members}
-                    localOptimisticReady={localOptimisticReady}
-                    onOptimisticChange={onSetLocalOptimisticReady}
-                />
-            )}
-
-            {/* ── PRÉVOIR MON DÉPART ── slides out when user is ready */}
-            <AnimatePresence initial={false}>
-            {memberId && !effectiveReady && (
-                <motion.div
-                    key="depart-block"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
-                    style={{ overflow: 'hidden' }}
-                >
-                <div
-                    ref={optionsRef}
-                    className="rounded-2xl border-2 border-white/8 overflow-hidden"
-                    style={{ background: '#0c0c0c', boxShadow: '3px 3px 0px #000' }}
-                >
-                    <button
-                        type="button"
-                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/[0.02] transition-colors"
-                        onClick={() => setIsOptionsOpen(v => !v)}
-                        aria-expanded={isOptionsOpen}
+            <AnimatePresence mode="wait" initial={false}>
+                {isDayOf ? (
+                    <motion.div
+                        key="day-of"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex flex-col gap-4"
                     >
-                        <PersonSimpleWalk className="w-3.5 h-3.5 text-[var(--v2-primary)] shrink-0" />
-                        <div className="flex-1 flex flex-col gap-0.5 text-left">
-                            <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/70">
-                                Prévoir mon départ
-                            </span>
-                            <span className="text-xs text-white/35">
-                                Indique quand tu prévoies de quitter la maison
-                            </span>
-                        </div>
-                        <CaretDown
-                            className={cn('w-3.5 h-3.5 text-white/30 transition-transform duration-200 shrink-0', isOptionsOpen && 'rotate-180')}
-                            weight="bold"
+                        {/* DAY-OF: ConfirmedSummary → HeroBlock → Départ → Members → Invite */}
+                        {confirmedDate && (
+                            <ConfirmedSummary
+                                date={confirmedDate}
+                                location={displayLocation}
+                                locationUrl={locationMapsUrl}
+                                onAddToCalendar={addToCalendar}
+                            />
+                        )}
+
+                        {memberId && (
+                            <HeroBlock
+                                slug={slug}
+                                memberId={memberId}
+                                isReady={isReady}
+                                timerEndTime={timerEndTime}
+                                proposedTime={currentMember?.proposed_time ?? null}
+                                readyCount={readyCount}
+                                totalCount={members.length}
+                                members={members}
+                                localOptimisticReady={localOptimisticReady}
+                                onOptimisticChange={onSetLocalOptimisticReady}
+                            />
+                        )}
+
+                        <AnimatePresence initial={false}>
+                            {memberId && !effectiveReady && (
+                                <motion.div
+                                    key="depart-block"
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+                                    style={{ overflow: 'hidden' }}
+                                >
+                                    <div
+                                        ref={optionsRef}
+                                        className="rounded-2xl border-2 border-white/8 overflow-hidden"
+                                        style={{ background: '#0c0c0c', boxShadow: '3px 3px 0px #000' }}
+                                    >
+                                        <button
+                                            type="button"
+                                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/[0.02] transition-colors"
+                                            onClick={() => setIsOptionsOpen(v => !v)}
+                                            aria-expanded={isOptionsOpen}
+                                        >
+                                            <PersonSimpleWalk className="w-3.5 h-3.5 text-[var(--v2-primary)] shrink-0" />
+                                            <div className="flex-1 flex flex-col gap-0.5 text-left">
+                                                <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/70">
+                                                    Prévoir mon départ
+                                                </span>
+                                                <span className="text-xs text-white/35">
+                                                    Indique quand tu prévoies de quitter la maison
+                                                </span>
+                                            </div>
+                                            <CaretDown
+                                                className={cn('w-3.5 h-3.5 text-white/30 transition-transform duration-200 shrink-0', isOptionsOpen && 'rotate-180')}
+                                                weight="bold"
+                                            />
+                                        </button>
+                                        <div className={cn(
+                                            'grid transition-all duration-200 ease-in-out',
+                                            isOptionsOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                                        )}>
+                                            <div className="overflow-hidden">
+                                                <div className="border-t border-white/6 px-4 py-3 space-y-3">
+                                                    <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/5">
+                                                        <span className="text-base leading-none mt-0.5">⏱️</span>
+                                                        <p className="text-[11px] text-white/35 font-medium leading-relaxed">
+                                                            Lance un minuteur visible par tous les membres du groupe ou indique l'horaire à partir de laquelle tu es dispo — les autres membres du groupe verront ce que tu as choisi.
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex gap-3">
+                                                        <div className="flex-1">
+                                                            <TimerPicker
+                                                                currentTimerEnd={timerEndTime}
+                                                                onUpdate={async (updates) => {
+                                                                    if (!memberId) return;
+                                                                    await updateMemberAction(slug, memberId, updates);
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        {group.type === 'in_person' && (
+                                                            <div className="flex-1">
+                                                                <TimeProposalModal
+                                                                    currentProposedTime={currentMember?.proposed_time ?? null}
+                                                                    onUpdate={async (updates) => {
+                                                                        if (!memberId) return;
+                                                                        await updateMemberAction(slug, memberId, updates);
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        <MembersCompact
+                            members={members}
+                            currentMemberId={memberId}
+                            loading={loadingMembers}
+                            onOpenManage={onOpenManage}
+                            isAdmin={isAdmin}
+                            mode="day-of"
                         />
-                    </button>
-                    <div className={cn(
-                        'grid transition-all duration-200 ease-in-out',
-                        isOptionsOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-                    )}>
-                        <div className="overflow-hidden">
-                            <div className="border-t border-white/6 px-4 py-3 space-y-3">
-                                <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/5">
-                                    <span className="text-base leading-none mt-0.5">⏱️</span>
-                                    <p className="text-[11px] text-white/35 font-medium leading-relaxed">
-                                        Lance un minuteur visible par tous les membres du groupe ou indique l'horaire à partir de laquelle tu es dispo — les autres membres du groupe verront ce que tu as choisi.
-                                    </p>
-                                </div>
-                                <div className="flex gap-3">
-                                <div className="flex-1">
-                                    <TimerPicker
-                                        currentTimerEnd={timerEndTime}
-                                        onUpdate={async (updates) => {
-                                            if (!memberId) return;
-                                            await updateMemberAction(slug, memberId, updates);
-                                        }}
-                                    />
-                                </div>
-                                {group.type === 'in_person' && (
-                                    <div className="flex-1">
-                                        <TimeProposalModal
-                                            currentProposedTime={currentMember?.proposed_time ?? null}
-                                            onUpdate={async (updates) => {
-                                                if (!memberId) return;
-                                                await updateMemberAction(slug, memberId, updates);
-                                            }}
-                                        />
-                                    </div>
-                                )}
-                                </div>
+
+                        {/* Voting cards visible in day-of if re-enabled (last-minute change) */}
+                        {actionCards}
+
+                        {showInviteNudge && (
+                            <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-dashed border-white/10 bg-white/2">
+                                <UserPlus className="w-4 h-4 text-white/25 shrink-0" />
+                                <span className="text-xs font-black text-white/40 flex-1">
+                                    Invite tes amis à rejoindre
+                                </span>
+                                <ShareMenu
+                                    groupName={group.name}
+                                    url={typeof window !== 'undefined' ? window.location.href : ''}
+                                    variant="button"
+                                />
                             </div>
-                        </div>
-                    </div>
-                </div>
-                </motion.div>
-            )}
-            </AnimatePresence>
-
-            {/* ── MEMBERS COMPACT ── */}
-            <MembersCompact
-                members={members}
-                currentMemberId={memberId}
-                loading={loadingMembers}
-                onOpenManage={onOpenManage}
-                isAdmin={isAdmin}
-            />
-
-            {/* ── INVITE NUDGE ── shown when group is small */}
-            {showInviteNudge && (
-                <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-dashed border-white/10 bg-white/2">
-                    <UserPlus className="w-4 h-4 text-white/25 shrink-0" />
-                    <span className="text-xs font-black text-white/40 flex-1">
-                        Invite tes amis à rejoindre
-                    </span>
-                    <ShareMenu
-                        groupName={group.name}
-                        url={typeof window !== 'undefined' ? window.location.href : ''}
-                        variant="button"
-                    />
-                </div>
-            )}
-
-            {/* ── ACTION CARDS ── Calendar + Location */}
-            {(calendarEnabled || locationEnabled || (isAdmin && !locationEnabled)) && (
-                <div className="flex flex-wrap gap-3">
-                    {(calendarEnabled || locationEnabled) && (
-                        <p className="w-full text-[11px] font-black uppercase tracking-[0.18em] text-white/30 px-0.5">
-                            Choisi ce que tu préf
-                        </p>
-                    )}
-
-                    {/* Calendar card */}
-                    {calendarEnabled && (
-                        <motion.div
-                            layout
-                            key="calendar-card"
-                            className="min-w-0"
-                            style={{
-                                width: bothEnabled && !isCalendarOpen && !isLocationOpen ? 'calc(50% - 6px)' : '100%',
-                                order: isLocationOpen && !isCalendarOpen ? 1 : 0,
-                            }}
-                            transition={{ layout: { duration: 0.35, ease: [0.4, 0, 0.2, 1] } }}
-                        >
-                        <div
-                            ref={calendarRef}
-                            className={cn(
-                                'flex flex-col rounded-2xl border-2 overflow-hidden h-full transition-all duration-500',
-                                needsCalendarVote ? 'animate-vote-nudge' : ''
-                            )}
-                            style={{
-                                background: '#0c0c0c',
-                                borderColor: needsCalendarVote ? 'rgba(255,46,46,0.45)' : 'rgba(255,255,255,0.08)',
-                                boxShadow: needsCalendarVote
-                                    ? '0 0 18px rgba(255,46,46,0.18), 3px 3px 0px #000'
-                                    : '3px 3px 0px #000',
-                            }}
-                        >
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setIsCalendarOpen(v => !v);
-                                    if (!isCalendarOpen) setIsLocationOpen(false); // close other
-                                }}
-                                className="flex flex-col gap-1 p-3.5 text-left hover:bg-white/[0.02] transition-colors"
-                            >
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-1.5">
-                                        <CalendarDots className="w-3.5 h-3.5 text-[var(--v2-primary)]" weight="fill" />
-                                        <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/70">
-                                            Quand ?
-                                        </span>
-                                    </div>
-                                    <CaretDown
-                                        className={cn('w-3 h-3 text-white/20 transition-transform duration-200', isCalendarOpen && 'rotate-180')}
-                                        weight="bold"
-                                    />
-                                </div>
+                        )}
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        key="planning"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex flex-col gap-4"
+                    >
+                        {/* PLANNING: StatusStrip → ActionCards → Members → Invite */}
+                        {(displayDate || displayLocation || (isAdmin && !locationEnabled)) ? (
+                            <div className="flex items-center gap-2 flex-wrap px-0.5">
                                 {displayDate && (
-                                    <p className="text-sm font-black text-white capitalize leading-tight mt-0.5">{displayDate}</p>
+                                    <button
+                                        type="button"
+                                        onClick={addToCalendar}
+                                        className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full hover:bg-white/10 hover:border-white/15 active:scale-95 transition-all duration-150"
+                                    >
+                                        <CalendarDots className="w-3 h-3 text-[var(--v2-primary)] shrink-0" weight="fill" />
+                                        <span className="text-xs font-black text-white/75 capitalize truncate">{displayDate}</span>
+                                        {confirmedDate && (
+                                            <span className="text-[11px] font-black text-green-400 ml-0.5 shrink-0">✓</span>
+                                        )}
+                                    </button>
                                 )}
-                                <p className="text-[11px] text-white/35 uppercase tracking-wider">
-                                    {uniqueVotedDates} date{uniqueVotedDates !== 1 ? 's' : ''} · {myVoteCount} vote{myVoteCount !== 1 ? 's' : ''}
-                                </p>
-                                {needsCalendarVote && (
-                                    <span className="self-start mt-1 text-[10px] font-black uppercase tracking-[0.1em] bg-[var(--v2-primary)]/15 text-[var(--v2-primary)] border border-[var(--v2-primary)]/35 rounded-full px-2 py-0.5">
-                                        Ton vote →
+                                {displayLocation && (
+                                    locationMapsUrl ? (
+                                        <a
+                                            href={locationMapsUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full hover:bg-white/10 hover:border-white/15 active:scale-95 transition-all duration-150"
+                                        >
+                                            <MapTrifold className="w-3 h-3 text-[var(--v2-accent)] shrink-0" weight="fill" />
+                                            <span className="text-xs font-black text-white/75 truncate">{displayLocation}</span>
+                                        </a>
+                                    ) : (
+                                        <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full">
+                                            <MapTrifold className="w-3 h-3 text-[var(--v2-accent)] shrink-0" weight="fill" />
+                                            <span className="text-xs font-black text-white/75 truncate">{displayLocation}</span>
+                                        </div>
+                                    )
+                                )}
+                                {isAdmin && !locationEnabled && !group.location?.name && (
+                                    <button
+                                        onClick={() => setShowLocationModal(true)}
+                                        className="flex items-center gap-1.5 bg-[var(--v2-primary)]/8 border border-[var(--v2-primary)]/20 rounded-full px-3 py-1.5 hover:bg-[var(--v2-primary)]/15 transition-colors"
+                                    >
+                                        <MapTrifold className="w-3 h-3 text-[var(--v2-primary)] shrink-0" />
+                                        <span className="text-xs font-black text-[var(--v2-primary)]/90">+ Lieu</span>
+                                    </button>
+                                )}
+                                {isAdmin && !locationEnabled && group.location?.name && (
+                                    <button
+                                        onClick={() => setShowLocationModal(true)}
+                                        className="flex items-center gap-1.5 bg-white/4 border border-white/8 rounded-full px-3 py-1.5 hover:bg-white/8 transition-colors"
+                                    >
+                                        <span className="text-xs font-black text-white/40">Modifier →</span>
+                                    </button>
+                                )}
+                            </div>
+                        ) : memberId && calendarEnabled && (
+                            <div className="flex items-center gap-2 px-0.5">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--v2-primary)] animate-pulse shrink-0" />
+                                    <span className="text-xs font-black text-white/40">
+                                        Commence par voter une date ↓
                                     </span>
-                                )}
-                            </button>
-
-                            {/* Inline calendar */}
-                            <div className={cn(
-                                'grid transition-all duration-300 ease-in-out',
-                                isCalendarOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-                            )}>
-                                <div className="overflow-hidden">
-                                    <div className="border-t-2 border-white/6 p-3">
-                                        <CalendarTab
-                                            group={group}
-                                            slug={slug}
-                                            memberId={memberId}
-                                            members={members}
-                                            isAdmin={isAdmin}
-                                            onGroupChange={onGroupChange}
-                                            votes={votes}
-                                            onVotesChange={onVotesChange}
-                                        />
-                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        </motion.div>
-                    )}
+                        )}
 
-                    {/* Location card */}
-                    {locationEnabled && (
-                        <motion.div
-                            layout
-                            key="location-card"
-                            className="min-w-0"
-                            style={{
-                                width: bothEnabled && !isCalendarOpen && !isLocationOpen ? 'calc(50% - 6px)' : '100%',
-                                order: isCalendarOpen && !isLocationOpen ? 1 : 0,
-                            }}
-                            transition={{ layout: { duration: 0.35, ease: [0.4, 0, 0.2, 1] } }}
-                        >
-                        <div
-                            ref={locationRef}
-                            className={cn(
-                                'flex flex-col rounded-2xl border-2 overflow-hidden h-full transition-all duration-500',
-                                needsLocationAction ? 'animate-vote-nudge' : ''
-                            )}
-                            style={{
-                                background: '#0c0c0c',
-                                borderColor: needsLocationAction ? 'rgba(251,191,36,0.45)' : 'rgba(255,255,255,0.08)',
-                                boxShadow: needsLocationAction
-                                    ? '0 0 18px rgba(251,191,36,0.18), 3px 3px 0px #000'
-                                    : '3px 3px 0px #000',
-                            }}
-                        >
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setIsLocationOpen(v => !v);
-                                    if (!isLocationOpen) setIsCalendarOpen(false); // close other
-                                }}
-                                className="flex flex-col gap-1 p-3.5 text-left hover:bg-white/[0.02] transition-colors"
-                            >
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-1.5">
-                                        <MapTrifold className="w-3.5 h-3.5 text-[var(--v2-accent)]" weight="fill" />
-                                        <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/70">
-                                            Où ?
-                                        </span>
-                                    </div>
-                                    <CaretDown
-                                        className={cn('w-3 h-3 text-white/20 transition-transform duration-200', isLocationOpen && 'rotate-180')}
-                                        weight="bold"
-                                    />
-                                </div>
-                                {displayLocation ? (
-                                    <p className="text-sm font-black text-white truncate leading-tight mt-0.5">{displayLocation}</p>
-                                ) : (
-                                    <p className="text-xs text-white/40 mt-0.5">{needsLocationAction ? 'Vote pour un endroit !' : 'Aucune prop.'}</p>
-                                )}
-                                <p className="text-[11px] text-white/35 uppercase tracking-wider">
-                                    {proposals.length} proposition{proposals.length !== 1 ? 's' : ''}
-                                </p>
-                                {needsLocationAction && (
-                                    <span className="self-start mt-1 text-[10px] font-black uppercase tracking-[0.1em] bg-amber-400/15 text-amber-400 border border-amber-400/35 rounded-full px-2 py-0.5">
-                                        Ton vote →
-                                    </span>
-                                )}
-                            </button>
+                        {actionCards}
 
-                            {/* Inline location */}
-                            <div className={cn(
-                                'grid transition-all duration-300 ease-in-out',
-                                isLocationOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-                            )}>
-                                <div className="overflow-hidden">
-                                    <div className="border-t-2 border-white/6 p-3">
-                                        <LocationTab
-                                            group={group}
-                                            slug={slug}
-                                            memberId={memberId}
-                                            isAdmin={isAdmin}
-                                            proposals={proposals}
-                                            myVotes={myLocationVotes}
-                                            onProposalsChange={onProposalsChange}
-                                            members={members}
-                                            onGroupChange={onGroupChange}
-                                        />
-                                    </div>
-                                </div>
+                        <MembersCompact
+                            members={members}
+                            currentMemberId={memberId}
+                            loading={loadingMembers}
+                            onOpenManage={onOpenManage}
+                            isAdmin={isAdmin}
+                            mode="planning"
+                            votedMemberIds={votedMemberIds}
+                        />
+
+                        {showInviteNudge && (
+                            <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-dashed border-white/10 bg-white/2">
+                                <UserPlus className="w-4 h-4 text-white/25 shrink-0" />
+                                <span className="text-xs font-black text-white/40 flex-1">
+                                    Invite tes amis à rejoindre
+                                </span>
+                                <ShareMenu
+                                    groupName={group.name}
+                                    url={typeof window !== 'undefined' ? window.location.href : ''}
+                                    variant="button"
+                                />
                             </div>
-                        </div>
-                        </motion.div>
-                    )}
-                </div>
-            )}
+                        )}
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Add location modal (admin, non-voting mode) */}
             {showLocationModal && (

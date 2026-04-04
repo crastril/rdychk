@@ -11,6 +11,8 @@ export default function CreateGroupForm() {
     const { user } = useAuth();
     const [groupName, setGroupName] = useState('');
     const [groupType, setGroupType] = useState<'remote' | 'in_person'>('in_person');
+    const [knowsWhen, setKnowsWhen] = useState(false);
+    const [knowsWhere, setKnowsWhere] = useState(false);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
@@ -21,7 +23,6 @@ export default function CreateGroupForm() {
         } else {
             document.body.classList.remove('theme-online');
         }
-        // Cleanup when component unmounts
         return () => {
             document.body.classList.remove('theme-online');
         };
@@ -33,7 +34,6 @@ export default function CreateGroupForm() {
 
         setLoading(true);
 
-        // 1. Database Operation
         let uniqueSlug = '';
         try {
             const slug = createSlug(groupName);
@@ -45,7 +45,9 @@ export default function CreateGroupForm() {
                     name: groupName,
                     slug: uniqueSlug,
                     created_by: user?.id,
-                    type: groupType
+                    type: groupType,
+                    calendar_voting_enabled: !knowsWhen,
+                    location_voting_enabled: !knowsWhere,
                 });
 
             if (dbError) throw dbError;
@@ -57,10 +59,9 @@ export default function CreateGroupForm() {
                 : (error as any)?.message || (typeof error === 'object' ? JSON.stringify(error) : "Erreur inconnue");
             alert("Erreur lors de la création du groupe: " + errorMessage);
             setLoading(false);
-            return; // Stop here if DB failed
+            return;
         }
 
-        // 2. Navigation
         try {
             router.push(`/group/${uniqueSlug}`);
         } catch (error: unknown) {
@@ -72,6 +73,13 @@ export default function CreateGroupForm() {
             setLoading(false);
         }
     };
+
+    const handleNoneCheck = () => {
+        setKnowsWhen(false);
+        setKnowsWhere(false);
+    };
+
+    const noneChecked = !knowsWhen && !knowsWhere;
 
     return (
         <form onSubmit={handleSubmit} className="space-y-5 relative">
@@ -90,6 +98,7 @@ export default function CreateGroupForm() {
                     <PencilSimple className="w-5 h-5 absolute left-3.5 top-3.5 text-slate-500" />
                 </div>
             </div>
+
             <div>
                 <label className="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wide">Type d'activité</label>
                 <div className="grid grid-cols-2 gap-2 p-1 bg-black/40 rounded-xl border border-white/5">
@@ -118,6 +127,60 @@ export default function CreateGroupForm() {
                         <div className="w-full py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-medium text-slate-400 peer-checked:bg-white/10 peer-checked:text-white transition-all">
                             <span className="text-lg">📍</span> En Personne
                         </div>
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <label className="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wide">
+                    Vous savez déjà…
+                </label>
+                <div className="space-y-2">
+                    {/* On sait quand */}
+                    <label className="flex items-center gap-3 p-3.5 rounded-xl border border-white/8 bg-white/3 cursor-pointer hover:bg-white/6 transition-colors select-none">
+                        <div
+                            className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${knowsWhen ? 'bg-[var(--v2-primary)] border-[var(--v2-primary)]' : 'border-white/20 bg-transparent'}`}
+                            onClick={() => {
+                                setKnowsWhen(v => !v);
+                            }}
+                        >
+                            {knowsWhen && <span className="text-white text-[11px] font-black">✓</span>}
+                        </div>
+                        <div className="flex-1 min-w-0" onClick={() => setKnowsWhen(v => !v)}>
+                            <p className="text-sm font-bold text-white/80">On sait quand</p>
+                            <p className="text-[11px] text-white/35">Pas besoin de voter pour la date</p>
+                        </div>
+                        <span className="text-xl shrink-0">📅</span>
+                    </label>
+
+                    {/* On sait où */}
+                    <label className="flex items-center gap-3 p-3.5 rounded-xl border border-white/8 bg-white/3 cursor-pointer hover:bg-white/6 transition-colors select-none">
+                        <div
+                            className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${knowsWhere ? 'bg-[var(--v2-primary)] border-[var(--v2-primary)]' : 'border-white/20 bg-transparent'}`}
+                            onClick={() => setKnowsWhere(v => !v)}
+                        >
+                            {knowsWhere && <span className="text-white text-[11px] font-black">✓</span>}
+                        </div>
+                        <div className="flex-1 min-w-0" onClick={() => setKnowsWhere(v => !v)}>
+                            <p className="text-sm font-bold text-white/80">On sait où</p>
+                            <p className="text-[11px] text-white/35">Pas besoin de voter pour le lieu</p>
+                        </div>
+                        <span className="text-xl shrink-0">📍</span>
+                    </label>
+
+                    {/* Aucun des deux */}
+                    <label className="flex items-center gap-3 p-3.5 rounded-xl border border-white/8 bg-white/3 cursor-pointer hover:bg-white/6 transition-colors select-none">
+                        <div
+                            className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${noneChecked ? 'bg-[var(--v2-primary)] border-[var(--v2-primary)]' : 'border-white/20 bg-transparent'}`}
+                            onClick={handleNoneCheck}
+                        >
+                            {noneChecked && <span className="text-white text-[11px] font-black">✓</span>}
+                        </div>
+                        <div className="flex-1 min-w-0" onClick={handleNoneCheck}>
+                            <p className="text-sm font-bold text-white/80">Aucun des deux</p>
+                            <p className="text-[11px] text-white/35">On va voter pour la date et le lieu</p>
+                        </div>
+                        <span className="text-xl shrink-0">🗳️</span>
                     </label>
                 </div>
             </div>
