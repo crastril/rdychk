@@ -1,4 +1,4 @@
-import { createSlug } from './slug';
+import { createSlug } from './slug.ts';
 
 describe('createSlug', () => {
     it('should convert to lowercase', () => {
