@@ -36,11 +36,10 @@ function getInitials(name: string): string {
 
 type ViewMode = 'week' | 'month';
 
-function getMondayOf(date: Date): Date {
+function getWeekStart(date: Date, todayRef: Date): Date {
+    // Week always starts from todayRef when navigating forward/back by 7 days
     const d = new Date(date);
     d.setHours(0, 0, 0, 0);
-    const diff = (d.getDay() + 6) % 7; // Mon=0 … Sun=6
-    d.setDate(d.getDate() - diff);
     return d;
 }
 
@@ -54,6 +53,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
     const [pendingDates, setPendingDates] = useState<Set<string>>(new Set());
     const [confirmingDate, setConfirmingDate] = useState<string | null>(null);
     const [isOverrideModalOpen, setIsOverrideModalOpen] = useState(false);
+    const [isAllSlotsOpen, setIsAllSlotsOpen] = useState(false);
 
     const totalMembers = members.length;
 
@@ -114,7 +114,8 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
     const month = viewDate.getMonth();
 
     // Week view: 7 days starting from the Monday of viewDate
-    const weekStart = getMondayOf(viewDate);
+    // Week view: 7 days from viewDate (today on first load, shifts by ±7 on nav)
+    const weekStart = (() => { const d = new Date(viewDate); d.setHours(0,0,0,0); return d; })();
     const weekDays: Date[] = Array.from({ length: 7 }, (_, i) => {
         const d = new Date(weekStart);
         d.setDate(d.getDate() + i);
@@ -127,7 +128,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     const isCurrentPeriod = viewMode === 'week'
-        ? weekDays.some(d => toDateStr(d) === todayStr)
+        ? toDateStr(weekStart) === todayStr
         : (viewDate.getMonth() === today.getMonth() && viewDate.getFullYear() === today.getFullYear());
 
     const navPrev = () => {
@@ -183,11 +184,13 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
     for (let i = 0; i < firstDay; i++) cells.push(null);
     for (let d = 1; d <= daysInMonth; d++) cells.push(d);
 
-    // ── Fix #5 : synthèse créneaux (remplace liste participants) ─────────────
-    const topDates = allDatesWithVotes
+    // ── Synthèse créneaux : triés par votes desc, puis date asc ─────────────
+    const sortedDates = allDatesWithVotes
         .filter(([d]) => d >= todayStr)
-        .sort(([, a], [, b]) => b - a)
-        .slice(0, 6);
+        .sort(([da, a], [db, b]) => b - a || da.localeCompare(db));
+
+    const topDates = sortedDates.slice(0, 2);
+    const hasMoreDates = sortedDates.length > 2;
 
 
     // ── Calendrier désactivé ─────────────────────────────────────────────────
@@ -331,10 +334,10 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                 </div>
             </div>
 
-            {/* ── En-têtes jours (Lun → Dim) ─────────────────────────────── */}
+            {/* ── En-têtes jours ─────────────────────────────────────────── */}
             <div className="grid grid-cols-7 gap-0.5">
-                {DAYS_FR.map(d => (
-                    <div key={d} className="text-center text-[9px] font-black uppercase tracking-wide text-white/20 py-1">
+                {(viewMode === 'week' ? weekDays.map(d => DAYS_FR[(d.getDay() + 6) % 7]) : DAYS_FR).map((d, i) => (
+                    <div key={i} className="text-center text-[9px] font-black uppercase tracking-wide text-white/20 py-1">
                         {d}
                     </div>
                 ))}
@@ -405,9 +408,19 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                 style={{ overflow: 'hidden' }}
             >
             <div className="border-t border-white/5 pt-3 flex flex-col gap-1.5">
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/20 mb-1">
-                    Créneaux disponibles
-                </p>
+                <div className="flex items-center justify-between mb-1">
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/20">
+                        Créneaux disponibles
+                    </p>
+                    {hasMoreDates && (
+                        <button
+                            onClick={() => setIsAllSlotsOpen(true)}
+                            className="text-[10px] font-black text-[var(--v2-primary)]/60 hover:text-[var(--v2-primary)] transition-colors"
+                        >
+                            Voir plus →
+                        </button>
+                    )}
+                </div>
                 {topDates.map(([dateStr, count]) => {
                         const dateMembers = membersByDate[dateStr] || [];
                         const isConf = confirmedDate === dateStr;
@@ -503,6 +516,66 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                     Confirmer une date
                 </button>
             )}
+
+            {/* ── Modal tous les créneaux ──────────────────────────────────── */}
+            <Dialog open={isAllSlotsOpen} onOpenChange={setIsAllSlotsOpen}>
+                <DialogContent className="max-w-md glass-panel border-white/10 text-white rounded-3xl p-6">
+                    <DialogHeader className="mb-4">
+                        <DialogTitle className="text-sm font-black uppercase tracking-[0.15em] text-white">
+                            Tous les créneaux
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto pr-1">
+                        {sortedDates.map(([dateStr, count]) => {
+                            const dateMembers = membersByDate[dateStr] || [];
+                            const isConf = confirmedDate === dateStr;
+                            const pct = Math.round((count / totalMembers) * 100);
+                            return (
+                                <div
+                                    key={dateStr}
+                                    className={cn(
+                                        'flex items-center gap-2.5 px-3 py-2.5 rounded-xl border',
+                                        isConf ? 'bg-green-500/8 border-green-500/25' : 'bg-white/[0.02] border-white/5',
+                                    )}
+                                >
+                                    <div className="flex flex-col shrink-0 w-14">
+                                        <span className={cn('text-[11px] font-black capitalize leading-tight', isConf ? 'text-green-400' : 'text-white/70')}>
+                                            {new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' })}
+                                        </span>
+                                        <span className="text-[9px] text-white/25 capitalize leading-tight">
+                                            {new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', { month: 'short' })}
+                                        </span>
+                                    </div>
+                                    <div className="flex-1 flex flex-col gap-0.5">
+                                        <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                                            <div
+                                                className={cn('h-full rounded-full transition-all duration-500', isConf ? 'bg-green-500' : pct === 100 ? 'bg-amber-400' : 'bg-white/20')}
+                                                style={{ width: `${pct}%` }}
+                                            />
+                                        </div>
+                                        <span className={cn('text-[8px] font-black tabular-nums', isConf ? 'text-green-400/60' : 'text-white/20')}>
+                                            {count}/{totalMembers} dispo
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-0.5 shrink-0">
+                                        {dateMembers.slice(0, 4).map(mid => {
+                                            const m = members.find(x => x.id === mid);
+                                            if (!m) return null;
+                                            return (
+                                                <div key={mid} title={m.name} className={cn('w-5 h-5 rounded-full flex items-center justify-center text-[7px] font-black border shrink-0', mid === memberId ? 'bg-[var(--v2-primary)]/15 text-[var(--v2-primary)] border-[var(--v2-primary)]/40' : 'bg-white/8 text-white/50 border-white/10')}>
+                                                    {getInitials(m.name)}
+                                                </div>
+                                            );
+                                        })}
+                                        {dateMembers.length > 4 && <span className="text-[8px] text-white/20 font-bold ml-0.5">+{dateMembers.length - 4}</span>}
+                                    </div>
+                                    {isConf && <Check className="w-3.5 h-3.5 text-green-400 shrink-0" />}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             {/* ── Modal admin ──────────────────────────────────────────────── */}
             <Dialog open={isOverrideModalOpen} onOpenChange={setIsOverrideModalOpen}>

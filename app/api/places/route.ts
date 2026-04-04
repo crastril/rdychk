@@ -41,7 +41,7 @@ export async function GET(request: Request) {
             image: place.photos && place.photos.length > 0
                 ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=${apiKey}`
                 : null,
-            url: `https://www.google.com/maps/place/?q=place_id:${place.place_id}`
+            url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.place_id}`
         }));
 
         return NextResponse.json({ results });
