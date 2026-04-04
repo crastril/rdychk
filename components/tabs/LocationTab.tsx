@@ -107,6 +107,17 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
         });
     }, [initialMyVotes]); // eslint-disable-line react-hooks/exhaustive-deps
 
+    // Precompute a map of member IDs to names for O(1) lookups
+    const memberNameMap = useMemo(() => {
+        const map = new Map<string, string>();
+        for (const m of members) {
+            if (m.name) {
+                map.set(m.id, m.name);
+            }
+        }
+        return map;
+    }, [members]);
+
     // Merge parent proposals with local score overrides (for proposals where vote just completed)
     const mergedProposals = useMemo(() => {
         return proposals.map(p => ({
@@ -293,7 +304,7 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                                     )}
                                     <div className="flex-1 min-w-0">
                                         <p className="text-white font-bold text-sm sm:text-base line-clamp-1">{featured.name}</p>
-                                        <p className="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1">Proposé par <span className="text-slate-300 font-medium">{members.find(m => m.id === featured.member_id)?.name || 'Inconnu'}</span></p>
+                                        <p className="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1">Proposé par <span className="text-slate-300 font-medium">{featured.member_id ? memberNameMap.get(featured.member_id) || 'Inconnu' : 'Inconnu'}</span></p>
                                         {featured.description && <p className="text-slate-400 text-[11px] sm:text-sm mt-1 leading-relaxed line-clamp-2">{featured.description}</p>}
                                     </div>
                                 </div>
@@ -346,7 +357,7 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                                 )}
                                 <div className="flex-1 min-w-0">
                                     <p className="text-xs sm:text-sm font-bold text-white truncate">{p.name}</p>
-                                    <p className="text-[9px] sm:text-[10px] text-slate-500 truncate">Par {members.find(m => m.id === p.member_id)?.name || 'Inconnu'}</p>
+                                    <p className="text-[9px] sm:text-[10px] text-slate-500 truncate">Par {p.member_id ? memberNameMap.get(p.member_id) || 'Inconnu' : 'Inconnu'}</p>
                                     {p.description && <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 line-clamp-1 sm:line-clamp-2">{p.description}</p>}
                                 </div>
                             </div>
