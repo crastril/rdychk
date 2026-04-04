@@ -17,7 +17,6 @@ import { Badge } from '@/components/ui/badge';
 interface ManageGroupModalProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
-    groupId: string;
     slug: string;
     members: Member[];
     loading?: boolean;
