@@ -72,7 +72,7 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
                         <div className="flex items-center gap-3 px-4 py-3">
                             {/* Label */}
                             <span
-                                className="text-[11px] font-black uppercase tracking-[0.22em] shrink-0"
+                                className="text-[12px] font-black uppercase tracking-[0.22em] shrink-0"
                                 style={{
                                     fontFamily: 'var(--font-barlow-condensed)',
                                     color: currentProposedTime ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.25)',
