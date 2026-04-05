@@ -6,12 +6,11 @@ import { HeroBlock } from '@/components/HeroBlock';
 import { MembersCompact } from '@/components/MembersCompact';
 import { CalendarTab } from '@/components/tabs/CalendarTab';
 import { LocationTab } from '@/components/tabs/LocationTab';
-import { TimerPicker } from '@/components/TimerPicker';
 import { TimeProposalModal } from '@/components/TimeProposalModal';
 import { updateMemberAction } from '@/app/actions/member';
 import { updateLocationAction } from '@/app/actions/group';
 import { getGroupMode } from '@/lib/group-mode';
-import { CalendarDots, MapTrifold, CaretDown, UserPlus, PersonSimpleWalk, SlidersHorizontal } from '@phosphor-icons/react';
+import { CalendarDots, MapTrifold, CaretDown, UserPlus, SlidersHorizontal } from '@phosphor-icons/react';
 import { VenueCard } from '@/components/VenueCard';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -67,7 +66,6 @@ export function HomeTab({
 }: HomeTabProps) {
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [isLocationOpen, setIsLocationOpen] = useState(false);
-    const [isOptionsOpen, setIsOptionsOpen] = useState(false);
     const [showLocationModal, setShowLocationModal] = useState(false);
 
     const optionsRef = useRef<HTMLDivElement>(null);
@@ -85,9 +83,6 @@ export function HomeTab({
         }, delay);
     };
 
-    useEffect(() => {
-        if (isOptionsOpen) scrollIntoViewIfNeeded(optionsRef, 230);
-    }, [isOptionsOpen]);
 
     useEffect(() => {
         if (isCalendarOpen) scrollIntoViewIfNeeded(calendarRef, 330);
@@ -124,7 +119,6 @@ export function HomeTab({
     useEffect(() => {
         setIsCalendarOpen(false);
         setIsLocationOpen(false);
-        setIsOptionsOpen(false);
     }, [mode]);
 
     // Formatted dates
@@ -469,68 +463,14 @@ export function HomeTab({
                                     transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
                                     style={{ overflow: 'hidden' }}
                                 >
-                                    <div
-                                        ref={optionsRef}
-                                        className="rounded-2xl border-2 border-white/8 overflow-hidden"
-                                        style={{ background: '#0c0c0c', boxShadow: '3px 3px 0px #000' }}
-                                    >
-                                        <button
-                                            type="button"
-                                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/[0.02] transition-colors"
-                                            onClick={() => setIsOptionsOpen(v => !v)}
-                                            aria-expanded={isOptionsOpen}
-                                        >
-                                            <PersonSimpleWalk className="w-3.5 h-3.5 text-[var(--v2-primary)] shrink-0" />
-                                            <div className="flex-1 flex flex-col gap-0.5 text-left">
-                                                <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/70">
-                                                    Prévoir mon départ
-                                                </span>
-                                                <span className="text-xs text-white/35">
-                                                    Indique quand tu prévoies de quitter la maison
-                                                </span>
-                                            </div>
-                                            <CaretDown
-                                                className={cn('w-3.5 h-3.5 text-white/30 transition-transform duration-200 shrink-0', isOptionsOpen && 'rotate-180')}
-                                                weight="bold"
-                                            />
-                                        </button>
-                                        <div className={cn(
-                                            'grid transition-all duration-200 ease-in-out',
-                                            isOptionsOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-                                        )}>
-                                            <div className="overflow-hidden">
-                                                <div className="border-t border-white/6 px-4 py-3 space-y-3">
-                                                    <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/5">
-                                                        <span className="text-base leading-none mt-0.5">⏱️</span>
-                                                        <p className="text-[11px] text-white/35 font-medium leading-relaxed">
-                                                            Lance un minuteur visible par tous les membres du groupe ou indique l'horaire à partir de laquelle tu es dispo — les autres membres du groupe verront ce que tu as choisi.
-                                                        </p>
-                                                    </div>
-                                                    <div className="flex gap-3">
-                                                        <div className="flex-1">
-                                                            <TimerPicker
-                                                                currentTimerEnd={timerEndTime}
-                                                                onUpdate={async (updates) => {
-                                                                    if (!memberId) return;
-                                                                    await updateMemberAction(slug, memberId, updates);
-                                                                }}
-                                                            />
-                                                        </div>
-                                                        {group.type === 'in_person' && (
-                                                            <div className="flex-1">
-                                                                <TimeProposalModal
-                                                                    currentProposedTime={currentMember?.proposed_time ?? null}
-                                                                    onUpdate={async (updates) => {
-                                                                        if (!memberId) return;
-                                                                        await updateMemberAction(slug, memberId, updates);
-                                                                    }}
-                                                                />
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                    <div ref={optionsRef}>
+                                        <TimeProposalModal
+                                            currentProposedTime={currentMember?.proposed_time ?? null}
+                                            onUpdate={async (updates) => {
+                                                if (!memberId) return;
+                                                await updateMemberAction(slug, memberId, updates);
+                                            }}
+                                        />
                                     </div>
                                 </motion.div>
                             )}

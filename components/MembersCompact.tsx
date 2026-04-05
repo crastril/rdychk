@@ -233,19 +233,10 @@ export function MembersCompact({
                                                     </span>
                                                 );
                                             }
-                                            const timerEnd = m.timer_end_time ? new Date(m.timer_end_time) : null;
-                                            if (timerEnd && timerEnd > new Date()) {
-                                                const hhmm = timerEnd.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-                                                return (
-                                                    <span className="text-[11px] font-black shrink-0 tabular-nums text-amber-400/80">
-                                                        → {hhmm}h
-                                                    </span>
-                                                );
-                                            }
                                             if (m.proposed_time) {
                                                 return (
                                                     <span className="text-[11px] font-black shrink-0 tabular-nums text-sky-400/80">
-                                                        → {m.proposed_time.slice(0, 5)}h
+                                                        → {m.proposed_time.slice(0, 5)}
                                                     </span>
                                                 );
                                             }

@@ -14,7 +14,7 @@ import {
     DialogClose
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Alarm, X } from '@phosphor-icons/react';
+import { Clock, X } from '@phosphor-icons/react';
 
 interface TimeProposalModalProps {
     currentProposedTime: string | null;
@@ -65,21 +65,24 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
                 <DialogTrigger asChild>
                     <button
                         className={cn(
-                            "flex w-full flex-col items-center justify-center gap-1 py-3 rounded-xl",
-                            "border-[2px] font-black text-[11px] uppercase tracking-[0.18em]",
-                            "transition-all duration-100 active:translate-y-[1px]",
+                            "w-full flex items-center gap-3 px-4 py-3 rounded-2xl border-2 transition-all duration-150 active:scale-[0.99] text-left",
                             currentProposedTime
-                                ? "border-sky-500/50 bg-sky-500/10 text-sky-400 pr-8"
-                                : "border-white/15 bg-[#161616] text-white/55 hover:text-white/80 hover:border-white/25 px-3"
+                                ? "border-sky-500/40 bg-sky-500/8 pr-10"
+                                : "border-white/8 bg-[#0c0c0c] hover:bg-white/[0.02] hover:border-white/15"
                         )}
-                        style={{ boxShadow: currentProposedTime ? '2px 2px 0px rgba(14,165,233,0.25)' : '2px 2px 0px rgba(0,0,0,0.5)' }}
+                        style={{ boxShadow: '3px 3px 0px #000' }}
                     >
-                        <Alarm className="w-4 h-4 shrink-0" />
-                        {currentProposedTime ? (
-                            <span className="truncate tabular-nums">{currentProposedTime.slice(0, 5)}h</span>
-                        ) : (
-                            <span className="truncate">Horaire</span>
-                        )}
+                        <Clock className={cn("w-3.5 h-3.5 shrink-0", currentProposedTime ? "text-sky-400" : "text-white/40")} weight="fill" />
+                        <div className="flex-1 flex flex-col gap-0.5 min-w-0">
+                            <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/70">
+                                Je serai prêt à…
+                            </span>
+                            {currentProposedTime ? (
+                                <span className="text-sm font-black text-sky-400 tabular-nums">{currentProposedTime.slice(0, 5)}</span>
+                            ) : (
+                                <span className="text-xs text-white/30">Indique l'heure à laquelle tu seras disponible</span>
+                            )}
+                        </div>
                     </button>
                 </DialogTrigger>
                 {currentProposedTime && (
@@ -98,9 +101,9 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--v2-primary)] to-[var(--v2-accent)]"></div>
                 <div className="p-8">
                     <DialogHeader className="mb-4">
-                        <DialogTitle className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Indiquer un horaire</DialogTitle>
+                        <DialogTitle className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Je serai prêt à…</DialogTitle>
                         <DialogDescription className="text-[12px] text-slate-400 leading-relaxed">
-                            Indique l'heure à laquelle tu penses arriver. Les autres membres du groupe le verront.
+                            Indique l'heure à laquelle tu seras disponible. Les autres membres du groupe le verront.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="flex items-center justify-center py-8">
