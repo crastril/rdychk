@@ -248,7 +248,10 @@ export function HomeTab({
     const actionCards = (calendarEnabled || locationEnabled || (isAdmin && !locationEnabled)) && (
         <div className="flex flex-wrap gap-3">
             {(calendarEnabled || locationEnabled) && (
-                <p className="w-full text-[11px] font-black uppercase tracking-[0.18em] text-white/30 px-0.5">
+                <p
+                    className="w-full text-[10px] font-black uppercase tracking-[0.28em] text-white/25 px-0.5"
+                    style={{ fontFamily: 'var(--font-barlow-condensed)' }}
+                >
                     Choisi ce que tu préf
                 </p>
             )}
@@ -266,15 +269,14 @@ export function HomeTab({
                     <div
                         ref={calendarRef}
                         className={cn(
-                            'flex flex-col rounded-2xl border-2 overflow-hidden h-full transition-all duration-500',
+                            'flex flex-col rounded-2xl border-[3px] border-black overflow-hidden h-full transition-all duration-300',
                             needsCalendarVote ? 'animate-vote-nudge' : ''
                         )}
                         style={{
                             background: '#0c0c0c',
-                            borderColor: needsCalendarVote ? 'rgba(255,46,46,0.45)' : 'rgba(255,255,255,0.08)',
                             boxShadow: needsCalendarVote
-                                ? '0 0 18px rgba(255,46,46,0.18), 3px 3px 0px #000'
-                                : '3px 3px 0px #000',
+                                ? `5px 5px 0px var(--v2-primary)`
+                                : '5px 5px 0px #000',
                         }}
                     >
                         <button
@@ -283,28 +285,54 @@ export function HomeTab({
                                 setIsCalendarOpen(v => !v);
                                 if (!isCalendarOpen) setIsLocationOpen(false);
                             }}
-                            className="flex flex-col gap-1 p-3.5 text-left hover:bg-white/[0.02] transition-colors"
+                            className="flex flex-col gap-1.5 px-4 pt-3 pb-3 text-left hover:bg-white/[0.025] transition-colors"
                         >
                             <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-1.5">
-                                    <CalendarDots className="w-3.5 h-3.5 text-[var(--v2-primary)]" weight="fill" />
-                                    <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/70">
+                                <div className="flex items-center gap-2">
+                                    <CalendarDots
+                                        className="w-4 h-4 shrink-0"
+                                        style={{ color: needsCalendarVote ? 'var(--v2-primary)' : 'rgba(255,255,255,0.4)' }}
+                                        weight="fill"
+                                    />
+                                    <span
+                                        className="uppercase leading-none"
+                                        style={{
+                                            fontFamily: 'var(--font-barlow-condensed)',
+                                            fontWeight: 900,
+                                            fontSize: '1.05rem',
+                                            letterSpacing: '0.12em',
+                                            color: needsCalendarVote ? 'var(--v2-primary)' : 'rgba(255,255,255,0.75)',
+                                        }}
+                                    >
                                         Quand ?
                                     </span>
                                 </div>
                                 <CaretDown
-                                    className={cn('w-3 h-3 text-white/20 transition-transform duration-200', isCalendarOpen && 'rotate-180')}
+                                    className={cn('w-3.5 h-3.5 text-white/25 transition-transform duration-200 shrink-0', isCalendarOpen && 'rotate-180')}
                                     weight="bold"
                                 />
                             </div>
-                            {displayDate && (
-                                <p className="text-sm font-black text-white capitalize leading-tight mt-0.5">{displayDate}</p>
+                            {displayDate ? (
+                                <p
+                                    className="capitalize leading-tight text-white"
+                                    style={{
+                                        fontFamily: 'var(--font-barlow-condensed)',
+                                        fontWeight: 900,
+                                        fontSize: '1.35rem',
+                                        letterSpacing: '0.01em',
+                                    }}
+                                >{displayDate}</p>
+                            ) : (
+                                <p className="text-xs text-white/25 font-black uppercase tracking-wider">À déterminer</p>
                             )}
-                            <p className="text-[11px] text-white/35 uppercase tracking-wider">
+                            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/30">
                                 {uniqueVotedDates} date{uniqueVotedDates !== 1 ? 's' : ''} · {myVoteCount} vote{myVoteCount !== 1 ? 's' : ''}
                             </p>
                             {needsCalendarVote && (
-                                <span className="self-start mt-1 text-[10px] font-black uppercase tracking-[0.1em] bg-[var(--v2-primary)]/15 text-[var(--v2-primary)] border border-[var(--v2-primary)]/35 rounded-full px-2 py-0.5">
+                                <span
+                                    className="self-start text-[10px] font-black uppercase tracking-[0.12em] px-2 py-0.5 rounded-md border border-[var(--v2-primary)]/40 bg-[var(--v2-primary)]/10 text-[var(--v2-primary)]"
+                                    style={{ fontFamily: 'var(--font-barlow-condensed)' }}
+                                >
                                     Ton vote →
                                 </span>
                             )}
@@ -314,7 +342,7 @@ export function HomeTab({
                             isCalendarOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
                         )}>
                             <div className="overflow-hidden">
-                                <div className="border-t-2 border-white/6 p-3">
+                                <div className="border-t-[3px] border-black p-3">
                                     <CalendarTab
                                         group={group}
                                         slug={slug}
@@ -345,15 +373,14 @@ export function HomeTab({
                     <div
                         ref={locationRef}
                         className={cn(
-                            'flex flex-col rounded-2xl border-2 overflow-hidden h-full transition-all duration-500',
+                            'flex flex-col rounded-2xl border-[3px] border-black overflow-hidden h-full transition-all duration-300',
                             needsLocationAction ? 'animate-vote-nudge' : ''
                         )}
                         style={{
                             background: '#0c0c0c',
-                            borderColor: needsLocationAction ? 'rgba(251,191,36,0.45)' : 'rgba(255,255,255,0.08)',
                             boxShadow: needsLocationAction
-                                ? '0 0 18px rgba(251,191,36,0.18), 3px 3px 0px #000'
-                                : '3px 3px 0px #000',
+                                ? '5px 5px 0px #fbbf24'
+                                : '5px 5px 0px #000',
                         }}
                     >
                         <button
@@ -362,30 +389,56 @@ export function HomeTab({
                                 setIsLocationOpen(v => !v);
                                 if (!isLocationOpen) setIsCalendarOpen(false);
                             }}
-                            className="flex flex-col gap-1 p-3.5 text-left hover:bg-white/[0.02] transition-colors"
+                            className="flex flex-col gap-1.5 px-4 pt-3 pb-3 text-left hover:bg-white/[0.025] transition-colors"
                         >
                             <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-1.5">
-                                    <MapTrifold className="w-3.5 h-3.5 text-[var(--v2-accent)]" weight="fill" />
-                                    <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/70">
+                                <div className="flex items-center gap-2">
+                                    <MapTrifold
+                                        className="w-4 h-4 shrink-0"
+                                        style={{ color: needsLocationAction ? '#fbbf24' : 'rgba(255,255,255,0.4)' }}
+                                        weight="fill"
+                                    />
+                                    <span
+                                        className="uppercase leading-none"
+                                        style={{
+                                            fontFamily: 'var(--font-barlow-condensed)',
+                                            fontWeight: 900,
+                                            fontSize: '1.05rem',
+                                            letterSpacing: '0.12em',
+                                            color: needsLocationAction ? '#fbbf24' : 'rgba(255,255,255,0.75)',
+                                        }}
+                                    >
                                         Où ?
                                     </span>
                                 </div>
                                 <CaretDown
-                                    className={cn('w-3 h-3 text-white/20 transition-transform duration-200', isLocationOpen && 'rotate-180')}
+                                    className={cn('w-3.5 h-3.5 text-white/25 transition-transform duration-200 shrink-0', isLocationOpen && 'rotate-180')}
                                     weight="bold"
                                 />
                             </div>
                             {displayLocation ? (
-                                <p className="text-sm font-black text-white truncate leading-tight mt-0.5">{displayLocation}</p>
+                                <p
+                                    className="leading-tight text-white truncate"
+                                    style={{
+                                        fontFamily: 'var(--font-barlow-condensed)',
+                                        fontWeight: 900,
+                                        fontSize: '1.35rem',
+                                        letterSpacing: '0.01em',
+                                    }}
+                                >{displayLocation}</p>
                             ) : (
-                                <p className="text-xs text-white/40 mt-0.5">{needsLocationAction ? 'Vote pour un endroit !' : 'Aucune prop.'}</p>
+                                <p className="text-xs text-white/25 font-black uppercase tracking-wider">
+                                    {needsLocationAction ? 'Vote pour un endroit !' : 'Aucune prop.'}
+                                </p>
                             )}
-                            <p className="text-[11px] text-white/35 uppercase tracking-wider">
+                            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/30">
                                 {proposals.length} proposition{proposals.length !== 1 ? 's' : ''}
                             </p>
                             {needsLocationAction && (
-                                <span className="self-start mt-1 text-[10px] font-black uppercase tracking-[0.1em] bg-amber-400/15 text-amber-400 border border-amber-400/35 rounded-full px-2 py-0.5">
+                                <span
+                                    className="self-start text-[10px] font-black uppercase tracking-[0.12em] px-2 py-0.5 rounded-md border border-amber-400/40 bg-amber-400/10 text-amber-400"
+                                    style={{ fontFamily: 'var(--font-barlow-condensed)' }}
+                                >
                                     Ton vote →
                                 </span>
                             )}
@@ -395,7 +448,7 @@ export function HomeTab({
                             isLocationOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
                         )}>
                             <div className="overflow-hidden">
-                                <div className="border-t-2 border-white/6 p-3">
+                                <div className="border-t-[3px] border-black p-3">
                                     <LocationTab
                                         group={group}
                                         slug={slug}
