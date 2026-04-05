@@ -10,8 +10,9 @@ import { TimeProposalModal } from '@/components/TimeProposalModal';
 import { updateMemberAction } from '@/app/actions/member';
 import { updateLocationAction } from '@/app/actions/group';
 import { getGroupMode } from '@/lib/group-mode';
-import { CalendarDots, MapTrifold, CaretDown, UserPlus, SlidersHorizontal } from '@phosphor-icons/react';
+import { CalendarDots, MapTrifold, GameController, CaretDown, UserPlus, SlidersHorizontal } from '@phosphor-icons/react';
 import { VenueCard } from '@/components/VenueCard';
+import { GameCard } from '@/components/GameCard';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AddLocationProposalModal } from '@/components/AddLocationProposalModal';
@@ -96,6 +97,7 @@ export function HomeTab({
     const currentMember = members.find(m => m.id === memberId);
     const effectiveReady = localOptimisticReady !== null ? localOptimisticReady : isReady;
 
+    const isRemote = group.type === 'remote';
     const calendarEnabled = group.calendar_voting_enabled;
     const locationEnabled = group.location_voting_enabled;
 
@@ -207,7 +209,15 @@ export function HomeTab({
                 </button>
             )}
             {displayLocation && (
-                locationMapsUrl ? (
+                isRemote || !locationMapsUrl ? (
+                    <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full">
+                        {isRemote
+                            ? <GameController className="w-3 h-3 text-[var(--v2-primary)] shrink-0" weight="fill" />
+                            : <MapTrifold className="w-3 h-3 text-[var(--v2-accent)] shrink-0" weight="fill" />
+                        }
+                        <span className="text-xs font-black text-white/75 truncate">{displayLocation}</span>
+                    </div>
+                ) : (
                     <a
                         href={locationMapsUrl}
                         target="_blank"
@@ -217,11 +227,6 @@ export function HomeTab({
                         <MapTrifold className="w-3 h-3 text-[var(--v2-accent)] shrink-0" weight="fill" />
                         <span className="text-xs font-black text-white/75 truncate">{displayLocation}</span>
                     </a>
-                ) : (
-                    <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full">
-                        <MapTrifold className="w-3 h-3 text-[var(--v2-accent)] shrink-0" weight="fill" />
-                        <span className="text-xs font-black text-white/75 truncate">{displayLocation}</span>
-                    </div>
                 )
             )}
             {isAdmin && !locationEnabled && !group.location?.name && (
@@ -229,8 +234,11 @@ export function HomeTab({
                     onClick={() => setShowLocationModal(true)}
                     className="flex items-center gap-1.5 bg-[var(--v2-primary)]/8 border border-[var(--v2-primary)]/20 rounded-full px-3 py-1.5 hover:bg-[var(--v2-primary)]/15 transition-colors"
                 >
-                    <MapTrifold className="w-3 h-3 text-[var(--v2-primary)] shrink-0" />
-                    <span className="text-xs font-black text-[var(--v2-primary)]/90">+ Lieu</span>
+                    {isRemote
+                        ? <GameController className="w-3 h-3 text-[var(--v2-primary)] shrink-0" />
+                        : <MapTrifold className="w-3 h-3 text-[var(--v2-primary)] shrink-0" />
+                    }
+                    <span className="text-xs font-black text-[var(--v2-primary)]/90">{isRemote ? '+ Jeu' : '+ Lieu'}</span>
                 </button>
             )}
             {isAdmin && !locationEnabled && group.location?.name && (
@@ -393,11 +401,10 @@ export function HomeTab({
                         >
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    <MapTrifold
-                                        className="w-4 h-4 shrink-0"
-                                        style={{ color: needsLocationAction ? '#fbbf24' : 'rgba(255,255,255,0.4)' }}
-                                        weight="fill"
-                                    />
+                                    {isRemote
+                                        ? <GameController className="w-4 h-4 shrink-0" style={{ color: needsLocationAction ? '#fbbf24' : 'rgba(255,255,255,0.4)' }} weight="fill" />
+                                        : <MapTrifold className="w-4 h-4 shrink-0" style={{ color: needsLocationAction ? '#fbbf24' : 'rgba(255,255,255,0.4)' }} weight="fill" />
+                                    }
                                     <span
                                         className="uppercase leading-none"
                                         style={{
@@ -408,7 +415,7 @@ export function HomeTab({
                                             color: needsLocationAction ? '#fbbf24' : 'rgba(255,255,255,0.75)',
                                         }}
                                     >
-                                        Où ?
+                                        {isRemote ? 'Jeu ?' : 'Où ?'}
                                     </span>
                                 </div>
                                 <CaretDown
@@ -428,7 +435,10 @@ export function HomeTab({
                                 >{displayLocation}</p>
                             ) : (
                                 <p className="text-xs text-white/25 font-black uppercase tracking-wider">
-                                    {needsLocationAction ? 'Vote pour un endroit !' : 'Aucune prop.'}
+                                    {isRemote
+                                        ? (needsLocationAction ? 'Vote pour un jeu !' : 'Aucune prop.')
+                                        : (needsLocationAction ? 'Vote pour un endroit !' : 'Aucune prop.')
+                                    }
                                 </p>
                             )}
                             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/30">
@@ -483,13 +493,23 @@ export function HomeTab({
                     >
                         {/* DAY-OF: VenueCard (or StatusStrip fallback) → HeroBlock → Départ → Members → Invite */}
                         {displayLocation ? (
-                            <VenueCard
-                                name={displayLocation}
-                                image={locationImage}
-                                date={confirmedDate ?? formattedPopularDate}
-                                mapsUrl={locationMapsUrl}
-                                showCalendar={false}
-                            />
+                            isRemote ? (
+                                <GameCard
+                                    name={displayLocation}
+                                    image={locationImage}
+                                    link={group.location?.link ?? null}
+                                    genres={group.location?.description ?? null}
+                                    date={confirmedDate ?? formattedPopularDate}
+                                />
+                            ) : (
+                                <VenueCard
+                                    name={displayLocation}
+                                    image={locationImage}
+                                    date={confirmedDate ?? formattedPopularDate}
+                                    mapsUrl={locationMapsUrl}
+                                    showCalendar={false}
+                                />
+                            )
                         ) : statusStrip}
 
                         {memberId && (
@@ -561,14 +581,24 @@ export function HomeTab({
                     >
                         {/* PLANNING: VenueCard (if location) → StatusStrip → ActionCards → Members → Invite */}
                         {displayLocation && (
-                            <VenueCard
-                                name={displayLocation}
-                                image={locationImage}
-                                date={confirmedDate ?? formattedPopularDate}
-                                mapsUrl={locationMapsUrl}
-                                onAddToCalendar={addToCalendar}
-                                showCalendar={true}
-                            />
+                            isRemote ? (
+                                <GameCard
+                                    name={displayLocation}
+                                    image={locationImage}
+                                    link={group.location?.link ?? null}
+                                    genres={group.location?.description ?? null}
+                                    date={confirmedDate ?? formattedPopularDate}
+                                />
+                            ) : (
+                                <VenueCard
+                                    name={displayLocation}
+                                    image={locationImage}
+                                    date={confirmedDate ?? formattedPopularDate}
+                                    mapsUrl={locationMapsUrl}
+                                    onAddToCalendar={addToCalendar}
+                                    showCalendar={true}
+                                />
+                            )
                         )}
 
                         {!displayLocation && statusStrip ? statusStrip : !displayLocation && (memberId && calendarEnabled && (

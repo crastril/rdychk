@@ -9,7 +9,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { supabase } from '@/lib/supabase';
-import { CircleNotch, SignOut, MapPin, CalendarDots, CheckSquare } from '@phosphor-icons/react';
+import { CircleNotch, SignOut, MapPin, CalendarDots, CheckSquare, GameController } from '@phosphor-icons/react';
 import { GroupTypeSelector } from '@/components/GroupTypeSelector';
 import { FRENCH_CITIES } from '@/lib/cities';
 import { Input } from '@/components/ui/input';
@@ -303,11 +303,11 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                                 "size-10 rounded-xl flex items-center justify-center transition-colors",
                                                 locationEnabled ? "bg-[var(--v2-primary)]/20 text-[var(--v2-primary)]" : "bg-white/5 text-slate-400"
                                             )}>
-                                                <MapPin className="size-5" />
+                                                {groupType === 'remote' ? <GameController className="size-5" /> : <MapPin className="size-5" />}
                                             </div>
                                             <div>
-                                                <p className={cn("font-bold text-sm", locationEnabled ? "text-white" : "text-slate-300")}>Lieux</p>
-                                                <p className="text-[11px] text-slate-500">Proposer et voter pour des lieux</p>
+                                                <p className={cn("font-bold text-sm", locationEnabled ? "text-white" : "text-slate-300")}>{groupType === 'remote' ? 'Jeux' : 'Lieux'}</p>
+                                                <p className="text-[11px] text-slate-500">{groupType === 'remote' ? 'Proposer et voter pour un jeu' : 'Proposer et voter pour des lieux'}</p>
                                             </div>
                                         </div>
                                         <div className={cn(
