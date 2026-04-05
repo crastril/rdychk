@@ -14,7 +14,7 @@ import {
     DialogClose
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Clock, X } from '@phosphor-icons/react';
+import { X } from '@phosphor-icons/react';
 
 interface TimeProposalModalProps {
     currentProposedTime: string | null;
@@ -29,15 +29,8 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
     const handleSave = async () => {
         setLoading(true);
         try {
-            // If time is empty, we clear the proposed time
             const valueToSave = time.trim() === '' ? null : time;
-
-            await onUpdate({
-                proposed_time: valueToSave,
-                is_ready: false,
-                timer_end_time: null
-            });
-
+            await onUpdate({ proposed_time: valueToSave, is_ready: false, timer_end_time: null });
             setOpen(false);
         } catch (error) {
             console.error('Error saving time:', error);
@@ -59,51 +52,99 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
         }
     };
 
+    const displayTime = currentProposedTime ? currentProposedTime.slice(0, 5).replace(':', 'H') : null;
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <div className="w-full relative group/modal">
+            <div className="w-full relative">
                 <DialogTrigger asChild>
                     <button
                         className={cn(
-                            "w-full flex items-center gap-3 px-4 py-3 rounded-2xl border-2 transition-all duration-150 active:scale-[0.99] text-left",
-                            currentProposedTime
-                                ? "border-sky-500/40 bg-sky-500/8 pr-10"
-                                : "border-white/8 bg-[#0c0c0c] hover:bg-white/[0.02] hover:border-white/15"
+                            'w-full text-left transition-all duration-150 active:translate-y-[2px] active:translate-x-[2px]',
+                            'rounded-2xl border-[3px] border-black overflow-hidden',
                         )}
-                        style={{ boxShadow: '3px 3px 0px #000' }}
+                        style={{
+                            background: currentProposedTime ? '#0a1a2a' : '#0c0c0c',
+                            boxShadow: currentProposedTime
+                                ? '4px 4px 0px #0ea5e9'
+                                : '4px 4px 0px #000',
+                        }}
                     >
-                        <Clock className={cn("w-3.5 h-3.5 shrink-0", currentProposedTime ? "text-sky-400" : "text-white/40")} weight="fill" />
-                        <div className="flex-1 flex flex-col gap-0.5 min-w-0">
-                            <span className="text-[11px] font-black uppercase tracking-[0.18em] text-white/70">
+                        {/* Label row */}
+                        <div
+                            className="px-4 pt-3 pb-1 flex items-center justify-between"
+                        >
+                            <span
+                                className="text-[10px] font-black uppercase tracking-[0.25em]"
+                                style={{
+                                    fontFamily: 'var(--font-barlow-condensed)',
+                                    color: currentProposedTime ? '#38bdf8' : 'rgba(255,255,255,0.35)',
+                                }}
+                            >
                                 Je serai prêt à…
                             </span>
-                            {currentProposedTime ? (
-                                <span className="text-sm font-black text-sky-400 tabular-nums">{currentProposedTime.slice(0, 5)}</span>
+                            {currentProposedTime && (
+                                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-sky-400/60">
+                                    modifier →
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Big time display */}
+                        <div className="px-4 pb-3">
+                            {displayTime ? (
+                                <span
+                                    className="tabular-nums leading-none text-sky-300"
+                                    style={{
+                                        fontFamily: 'var(--font-barlow-condensed)',
+                                        fontWeight: 900,
+                                        fontSize: '2.75rem',
+                                        letterSpacing: '-0.01em',
+                                    }}
+                                >
+                                    {displayTime}
+                                </span>
                             ) : (
-                                <span className="text-xs text-white/30">Indique l'heure à laquelle tu seras disponible</span>
+                                <span
+                                    className="text-white/20"
+                                    style={{
+                                        fontFamily: 'var(--font-barlow-condensed)',
+                                        fontWeight: 900,
+                                        fontSize: '2.75rem',
+                                        letterSpacing: '-0.01em',
+                                    }}
+                                >
+                                    --H--
+                                </span>
                             )}
                         </div>
                     </button>
                 </DialogTrigger>
+
+                {/* Clear button — outside trigger to avoid nested interactive */}
                 {currentProposedTime && (
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute top-1/2 right-2 -translate-y-1/2 h-5 w-5 rounded-full bg-black/60 border border-white/10 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30 transition-all z-20"
+                    <button
+                        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black border-2 border-white/15 flex items-center justify-center hover:border-red-500/50 hover:bg-red-500/15 transition-all z-20"
                         onClick={handleClear}
                         disabled={loading}
                     >
-                        <X className="h-2.5 w-2.5" />
-                    </Button>
+                        <X className="w-2.5 h-2.5 text-white/40" />
+                    </button>
                 )}
             </div>
+
             <DialogContent className="w-[calc(100%-2rem)] max-w-md mx-auto glass-panel border-white/10 text-white rounded-3xl p-0 overflow-hidden backdrop-blur-2xl">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--v2-primary)] to-[var(--v2-accent)]"></div>
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--v2-primary)] to-[var(--v2-accent)]" />
                 <div className="p-8">
                     <DialogHeader className="mb-4">
-                        <DialogTitle className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Je serai prêt à…</DialogTitle>
+                        <DialogTitle
+                            className="uppercase tracking-[0.2em]"
+                            style={{ fontFamily: 'var(--font-barlow-condensed)', fontWeight: 900, fontSize: '1.1rem' }}
+                        >
+                            Je serai prêt à…
+                        </DialogTitle>
                         <DialogDescription className="text-[12px] text-slate-400 leading-relaxed">
-                            Indique l'heure à laquelle tu seras disponible. Les autres membres du groupe le verront.
+                            Les autres membres du groupe verront l'heure que tu indiques.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="flex items-center justify-center py-8">
