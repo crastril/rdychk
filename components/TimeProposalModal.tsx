@@ -62,61 +62,38 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
                         className={cn(
                             'w-full text-left transition-all duration-150 active:translate-y-[2px] active:translate-x-[2px]',
                             'rounded-2xl border-[3px] border-black overflow-hidden',
+                            currentProposedTime ? 'pr-10' : '',
                         )}
                         style={{
-                            background: currentProposedTime ? '#0a1a2a' : '#0c0c0c',
-                            boxShadow: currentProposedTime
-                                ? '4px 4px 0px #0ea5e9'
-                                : '4px 4px 0px #000',
+                            background: '#0c0c0c',
+                            boxShadow: '5px 5px 0px #000',
                         }}
                     >
-                        {/* Label row */}
-                        <div
-                            className="px-4 pt-3 pb-1 flex items-center justify-between"
-                        >
+                        <div className="flex items-center gap-3 px-4 py-3">
+                            {/* Label */}
                             <span
-                                className="text-[10px] font-black uppercase tracking-[0.25em]"
+                                className="text-[11px] font-black uppercase tracking-[0.22em] shrink-0"
                                 style={{
                                     fontFamily: 'var(--font-barlow-condensed)',
-                                    color: currentProposedTime ? '#38bdf8' : 'rgba(255,255,255,0.35)',
+                                    color: currentProposedTime ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.25)',
                                 }}
                             >
                                 Je serai prêt à…
                             </span>
-                            {currentProposedTime && (
-                                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-sky-400/60">
-                                    modifier →
-                                </span>
-                            )}
-                        </div>
 
-                        {/* Big time display */}
-                        <div className="px-4 pb-3">
-                            {displayTime ? (
-                                <span
-                                    className="tabular-nums leading-none text-sky-300"
-                                    style={{
-                                        fontFamily: 'var(--font-barlow-condensed)',
-                                        fontWeight: 900,
-                                        fontSize: '2.75rem',
-                                        letterSpacing: '-0.01em',
-                                    }}
-                                >
-                                    {displayTime}
-                                </span>
-                            ) : (
-                                <span
-                                    className="text-white/20"
-                                    style={{
-                                        fontFamily: 'var(--font-barlow-condensed)',
-                                        fontWeight: 900,
-                                        fontSize: '2.75rem',
-                                        letterSpacing: '-0.01em',
-                                    }}
-                                >
-                                    --H--
-                                </span>
-                            )}
+                            {/* Time display */}
+                            <span
+                                className="ml-auto tabular-nums leading-none shrink-0"
+                                style={{
+                                    fontFamily: 'var(--font-barlow-condensed)',
+                                    fontWeight: 900,
+                                    fontSize: '1.75rem',
+                                    letterSpacing: '-0.01em',
+                                    color: displayTime ? '#7dd3fc' : 'rgba(255,255,255,0.12)',
+                                }}
+                            >
+                                {displayTime || '--H--'}
+                            </span>
                         </div>
                     </button>
                 </DialogTrigger>
@@ -124,11 +101,11 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
                 {/* Clear button — outside trigger to avoid nested interactive */}
                 {currentProposedTime && (
                     <button
-                        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black border-2 border-white/15 flex items-center justify-center hover:border-red-500/50 hover:bg-red-500/15 transition-all z-20"
+                        className="absolute top-1/2 -translate-y-1/2 right-3 w-6 h-6 rounded-full bg-black border-2 border-white/10 flex items-center justify-center hover:border-red-500/50 hover:bg-red-500/15 transition-all z-20"
                         onClick={handleClear}
                         disabled={loading}
                     >
-                        <X className="w-2.5 h-2.5 text-white/40" />
+                        <X className="w-2.5 h-2.5 text-white/35" />
                     </button>
                 )}
             </div>
