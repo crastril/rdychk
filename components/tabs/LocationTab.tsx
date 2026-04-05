@@ -4,8 +4,9 @@ import { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import type { LocationProposal, Member } from '@/types/database';
 import { addLocationProposalAction, voteLocationProposalAction, deleteLocationProposalAction, updateLocationAction } from '@/app/actions/group';
-import { MapPin, CaretUp, CaretDown, Plus, CircleNotch, Star, Trash, WarningOctagon, Check } from '@phosphor-icons/react';
+import { MapPin, GameController, CaretUp, CaretDown, Plus, CircleNotch, Star, Trash, WarningOctagon, Check } from '@phosphor-icons/react';
 import { AddLocationProposalModal } from '@/components/AddLocationProposalModal';
+import { AddGameProposalModal } from '@/components/AddGameProposalModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -65,6 +66,7 @@ interface LocationTabProps {
     group: {
         id: string;
         slug?: string;
+        type?: 'remote' | 'in_person';
         location_voting_enabled: boolean;
         city: string | null;
         location?: { name: string; address?: string } | null;
@@ -82,6 +84,7 @@ interface LocationTabProps {
 }
 
 export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes: initialMyVotes, onProposalsChange, members, onGroupChange }: LocationTabProps) {
+    const isRemote = group.type === 'remote';
     // Local copies of votes & scores that we control; synced from parent but overridden locally after voting
     const [myVotes, setMyVotes] = useState<Record<string, 1 | -1>>(initialMyVotes);
     const [localScores, setLocalScores] = useState<Record<string, number>>({});
@@ -184,11 +187,14 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
         return (
             <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
                 <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center">
-                    <MapPin className="w-7 h-7 text-slate-500" />
+                    {isRemote
+                        ? <GameController className="w-7 h-7 text-slate-500" weight="fill" />
+                        : <MapPin className="w-7 h-7 text-slate-500" />
+                    }
                 </div>
                 <div>
                     <p className="text-white font-bold text-lg">Propositions désactivées</p>
-                    <p className="text-slate-500 mt-1 text-sm">L'admin peut activer les contre-propositions dans les paramètres.</p>
+                    <p className="text-slate-500 mt-1 text-sm">L'admin peut activer les propositions dans les paramètres.</p>
                 </div>
             </div>
         );
@@ -241,7 +247,7 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                     <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 whitespace-nowrap">
-                        Propositions ({proposals.length})
+                        {isRemote ? 'Jeux proposés' : 'Propositions'} ({proposals.length})
                     </h3>
                     {isAdmin && (
                         <button
@@ -257,9 +263,12 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
 
             {proposals.length === 0 && (
                 <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/5">
-                    <span className="text-base leading-none mt-0.5">📍</span>
+                    <span className="text-base leading-none mt-0.5">{isRemote ? '🎮' : '📍'}</span>
                     <p className="text-[11px] text-white/35 font-medium leading-relaxed">
-                        Propose un lieu — le groupe votera pour le meilleur endroit.
+                        {isRemote
+                            ? 'Propose un jeu — le groupe votera pour le meilleur choix.'
+                            : 'Propose un lieu — le groupe votera pour le meilleur endroit.'
+                        }
                     </p>
                 </div>
             )}
@@ -322,7 +331,9 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                                 className="btn-massive w-full rounded-2xl py-3.5 sm:py-4 flex items-center justify-center gap-3 transition-all group"
                             >
                                 <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                                <span className="text-sm font-black uppercase tracking-widest">Proposer un lieu</span>
+                                <span className="text-sm font-black uppercase tracking-widest">
+                                    {isRemote ? 'Proposer un jeu' : 'Proposer un lieu'}
+                                </span>
                             </button>
                         </motion.div>
                     )}
@@ -365,19 +376,32 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
             </div>
 
             {showAddModal && memberId && (
-                <AddLocationProposalModal
-                    isOpen={showAddModal}
-                    onClose={() => setShowAddModal(false)}
-                    city={group.city}
-                    baseLat={group.base_lat}
-                    baseLng={group.base_lng}
-                    onSubmit={async (data) => {
-                        if (!memberId) return;
-                        const res = await addLocationProposalAction(slug, memberId, data);
-                        if (res.success && res.proposal) onProposalsChange([...proposals, res.proposal]);
-                        setShowAddModal(false);
-                    }}
-                />
+                isRemote ? (
+                    <AddGameProposalModal
+                        isOpen={showAddModal}
+                        onClose={() => setShowAddModal(false)}
+                        onSubmit={async (data) => {
+                            if (!memberId) return;
+                            const res = await addLocationProposalAction(slug, memberId, data);
+                            if (res.success && res.proposal) onProposalsChange([...proposals, res.proposal]);
+                            setShowAddModal(false);
+                        }}
+                    />
+                ) : (
+                    <AddLocationProposalModal
+                        isOpen={showAddModal}
+                        onClose={() => setShowAddModal(false)}
+                        city={group.city}
+                        baseLat={group.base_lat}
+                        baseLng={group.base_lng}
+                        onSubmit={async (data) => {
+                            if (!memberId) return;
+                            const res = await addLocationProposalAction(slug, memberId, data);
+                            if (res.success && res.proposal) onProposalsChange([...proposals, res.proposal]);
+                            setShowAddModal(false);
+                        }}
+                    />
+                )
             )}
 
             <Dialog open={isOverrideModalOpen} onOpenChange={setIsOverrideModalOpen}>
