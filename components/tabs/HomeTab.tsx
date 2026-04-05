@@ -249,7 +249,7 @@ export function HomeTab({
         <div className="flex flex-wrap gap-3">
             {(calendarEnabled || locationEnabled) && (
                 <p
-                    className="w-full text-[10px] font-black uppercase tracking-[0.28em] text-white/25 px-0.5"
+                    className="w-full text-[12px] font-black uppercase tracking-[0.28em] text-white/25 px-0.5"
                     style={{ fontFamily: 'var(--font-barlow-condensed)' }}
                 >
                     Choisi ce que tu préf
