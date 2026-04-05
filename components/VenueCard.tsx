@@ -7,10 +7,11 @@ interface VenueCardProps {
     image?: string | null;
     date?: string | null;          // formatted string, e.g. "Dimanche 5 Avril"
     mapsUrl?: string | null;
-    onAddToCalendar: () => void;
+    onAddToCalendar?: () => void;
+    showCalendar?: boolean;
 }
 
-export function VenueCard({ name, image, date, mapsUrl, onAddToCalendar }: VenueCardProps) {
+export function VenueCard({ name, image, date, mapsUrl, onAddToCalendar, showCalendar = true }: VenueCardProps) {
     return (
         <div className="flex flex-col gap-2">
             {/* ── CARD ── */}
@@ -99,24 +100,26 @@ export function VenueCard({ name, image, date, mapsUrl, onAddToCalendar }: Venue
                     </div>
                 )}
 
-                <button
-                    type="button"
-                    onClick={onAddToCalendar}
-                    className="flex items-center gap-2 px-3 py-2 rounded-xl border-[2.5px] border-black transition-all duration-150 active:translate-y-[2px] active:translate-x-[2px] group"
-                    style={{
-                        background: '#0c0c0c',
-                        boxShadow: '3px 3px 0px #0ea5e9',
-                    }}
-                >
-                    <CalendarPlus className="w-3.5 h-3.5 text-sky-400 shrink-0" weight="fill" />
-                    <span
-                        className="text-[11px] font-black uppercase tracking-[0.08em] text-white/70 group-hover:text-white transition-colors"
-                        style={{ fontFamily: 'var(--font-barlow-condensed)' }}
+                {showCalendar && onAddToCalendar && (
+                    <button
+                        type="button"
+                        onClick={onAddToCalendar}
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl border-[2.5px] border-black transition-all duration-150 active:translate-y-[2px] active:translate-x-[2px] group"
+                        style={{
+                            background: '#0c0c0c',
+                            boxShadow: '3px 3px 0px #0ea5e9',
+                        }}
                     >
-                        Rajouter à mon calendrier
-                    </span>
-                    <ArrowSquareOut className="w-3 h-3 text-white/30 group-hover:text-sky-400 shrink-0 transition-colors" />
-                </button>
+                        <CalendarPlus className="w-3.5 h-3.5 text-sky-400 shrink-0" weight="fill" />
+                        <span
+                            className="text-[11px] font-black uppercase tracking-[0.08em] text-white/70 group-hover:text-white transition-colors"
+                            style={{ fontFamily: 'var(--font-barlow-condensed)' }}
+                        >
+                            Rajouter à mon calendrier
+                        </span>
+                        <ArrowSquareOut className="w-3 h-3 text-white/30 group-hover:text-sky-400 shrink-0 transition-colors" />
+                    </button>
+                )}
             </div>
         </div>
     );

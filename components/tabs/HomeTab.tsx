@@ -434,7 +434,7 @@ export function HomeTab({
                                 image={locationImage}
                                 date={confirmedDate ?? formattedPopularDate}
                                 mapsUrl={locationMapsUrl}
-                                onAddToCalendar={addToCalendar}
+                                showCalendar={false}
                             />
                         ) : statusStrip}
 
@@ -511,8 +511,19 @@ export function HomeTab({
                         transition={{ duration: 0.2 }}
                         className="flex flex-col gap-4"
                     >
-                        {/* PLANNING: StatusStrip → ActionCards → Members → Invite */}
-                        {statusStrip ?? (memberId && calendarEnabled && (
+                        {/* PLANNING: VenueCard (if location) → StatusStrip → ActionCards → Members → Invite */}
+                        {displayLocation && (
+                            <VenueCard
+                                name={displayLocation}
+                                image={locationImage}
+                                date={confirmedDate ?? formattedPopularDate}
+                                mapsUrl={locationMapsUrl}
+                                onAddToCalendar={addToCalendar}
+                                showCalendar={true}
+                            />
+                        )}
+
+                        {!displayLocation && statusStrip ? statusStrip : !displayLocation && (memberId && calendarEnabled && (
                             <div className="flex items-center gap-2 px-0.5">
                                 <div className="flex items-center gap-2">
                                     <span className="w-1.5 h-1.5 rounded-full bg-[var(--v2-primary)] animate-pulse shrink-0" />
