@@ -48,7 +48,7 @@ export function VenueCard({ name, image, date, mapsUrl, onAddToCalendar, showCal
                 <div className="absolute inset-x-0 bottom-0 px-4 pb-4 flex flex-col gap-0.5">
                     {date && (
                         <span
-                            className="text-[11px] font-black uppercase tracking-[0.22em] text-white/55"
+                            className="text-[12px] font-black uppercase tracking-[0.22em] text-white/55"
                             style={{ fontFamily: 'var(--font-barlow-condensed)' }}
                         >
                             {date}
@@ -78,7 +78,7 @@ export function VenueCard({ name, image, date, mapsUrl, onAddToCalendar, showCal
                     >
                         <MapTrifold className="w-3.5 h-3.5 text-orange-400 shrink-0" weight="fill" />
                         <span
-                            className="text-[11px] font-black uppercase tracking-[0.08em] text-white/70 group-hover:text-white transition-colors"
+                            className="text-[12px] font-black uppercase tracking-[0.06em] text-white/70 group-hover:text-white transition-colors"
                             style={{ fontFamily: 'var(--font-barlow-condensed)' }}
                         >
                             Afficher dans Google Maps
@@ -92,7 +92,7 @@ export function VenueCard({ name, image, date, mapsUrl, onAddToCalendar, showCal
                     >
                         <MapTrifold className="w-3.5 h-3.5 text-white/30 shrink-0" weight="fill" />
                         <span
-                            className="text-[11px] font-black uppercase tracking-[0.08em] text-white/30"
+                            className="text-[12px] font-black uppercase tracking-[0.06em] text-white/30"
                             style={{ fontFamily: 'var(--font-barlow-condensed)' }}
                         >
                             Afficher dans Google Maps
@@ -112,7 +112,7 @@ export function VenueCard({ name, image, date, mapsUrl, onAddToCalendar, showCal
                     >
                         <CalendarPlus className="w-3.5 h-3.5 text-sky-400 shrink-0" weight="fill" />
                         <span
-                            className="text-[11px] font-black uppercase tracking-[0.08em] text-white/70 group-hover:text-white transition-colors"
+                            className="text-[12px] font-black uppercase tracking-[0.06em] text-white/70 group-hover:text-white transition-colors"
                             style={{ fontFamily: 'var(--font-barlow-condensed)' }}
                         >
                             Rajouter à mon calendrier
