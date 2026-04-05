@@ -81,9 +81,9 @@ export function AddGameProposalModal({ isOpen, onClose, onSubmit }: AddGamePropo
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
-            <DialogContent className="w-[calc(100%-2rem)] max-w-md mx-auto glass-panel border-white/10 text-white rounded-3xl p-0 overflow-hidden backdrop-blur-2xl">
+            <DialogContent className="max-w-md glass-panel border-white/10 text-white rounded-3xl p-0 overflow-hidden flex flex-col" style={{ position: 'fixed', top: '5vh', left: '50%', transform: 'translateX(-50%)', maxHeight: '85dvh', width: 'calc(100% - 2rem)' }}>
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--v2-primary)] to-[var(--v2-accent)]" />
-                <div className="p-6">
+                <div className="p-6 overflow-y-auto flex-1">
                     <DialogHeader className="mb-4">
                         <DialogTitle
                             className="uppercase tracking-[0.15em] flex items-center gap-2"
@@ -95,7 +95,7 @@ export function AddGameProposalModal({ isOpen, onClose, onSubmit }: AddGamePropo
                     </DialogHeader>
 
                     {/* Search field */}
-                    <div className="relative">
+                    <div>
                         <div className="flex items-center gap-2 bg-black/50 border border-white/10 rounded-xl px-3 py-2.5 focus-within:border-[var(--v2-primary)]/50 transition-colors">
                             {searching
                                 ? <CircleNotch className="w-4 h-4 text-white/30 shrink-0 animate-spin" />
@@ -115,9 +115,9 @@ export function AddGameProposalModal({ isOpen, onClose, onSubmit }: AddGamePropo
                             )}
                         </div>
 
-                        {/* Results dropdown */}
+                        {/* Results list (inline, expands modal) */}
                         {results.length > 0 && (
-                            <div className="absolute top-full left-0 w-full mt-2 bg-[#111] border border-white/10 rounded-2xl overflow-hidden z-50 shadow-2xl max-h-72 overflow-y-auto">
+                            <div className="mt-2 bg-[#111] border border-white/10 rounded-2xl overflow-hidden">
                                 {results.map(game => (
                                     <button
                                         key={game.slug}
