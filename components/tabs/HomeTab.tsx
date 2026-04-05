@@ -187,7 +187,7 @@ export function HomeTab({
     // Members who voted on any date (for planning mode)
     const votedMemberIds = new Set(votes.map(v => v.member_id));
 
-    const showInviteNudge = members.length < 4 && !!memberId;
+    const showInviteNudge = !!memberId;
 
     // ── SHARED: STATUS STRIP ──
     const statusStrip = (displayDate || displayLocation || (isAdmin && !locationEnabled)) ? (
@@ -489,16 +489,35 @@ export function HomeTab({
                         {actionCards}
 
                         {showInviteNudge && (
-                            <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-dashed border-white/10 bg-white/2">
-                                <UserPlus className="w-4 h-4 text-white/25 shrink-0" />
-                                <span className="text-xs font-black text-white/40 flex-1">
-                                    Invite tes amis à rejoindre
-                                </span>
-                                <ShareMenu
-                                    groupName={group.name}
-                                    url={typeof window !== 'undefined' ? window.location.href : ''}
-                                    variant="button"
-                                />
+                            <div
+                                className="rounded-2xl border-[3px] border-black overflow-hidden"
+                                style={{ background: '#0c0c0c', boxShadow: '5px 5px 0px #fbbf24' }}
+                            >
+                                <div className="flex items-center gap-3 px-4 py-3">
+                                    <div className="flex-1 min-w-0">
+                                        <p
+                                            className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-400/60 leading-none mb-1"
+                                            style={{ fontFamily: 'var(--font-barlow-condensed)' }}
+                                        >
+                                            {members.length} membre{members.length !== 1 ? 's' : ''} pour l'instant
+                                        </p>
+                                        <p
+                                            className="text-lg font-black uppercase leading-none text-white"
+                                            style={{ fontFamily: 'var(--font-barlow-condensed)', letterSpacing: '0.02em' }}
+                                        >
+                                            Invite tes amis !
+                                        </p>
+                                    </div>
+                                    <div className="relative shrink-0">
+                                        <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                                        <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400" />
+                                        <ShareMenu
+                                            groupName={group.name}
+                                            url={typeof window !== 'undefined' ? window.location.href : ''}
+                                            variant="button"
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </motion.div>
@@ -558,16 +577,35 @@ export function HomeTab({
                         )}
 
                         {showInviteNudge && (
-                            <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-dashed border-white/10 bg-white/2">
-                                <UserPlus className="w-4 h-4 text-white/25 shrink-0" />
-                                <span className="text-xs font-black text-white/40 flex-1">
-                                    Invite tes amis à rejoindre
-                                </span>
-                                <ShareMenu
-                                    groupName={group.name}
-                                    url={typeof window !== 'undefined' ? window.location.href : ''}
-                                    variant="button"
-                                />
+                            <div
+                                className="rounded-2xl border-[3px] border-black overflow-hidden"
+                                style={{ background: '#0c0c0c', boxShadow: '5px 5px 0px #fbbf24' }}
+                            >
+                                <div className="flex items-center gap-3 px-4 py-3">
+                                    <div className="flex-1 min-w-0">
+                                        <p
+                                            className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-400/60 leading-none mb-1"
+                                            style={{ fontFamily: 'var(--font-barlow-condensed)' }}
+                                        >
+                                            {members.length} membre{members.length !== 1 ? 's' : ''} pour l'instant
+                                        </p>
+                                        <p
+                                            className="text-lg font-black uppercase leading-none text-white"
+                                            style={{ fontFamily: 'var(--font-barlow-condensed)', letterSpacing: '0.02em' }}
+                                        >
+                                            Invite tes amis !
+                                        </p>
+                                    </div>
+                                    <div className="relative shrink-0">
+                                        <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                                        <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400" />
+                                        <ShareMenu
+                                            groupName={group.name}
+                                            url={typeof window !== 'undefined' ? window.location.href : ''}
+                                            variant="button"
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </motion.div>
