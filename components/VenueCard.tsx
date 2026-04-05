@@ -63,33 +63,59 @@ export function VenueCard({ name, image, date, mapsUrl, onAddToCalendar }: Venue
             </div>
 
             {/* ── ACTION LINKS ── */}
-            <div className="flex flex-wrap gap-x-4 gap-y-1 px-0.5">
+            <div className="flex flex-wrap gap-2">
                 {mapsUrl ? (
                     <a
                         href={mapsUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 py-1.5 group w-fit"
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl border-[2.5px] border-black transition-all duration-150 active:translate-y-[2px] active:translate-x-[2px] group"
+                        style={{
+                            background: '#0c0c0c',
+                            boxShadow: '3px 3px 0px #f97316',
+                        }}
                     >
-                        <MapTrifold className="w-3.5 h-3.5 text-[var(--v2-accent)] shrink-0" weight="fill" />
-                        <span className="text-xs font-black text-white/60 group-hover:text-white/90 underline underline-offset-2 decoration-white/20 group-hover:decoration-white/50 transition-colors">Afficher dans Google Maps</span>
-                        <ArrowSquareOut className="w-3 h-3 text-white/25 group-hover:text-white/60 shrink-0 transition-colors" />
+                        <MapTrifold className="w-3.5 h-3.5 text-orange-400 shrink-0" weight="fill" />
+                        <span
+                            className="text-[11px] font-black uppercase tracking-[0.12em] text-white/70 group-hover:text-white transition-colors"
+                            style={{ fontFamily: 'var(--font-barlow-condensed)' }}
+                        >
+                            Google Maps
+                        </span>
+                        <ArrowSquareOut className="w-3 h-3 text-white/30 group-hover:text-orange-400 shrink-0 transition-colors" />
                     </a>
                 ) : (
-                    <div className="flex items-center gap-2 py-1.5 opacity-30 cursor-not-allowed w-fit">
+                    <div
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl border-[2.5px] border-black opacity-30 cursor-not-allowed"
+                        style={{ background: '#0c0c0c', boxShadow: '3px 3px 0px #333' }}
+                    >
                         <MapTrifold className="w-3.5 h-3.5 text-white/30 shrink-0" weight="fill" />
-                        <span className="text-xs font-black text-white/30">Afficher dans Google Maps</span>
+                        <span
+                            className="text-[11px] font-black uppercase tracking-[0.12em] text-white/30"
+                            style={{ fontFamily: 'var(--font-barlow-condensed)' }}
+                        >
+                            Google Maps
+                        </span>
                     </div>
                 )}
 
                 <button
                     type="button"
                     onClick={onAddToCalendar}
-                    className="flex items-center gap-2 py-1.5 group w-fit"
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl border-[2.5px] border-black transition-all duration-150 active:translate-y-[2px] active:translate-x-[2px] group"
+                    style={{
+                        background: '#0c0c0c',
+                        boxShadow: '3px 3px 0px #0ea5e9',
+                    }}
                 >
-                    <CalendarPlus className="w-3.5 h-3.5 text-[var(--v2-primary)] shrink-0" weight="fill" />
-                    <span className="text-xs font-black text-white/60 group-hover:text-white/90 underline underline-offset-2 decoration-white/20 group-hover:decoration-white/50 transition-colors">Rajouter à mon calendrier</span>
-                    <ArrowSquareOut className="w-3 h-3 text-white/25 group-hover:text-white/60 shrink-0 transition-colors" />
+                    <CalendarPlus className="w-3.5 h-3.5 text-sky-400 shrink-0" weight="fill" />
+                    <span
+                        className="text-[11px] font-black uppercase tracking-[0.12em] text-white/70 group-hover:text-white transition-colors"
+                        style={{ fontFamily: 'var(--font-barlow-condensed)' }}
+                    >
+                        Mon calendrier
+                    </span>
+                    <ArrowSquareOut className="w-3 h-3 text-white/30 group-hover:text-sky-400 shrink-0 transition-colors" />
                 </button>
             </div>
         </div>
