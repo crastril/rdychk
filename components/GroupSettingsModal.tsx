@@ -89,6 +89,12 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                 return;
             }
 
+            // If saving in Jour J phase with no confirmed_date, anchor to today
+            // so getGroupMode() keeps returning 'day-of' even when a vote is re-enabled
+            const dateToSave = phase === 'day-of' && !confirmedDate
+                ? new Date().toISOString().slice(0, 10)
+                : confirmedDate;
+
             const { error: typeError } = await supabase
                 .from('groups')
                 .update({
@@ -96,7 +102,7 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                     city: groupType === 'in_person' ? location : null,
                     calendar_voting_enabled: calendarEnabled,
                     location_voting_enabled: locationEnabled,
-                    confirmed_date: confirmedDate,
+                    confirmed_date: dateToSave,
                 })
                 .eq('id', groupId);
 
