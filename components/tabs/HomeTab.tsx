@@ -8,11 +8,11 @@ import { CalendarTab } from '@/components/tabs/CalendarTab';
 import { LocationTab } from '@/components/tabs/LocationTab';
 import { TimerPicker } from '@/components/TimerPicker';
 import { TimeProposalModal } from '@/components/TimeProposalModal';
-import { ConfirmedSummary } from '@/components/ConfirmedSummary';
 import { updateMemberAction } from '@/app/actions/member';
 import { updateLocationAction } from '@/app/actions/group';
 import { getGroupMode } from '@/lib/group-mode';
-import { CalendarDots, MapTrifold, CaretDown, UserPlus, PersonSimpleWalk } from '@phosphor-icons/react';
+import { CalendarDots, MapTrifold, CaretDown, UserPlus, PersonSimpleWalk, SlidersHorizontal } from '@phosphor-icons/react';
+import { VenueCard } from '@/components/VenueCard';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AddLocationProposalModal } from '@/components/AddLocationProposalModal';
@@ -105,7 +105,20 @@ export function HomeTab({
 
     // Mode dérivé de confirmed_date + flags de vote
     const mode = getGroupMode(group.confirmed_date, calendarEnabled, locationEnabled);
-    const isDayOf = mode === 'day-of';
+
+    // Member-level day-of override: non-admin who voted can "join" day-of view
+    const storageKey = memberId ? `rdychk:dayof:${slug}:${memberId}` : null;
+    const [memberJoinedDayOf, setMemberJoinedDayOf] = useState(() => {
+        if (typeof window === 'undefined' || !storageKey) return false;
+        return localStorage.getItem(storageKey) === '1';
+    });
+
+    const isDayOf = mode === 'day-of' || memberJoinedDayOf;
+
+    const handleJoinDayOf = () => {
+        setMemberJoinedDayOf(true);
+        if (storageKey) localStorage.setItem(storageKey, '1');
+    };
 
     // Reset accordion states when mode changes
     useEffect(() => {
@@ -160,14 +173,13 @@ export function HomeTab({
     };
 
     const displayLocation = group.location?.name || topLocationProposal?.name;
+    const locationImage = group.location?.image || topLocationProposal?.image;
     const locationMapsUrl = (() => {
         const link = group.location?.link || topLocationProposal?.link;
         if (link) return link;
         const query = group.location?.address || group.location?.name || topLocationProposal?.description || topLocationProposal?.name;
         return query ? `https://maps.google.com/?q=${encodeURIComponent(query)}` : null;
     })();
-
-    const bothEnabled = calendarEnabled && locationEnabled;
 
     // Vote nudge indicators
     const myVoteCount = votes.filter(v => v.member_id === memberId).length;
@@ -182,6 +194,60 @@ export function HomeTab({
     const votedMemberIds = new Set(votes.map(v => v.member_id));
 
     const showInviteNudge = members.length < 4 && !!memberId;
+
+    // ── SHARED: STATUS STRIP ──
+    const statusStrip = (displayDate || displayLocation || (isAdmin && !locationEnabled)) ? (
+        <div className="flex items-center gap-2 flex-wrap px-0.5">
+            {displayDate && (
+                <button
+                    type="button"
+                    onClick={addToCalendar}
+                    className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full hover:bg-white/10 hover:border-white/15 active:scale-95 transition-all duration-150"
+                >
+                    <CalendarDots className="w-3 h-3 text-[var(--v2-primary)] shrink-0" weight="fill" />
+                    <span className="text-xs font-black text-white/75 capitalize truncate">{displayDate}</span>
+                    {confirmedDate && (
+                        <span className="text-[11px] font-black text-green-400 ml-0.5 shrink-0">✓</span>
+                    )}
+                </button>
+            )}
+            {displayLocation && (
+                locationMapsUrl ? (
+                    <a
+                        href={locationMapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full hover:bg-white/10 hover:border-white/15 active:scale-95 transition-all duration-150"
+                    >
+                        <MapTrifold className="w-3 h-3 text-[var(--v2-accent)] shrink-0" weight="fill" />
+                        <span className="text-xs font-black text-white/75 truncate">{displayLocation}</span>
+                    </a>
+                ) : (
+                    <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full">
+                        <MapTrifold className="w-3 h-3 text-[var(--v2-accent)] shrink-0" weight="fill" />
+                        <span className="text-xs font-black text-white/75 truncate">{displayLocation}</span>
+                    </div>
+                )
+            )}
+            {isAdmin && !locationEnabled && !group.location?.name && (
+                <button
+                    onClick={() => setShowLocationModal(true)}
+                    className="flex items-center gap-1.5 bg-[var(--v2-primary)]/8 border border-[var(--v2-primary)]/20 rounded-full px-3 py-1.5 hover:bg-[var(--v2-primary)]/15 transition-colors"
+                >
+                    <MapTrifold className="w-3 h-3 text-[var(--v2-primary)] shrink-0" />
+                    <span className="text-xs font-black text-[var(--v2-primary)]/90">+ Lieu</span>
+                </button>
+            )}
+            {isAdmin && !locationEnabled && group.location?.name && (
+                <button
+                    onClick={() => setShowLocationModal(true)}
+                    className="flex items-center gap-1.5 bg-white/4 border border-white/8 rounded-full px-3 py-1.5 hover:bg-white/8 transition-colors"
+                >
+                    <span className="text-xs font-black text-white/40">Modifier →</span>
+                </button>
+            )}
+        </div>
+    ) : null;
 
     // ── SHARED: ACTION CARDS ──
     const actionCards = (calendarEnabled || locationEnabled || (isAdmin && !locationEnabled)) && (
@@ -198,8 +264,7 @@ export function HomeTab({
                     key="calendar-card"
                     className="min-w-0"
                     style={{
-                        width: bothEnabled && !isCalendarOpen && !isLocationOpen ? 'calc(50% - 6px)' : '100%',
-                        order: isLocationOpen && !isCalendarOpen ? 1 : 0,
+                        width: isDayOf && calendarEnabled && locationEnabled && !isCalendarOpen && !isLocationOpen ? 'calc(50% - 6px)' : '100%',
                     }}
                     transition={{ layout: { duration: 0.35, ease: [0.4, 0, 0.2, 1] } }}
                 >
@@ -278,8 +343,7 @@ export function HomeTab({
                     key="location-card"
                     className="min-w-0"
                     style={{
-                        width: bothEnabled && !isCalendarOpen && !isLocationOpen ? 'calc(50% - 6px)' : '100%',
-                        order: isCalendarOpen && !isLocationOpen ? 1 : 0,
+                        width: isDayOf && calendarEnabled && locationEnabled && !isCalendarOpen && !isLocationOpen ? 'calc(50% - 6px)' : '100%',
                     }}
                     transition={{ layout: { duration: 0.35, ease: [0.4, 0, 0.2, 1] } }}
                 >
@@ -369,15 +433,16 @@ export function HomeTab({
                         transition={{ duration: 0.2 }}
                         className="flex flex-col gap-4"
                     >
-                        {/* DAY-OF: ConfirmedSummary → HeroBlock → Départ → Members → Invite */}
-                        {confirmedDate && (
-                            <ConfirmedSummary
-                                date={confirmedDate}
-                                location={displayLocation}
-                                locationUrl={locationMapsUrl}
+                        {/* DAY-OF: VenueCard (or StatusStrip fallback) → HeroBlock → Départ → Members → Invite */}
+                        {displayLocation ? (
+                            <VenueCard
+                                name={displayLocation}
+                                image={locationImage}
+                                date={confirmedDate ?? formattedPopularDate}
+                                mapsUrl={locationMapsUrl}
                                 onAddToCalendar={addToCalendar}
                             />
-                        )}
+                        ) : statusStrip}
 
                         {memberId && (
                             <HeroBlock
@@ -507,58 +572,7 @@ export function HomeTab({
                         className="flex flex-col gap-4"
                     >
                         {/* PLANNING: StatusStrip → ActionCards → Members → Invite */}
-                        {(displayDate || displayLocation || (isAdmin && !locationEnabled)) ? (
-                            <div className="flex items-center gap-2 flex-wrap px-0.5">
-                                {displayDate && (
-                                    <button
-                                        type="button"
-                                        onClick={addToCalendar}
-                                        className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full hover:bg-white/10 hover:border-white/15 active:scale-95 transition-all duration-150"
-                                    >
-                                        <CalendarDots className="w-3 h-3 text-[var(--v2-primary)] shrink-0" weight="fill" />
-                                        <span className="text-xs font-black text-white/75 capitalize truncate">{displayDate}</span>
-                                        {confirmedDate && (
-                                            <span className="text-[11px] font-black text-green-400 ml-0.5 shrink-0">✓</span>
-                                        )}
-                                    </button>
-                                )}
-                                {displayLocation && (
-                                    locationMapsUrl ? (
-                                        <a
-                                            href={locationMapsUrl}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full hover:bg-white/10 hover:border-white/15 active:scale-95 transition-all duration-150"
-                                        >
-                                            <MapTrifold className="w-3 h-3 text-[var(--v2-accent)] shrink-0" weight="fill" />
-                                            <span className="text-xs font-black text-white/75 truncate">{displayLocation}</span>
-                                        </a>
-                                    ) : (
-                                        <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full">
-                                            <MapTrifold className="w-3 h-3 text-[var(--v2-accent)] shrink-0" weight="fill" />
-                                            <span className="text-xs font-black text-white/75 truncate">{displayLocation}</span>
-                                        </div>
-                                    )
-                                )}
-                                {isAdmin && !locationEnabled && !group.location?.name && (
-                                    <button
-                                        onClick={() => setShowLocationModal(true)}
-                                        className="flex items-center gap-1.5 bg-[var(--v2-primary)]/8 border border-[var(--v2-primary)]/20 rounded-full px-3 py-1.5 hover:bg-[var(--v2-primary)]/15 transition-colors"
-                                    >
-                                        <MapTrifold className="w-3 h-3 text-[var(--v2-primary)] shrink-0" />
-                                        <span className="text-xs font-black text-[var(--v2-primary)]/90">+ Lieu</span>
-                                    </button>
-                                )}
-                                {isAdmin && !locationEnabled && group.location?.name && (
-                                    <button
-                                        onClick={() => setShowLocationModal(true)}
-                                        className="flex items-center gap-1.5 bg-white/4 border border-white/8 rounded-full px-3 py-1.5 hover:bg-white/8 transition-colors"
-                                    >
-                                        <span className="text-xs font-black text-white/40">Modifier →</span>
-                                    </button>
-                                )}
-                            </div>
-                        ) : memberId && calendarEnabled && (
+                        {statusStrip ?? (memberId && calendarEnabled && (
                             <div className="flex items-center gap-2 px-0.5">
                                 <div className="flex items-center gap-2">
                                     <span className="w-1.5 h-1.5 rounded-full bg-[var(--v2-primary)] animate-pulse shrink-0" />
@@ -567,7 +581,7 @@ export function HomeTab({
                                     </span>
                                 </div>
                             </div>
-                        )}
+                        ))}
 
                         {actionCards}
 
@@ -580,6 +594,17 @@ export function HomeTab({
                             mode="planning"
                             votedMemberIds={votedMemberIds}
                         />
+
+                        {!isAdmin && memberId && votedMemberIds.has(memberId) && (
+                            <button
+                                type="button"
+                                onClick={handleJoinDayOf}
+                                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl border-2 border-green-500/30 bg-green-500/8 hover:bg-green-500/15 hover:border-green-500/50 transition-all duration-200 active:scale-[0.98]"
+                            >
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse shrink-0" />
+                                <span className="text-sm font-black text-green-400">Rejoindre le groupe</span>
+                            </button>
+                        )}
 
                         {showInviteNudge && (
                             <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-dashed border-white/10 bg-white/2">

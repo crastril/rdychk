@@ -33,6 +33,8 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
     const [locationResults, setLocationResults] = useState<string[]>([]);
     const [calendarEnabled, setCalendarEnabled] = useState(false);
     const [locationEnabled, setLocationEnabled] = useState(false);
+    const [phase, setPhase] = useState<'planning' | 'day-of'>('planning');
+    const [confirmedDate, setConfirmedDate] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
 
@@ -46,7 +48,7 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
         setLoading(true);
         const { data } = await supabase
             .from('groups')
-            .select('type, city, calendar_voting_enabled, location_voting_enabled')
+            .select('type, city, calendar_voting_enabled, location_voting_enabled, confirmed_date')
             .eq('id', groupId)
             .single();
 
@@ -56,6 +58,13 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
             setLocationSearch(data.city || '');
             setCalendarEnabled(data.calendar_voting_enabled ?? false);
             setLocationEnabled(data.location_voting_enabled ?? false);
+            setConfirmedDate(data.confirmed_date ?? null);
+            // Derive initial phase: day-of if confirmed today/past, or if both voting off
+            const today = new Date().toISOString().slice(0, 10);
+            const isDayOf =
+                (data.confirmed_date && data.confirmed_date <= today) ||
+                (!data.calendar_voting_enabled && !data.location_voting_enabled);
+            setPhase(isDayOf ? 'day-of' : 'planning');
         }
         setLoading(false);
     };
@@ -86,7 +95,8 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                     type: groupType,
                     city: groupType === 'in_person' ? location : null,
                     calendar_voting_enabled: calendarEnabled,
-                    location_voting_enabled: locationEnabled
+                    location_voting_enabled: locationEnabled,
+                    confirmed_date: confirmedDate,
                 })
                 .eq('id', groupId);
 
@@ -101,17 +111,22 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
         }
     };
 
-    // Derived mode: "day-of" when both voting features are off
-    const isInPlanningMode = calendarEnabled || locationEnabled;
-
     const setModePlanning = () => {
+        setPhase('planning');
         setCalendarEnabled(true);
         setLocationEnabled(true);
+        setConfirmedDate(null);
     };
 
     const setModeDayOf = () => {
+        setPhase('day-of');
         setCalendarEnabled(false);
         setLocationEnabled(false);
+        // Anchor confirmed_date to today so Jour J layout stays stable
+        // even if voting is re-enabled afterwards
+        if (!confirmedDate) {
+            setConfirmedDate(new Date().toISOString().slice(0, 10));
+        }
     };
 
     return (
@@ -200,13 +215,13 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                         onClick={setModePlanning}
                                         className={cn(
                                             'flex flex-col items-center gap-1.5 py-3 px-2 rounded-lg transition-all text-center',
-                                            isInPlanningMode
+                                            phase === 'planning'
                                                 ? 'bg-[var(--v2-primary)]/15 text-white'
                                                 : 'text-slate-400 hover:text-slate-200',
                                             !isAdmin && 'opacity-50 cursor-not-allowed'
                                         )}
                                     >
-                                        <CalendarDots className={cn('w-4 h-4', isInPlanningMode ? 'text-[var(--v2-primary)]' : 'text-slate-500')} weight="fill" />
+                                        <CalendarDots className={cn('w-4 h-4', phase === 'planning' ? 'text-[var(--v2-primary)]' : 'text-slate-500')} weight="fill" />
                                         <span className="text-xs font-bold">Planification</span>
                                         <span className="text-[10px] text-white/35 leading-tight">On se met d'accord</span>
                                     </button>
@@ -216,13 +231,13 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                         onClick={setModeDayOf}
                                         className={cn(
                                             'flex flex-col items-center gap-1.5 py-3 px-2 rounded-lg transition-all text-center',
-                                            !isInPlanningMode
+                                            phase === 'day-of'
                                                 ? 'bg-green-500/15 text-white'
                                                 : 'text-slate-400 hover:text-slate-200',
                                             !isAdmin && 'opacity-50 cursor-not-allowed'
                                         )}
                                     >
-                                        <CheckSquare className={cn('w-4 h-4', !isInPlanningMode ? 'text-green-400' : 'text-slate-500')} weight="fill" />
+                                        <CheckSquare className={cn('w-4 h-4', phase === 'day-of' ? 'text-green-400' : 'text-slate-500')} weight="fill" />
                                         <span className="text-xs font-bold">Jour J</span>
                                         <span className="text-[10px] text-white/35 leading-tight">C'est décidé</span>
                                     </button>
