@@ -642,6 +642,11 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                             {group.name}
                         </h1>
                     </div>
+                    <ShareMenu
+                        groupName={group.name}
+                        url={typeof window !== 'undefined' ? window.location.href : ''}
+                        variant="icon"
+                    />
                 </div>
 
                 {/* Single-scroll home view */}

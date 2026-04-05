@@ -16,6 +16,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AddLocationProposalModal } from '@/components/AddLocationProposalModal';
 import { ShareMenu } from '@/components/ShareMenu';
+import { InviteBlock } from '@/components/InviteBlock';
 
 interface HomeTabProps {
     group: Group;
@@ -187,7 +188,7 @@ export function HomeTab({
     // Members who voted on any date (for planning mode)
     const votedMemberIds = new Set(votes.map(v => v.member_id));
 
-    const showInviteNudge = members.length < 4 && !!memberId;
+    const showInviteNudge = members.length < 3 && !!memberId;
 
     // ── SHARED: STATUS STRIP ──
     const statusStrip = (displayDate || displayLocation || (isAdmin && !locationEnabled)) ? (
@@ -489,17 +490,11 @@ export function HomeTab({
                         {actionCards}
 
                         {showInviteNudge && (
-                            <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-dashed border-white/10 bg-white/2">
-                                <UserPlus className="w-4 h-4 text-white/25 shrink-0" />
-                                <span className="text-xs font-black text-white/40 flex-1">
-                                    Invite tes amis à rejoindre
-                                </span>
-                                <ShareMenu
-                                    groupName={group.name}
-                                    url={typeof window !== 'undefined' ? window.location.href : ''}
-                                    variant="button"
-                                />
-                            </div>
+                            <InviteBlock
+                                groupName={group.name}
+                                url={typeof window !== 'undefined' ? window.location.href : ''}
+                                memberCount={members.length}
+                            />
                         )}
                     </motion.div>
                 ) : (
@@ -558,17 +553,11 @@ export function HomeTab({
                         )}
 
                         {showInviteNudge && (
-                            <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-dashed border-white/10 bg-white/2">
-                                <UserPlus className="w-4 h-4 text-white/25 shrink-0" />
-                                <span className="text-xs font-black text-white/40 flex-1">
-                                    Invite tes amis à rejoindre
-                                </span>
-                                <ShareMenu
-                                    groupName={group.name}
-                                    url={typeof window !== 'undefined' ? window.location.href : ''}
-                                    variant="button"
-                                />
-                            </div>
+                            <InviteBlock
+                                groupName={group.name}
+                                url={typeof window !== 'undefined' ? window.location.href : ''}
+                                memberCount={members.length}
+                            />
                         )}
                     </motion.div>
                 )}
