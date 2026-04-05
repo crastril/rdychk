@@ -78,7 +78,7 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
                                     color: currentProposedTime ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.25)',
                                 }}
                             >
-                                Je serai prêt à…
+                                Je pense arriver à…
                             </span>
 
                             {/* Time display */}
@@ -118,7 +118,7 @@ export function TimeProposalModal({ currentProposedTime, onUpdate }: TimeProposa
                             className="uppercase tracking-[0.2em]"
                             style={{ fontFamily: 'var(--font-barlow-condensed)', fontWeight: 900, fontSize: '1.1rem' }}
                         >
-                            Je serai prêt à…
+                            Je pense arriver à…
                         </DialogTitle>
                         <DialogDescription className="text-[12px] text-slate-400 leading-relaxed">
                             Les autres membres du groupe verront l'heure que tu indiques.
