@@ -77,10 +77,10 @@ export function VenueCard({ name, image, date, mapsUrl, onAddToCalendar }: Venue
                     >
                         <MapTrifold className="w-3.5 h-3.5 text-orange-400 shrink-0" weight="fill" />
                         <span
-                            className="text-[11px] font-black uppercase tracking-[0.12em] text-white/70 group-hover:text-white transition-colors"
+                            className="text-[11px] font-black uppercase tracking-[0.08em] text-white/70 group-hover:text-white transition-colors"
                             style={{ fontFamily: 'var(--font-barlow-condensed)' }}
                         >
-                            Google Maps
+                            Afficher dans Google Maps
                         </span>
                         <ArrowSquareOut className="w-3 h-3 text-white/30 group-hover:text-orange-400 shrink-0 transition-colors" />
                     </a>
@@ -91,10 +91,10 @@ export function VenueCard({ name, image, date, mapsUrl, onAddToCalendar }: Venue
                     >
                         <MapTrifold className="w-3.5 h-3.5 text-white/30 shrink-0" weight="fill" />
                         <span
-                            className="text-[11px] font-black uppercase tracking-[0.12em] text-white/30"
+                            className="text-[11px] font-black uppercase tracking-[0.08em] text-white/30"
                             style={{ fontFamily: 'var(--font-barlow-condensed)' }}
                         >
-                            Google Maps
+                            Afficher dans Google Maps
                         </span>
                     </div>
                 )}
@@ -110,10 +110,10 @@ export function VenueCard({ name, image, date, mapsUrl, onAddToCalendar }: Venue
                 >
                     <CalendarPlus className="w-3.5 h-3.5 text-sky-400 shrink-0" weight="fill" />
                     <span
-                        className="text-[11px] font-black uppercase tracking-[0.12em] text-white/70 group-hover:text-white transition-colors"
+                        className="text-[11px] font-black uppercase tracking-[0.08em] text-white/70 group-hover:text-white transition-colors"
                         style={{ fontFamily: 'var(--font-barlow-condensed)' }}
                     >
-                        Mon calendrier
+                        Rajouter à mon calendrier
                     </span>
                     <ArrowSquareOut className="w-3 h-3 text-white/30 group-hover:text-sky-400 shrink-0 transition-colors" />
                 </button>
