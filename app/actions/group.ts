@@ -85,7 +85,7 @@ export async function updateGroupBaseLocationAction(
 export async function addLocationProposalAction(
     slug: string,
     memberId: string,
-    data: { name: string; link?: string; description?: string; image?: string | null }
+    data: { name: string; link?: string; description?: string; image?: string | null; category?: string }
 ) {
     const isAuthorized = await verifyGuestSession(slug, memberId);
     if (!isAuthorized) return { success: false, error: 'Unauthorized' };
@@ -106,7 +106,8 @@ export async function addLocationProposalAction(
             name: data.name,
             description: data.description,
             link: data.link,
-            image: data.image
+            image: data.image,
+            category: data.category ?? 'location'
         })
         .select()
         .single();
