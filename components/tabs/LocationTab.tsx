@@ -85,6 +85,8 @@ interface LocationTabProps {
 
 export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes: initialMyVotes, onProposalsChange, members, onGroupChange }: LocationTabProps) {
     const isRemote = group.type === 'remote';
+    const category = isRemote ? 'game' : 'location';
+    const filteredProposals = proposals.filter(p => (p as any).category === category || (p as any).category == null && !isRemote);
     // Local copies of votes & scores that we control; synced from parent but overridden locally after voting
     const [myVotes, setMyVotes] = useState<Record<string, 1 | -1>>(initialMyVotes);
     const [localScores, setLocalScores] = useState<Record<string, number>>({});
@@ -110,13 +112,13 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
         });
     }, [initialMyVotes]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Merge parent proposals with local score overrides (for proposals where vote just completed)
+    // Merge filtered proposals with local score overrides (for proposals where vote just completed)
     const mergedProposals = useMemo(() => {
-        return proposals.map(p => ({
+        return filteredProposals.map(p => ({
             ...p,
             score: localScores[p.id] !== undefined ? localScores[p.id] : p.score
         }));
-    }, [proposals, localScores]);
+    }, [filteredProposals, localScores]);
 
     const { featured, rest } = useMemo(() => {
         const sorted = [...mergedProposals].sort((a, b) => {
@@ -126,7 +128,7 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
         return { featured: sorted[0] || null, rest: sorted.slice(1) };
     }, [mergedProposals]);
 
-    const hasProposed = memberId ? proposals.some(p => p.member_id === memberId) : false;
+    const hasProposed = memberId ? filteredProposals.some(p => p.member_id === memberId) : false;
 
     const handleVote = async (proposalId: string, vote: 1 | -1) => {
         if (!memberId || votingIds.has(proposalId)) return;
@@ -247,7 +249,7 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                     <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 whitespace-nowrap">
-                        {isRemote ? 'Jeux proposés' : 'Propositions'} ({proposals.length})
+                        {isRemote ? 'Jeux proposés' : 'Propositions'} ({filteredProposals.length})
                     </h3>
                     {isAdmin && (
                         <button
@@ -261,7 +263,7 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                 </div>
             </div>
 
-            {proposals.length === 0 && (
+            {filteredProposals.length === 0 && (
                 <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/5">
                     <span className="text-base leading-none mt-0.5">{isRemote ? '🎮' : '📍'}</span>
                     <p className="text-[11px] text-white/35 font-medium leading-relaxed">
@@ -382,7 +384,7 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                         onClose={() => setShowAddModal(false)}
                         onSubmit={async (data) => {
                             if (!memberId) return;
-                            const res = await addLocationProposalAction(slug, memberId, { ...data, link: data.link ?? undefined, description: data.description ?? undefined });
+                            const res = await addLocationProposalAction(slug, memberId, { ...data, link: data.link ?? undefined, description: data.description ?? undefined, category: 'game' });
                             if (res.success && res.proposal) onProposalsChange([...proposals, res.proposal]);
                             setShowAddModal(false);
                         }}
@@ -396,7 +398,7 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                         baseLng={group.base_lng}
                         onSubmit={async (data) => {
                             if (!memberId) return;
-                            const res = await addLocationProposalAction(slug, memberId, data);
+                            const res = await addLocationProposalAction(slug, memberId, { ...data, category: 'location' });
                             if (res.success && res.proposal) onProposalsChange([...proposals, res.proposal]);
                             setShowAddModal(false);
                         }}
@@ -415,7 +417,7 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                     <div className="space-y-4">
                         <p className="text-sm text-slate-400">Sélectionnez un lieu à imposer.</p>
                         <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-                            {proposals.map((p) => (
+                            {filteredProposals.map((p) => (
                                 <button
                                     key={p.id}
                                     onClick={() => handleConfirmLocation(p)}

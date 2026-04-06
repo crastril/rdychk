@@ -169,12 +169,18 @@ export function HomeTab({
         URL.revokeObjectURL(url);
     };
 
-    const displayLocation = group.location?.name || topLocationProposal?.name;
-    const locationImage = group.location?.image || topLocationProposal?.image;
+    const categoryFilter = isRemote ? 'game' : 'location';
+    const filteredProposals = proposals.filter(p => (p as any).category === categoryFilter || ((p as any).category == null && !isRemote));
+    const filteredTopProposal = filteredProposals.length > 0
+        ? [...filteredProposals].sort((a, b) => b.score - a.score)[0]
+        : null;
+
+    const displayLocation = group.location?.name || filteredTopProposal?.name;
+    const locationImage = group.location?.image || filteredTopProposal?.image;
     const locationMapsUrl = (() => {
-        const link = group.location?.link || topLocationProposal?.link;
+        const link = group.location?.link || filteredTopProposal?.link;
         if (link) return link;
-        const query = group.location?.address || group.location?.name || topLocationProposal?.description || topLocationProposal?.name;
+        const query = group.location?.address || group.location?.name || filteredTopProposal?.description || filteredTopProposal?.name;
         return query ? `https://maps.google.com/?q=${encodeURIComponent(query)}` : null;
     })();
 
@@ -183,9 +189,9 @@ export function HomeTab({
     const uniqueVotedDates = new Set(votes.map(v => v.date)).size;
     const needsCalendarVote = calendarEnabled && myVoteCount === 0 && !!memberId;
 
-    const hasProposedLocation = proposals.some(p => p.member_id === memberId);
+    const hasProposedLocation = filteredProposals.some(p => p.member_id === memberId);
     const hasVotedLocation = Object.keys(myLocationVotes).length > 0;
-    const needsLocationAction = locationEnabled && proposals.length > 0 && !hasProposedLocation && !hasVotedLocation && !!memberId;
+    const needsLocationAction = locationEnabled && filteredProposals.length > 0 && !hasProposedLocation && !hasVotedLocation && !!memberId;
 
     // Members who voted on any date (for planning mode)
     const votedMemberIds = new Set(votes.map(v => v.member_id));
@@ -442,7 +448,7 @@ export function HomeTab({
                                 </p>
                             )}
                             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/30">
-                                {proposals.length} proposition{proposals.length !== 1 ? 's' : ''}
+                                {filteredProposals.length} proposition{filteredProposals.length !== 1 ? 's' : ''}
                             </p>
                             {needsLocationAction && (
                                 <span
