@@ -382,7 +382,7 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                         onClose={() => setShowAddModal(false)}
                         onSubmit={async (data) => {
                             if (!memberId) return;
-                            const res = await addLocationProposalAction(slug, memberId, { ...data, link: data.link ?? undefined });
+                            const res = await addLocationProposalAction(slug, memberId, { ...data, link: data.link ?? undefined, description: data.description ?? undefined });
                             if (res.success && res.proposal) onProposalsChange([...proposals, res.proposal]);
                             setShowAddModal(false);
                         }}
