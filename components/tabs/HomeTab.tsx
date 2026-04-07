@@ -472,12 +472,6 @@ export function HomeTab({
                                     {proposals.length} proposition{proposals.length !== 1 ? 's' : ''}
                                 </p>
                             )}
-<<<<<<< HEAD
-                            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/30">
-                                {filteredProposals.length} proposition{filteredProposals.length !== 1 ? 's' : ''}
-                            </p>
-=======
->>>>>>> claude/jolly-ride
                             {needsLocationAction && (
                                 isRemote ? (
                                     <span className="self-start font-mono text-[10px] uppercase tracking-[0.12em] px-2 py-0.5" style={{ border: '1px solid rgba(217,70,239,0.4)', background: 'rgba(217,70,239,0.08)', color: '#d946ef', borderRadius: '2px' }}>
