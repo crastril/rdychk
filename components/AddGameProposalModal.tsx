@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { GameController, MagnifyingGlass, CircleNotch, X } from '@phosphor-icons/react';
-import { cn } from '@/lib/utils';
 
 interface RawgGame {
     name: string;
@@ -81,60 +80,108 @@ export function AddGameProposalModal({ isOpen, onClose, onSubmit }: AddGamePropo
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
-            <DialogContent className="max-w-md glass-panel border-white/10 text-white rounded-3xl p-0 overflow-hidden flex flex-col" style={{ position: 'fixed', top: '5vh', left: '50%', transform: 'translateX(-50%)', maxHeight: '85dvh', width: 'calc(100% - 2rem)' }}>
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--v2-primary)] to-[var(--v2-accent)]" />
-                <div className="p-6 overflow-y-auto flex-1">
-                    <DialogHeader className="mb-4">
+            <DialogContent
+                className="flex flex-col p-0 overflow-hidden"
+                style={{
+                    position: 'fixed',
+                    top: '5vh',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    maxHeight: '85dvh',
+                    width: 'calc(100% - 2rem)',
+                    maxWidth: '448px',
+                    background: 'rgba(8,0,20,0.98)',
+                    border: '1px solid rgba(168,85,247,0.3)',
+                    borderRadius: '4px',
+                    boxShadow: '0 0 40px rgba(168,85,247,0.15), 0 0 80px rgba(168,85,247,0.05)',
+                }}
+            >
+                {/* Top neon bar */}
+                <div className="w-full h-[2px] shrink-0" style={{ background: 'linear-gradient(90deg, #a855f7, #d946ef, #6366f1)' }} />
+
+                <div className="p-5 overflow-y-auto flex-1 flex flex-col gap-4">
+                    <DialogHeader>
                         <DialogTitle
-                            className="uppercase tracking-[0.15em] flex items-center gap-2"
-                            style={{ fontFamily: 'var(--font-barlow-condensed)', fontWeight: 900, fontSize: '1.1rem' }}
+                            className="font-mono text-[0.85rem] uppercase tracking-[0.2em] flex items-center gap-2"
+                            style={{ color: '#c4b5fd' }}
                         >
-                            <GameController className="w-5 h-5 text-[var(--v2-primary)]" weight="fill" />
-                            Propose un jeu
+                            <GameController className="w-4 h-4 shrink-0" style={{ color: '#a855f7' }} weight="fill" />
+                            {'> ADD_GAME_PROPOSAL'}
                         </DialogTitle>
                     </DialogHeader>
 
                     {/* Search field */}
                     <div>
-                        <div className="flex items-center gap-2 bg-black/50 border border-white/10 rounded-xl px-3 py-2.5 focus-within:border-[var(--v2-primary)]/50 transition-colors">
+                        <div
+                            className="flex items-center gap-2 px-3 py-2.5 transition-all"
+                            style={{
+                                background: 'rgba(168,85,247,0.04)',
+                                border: '1px solid rgba(168,85,247,0.2)',
+                                borderRadius: '3px',
+                            }}
+                            onFocus={e => (e.currentTarget.style.borderColor = 'rgba(168,85,247,0.5)')}
+                            onBlur={e => (e.currentTarget.style.borderColor = 'rgba(168,85,247,0.2)')}
+                        >
                             {searching
-                                ? <CircleNotch className="w-4 h-4 text-white/30 shrink-0 animate-spin" />
-                                : <MagnifyingGlass className="w-4 h-4 text-white/30 shrink-0" />
+                                ? <CircleNotch className="w-4 h-4 shrink-0 animate-spin" style={{ color: '#a855f7' }} />
+                                : <MagnifyingGlass className="w-4 h-4 shrink-0" style={{ color: '#8b5cf6' }} />
                             }
                             <input
                                 ref={inputRef}
                                 value={query}
                                 onChange={e => { setQuery(e.target.value); setSelected(null); }}
-                                placeholder="Rechercher un jeu…"
-                                className="flex-1 bg-transparent text-white placeholder:text-white/25 text-sm font-medium outline-none"
+                                placeholder="SEARCH_GAME..."
+                                className="flex-1 bg-transparent text-sm font-mono outline-none placeholder:text-[#8b5cf6]/50"
+                                style={{ color: '#c4b5fd' }}
                             />
                             {query && (
-                                <button onClick={() => { setQuery(''); setSelected(null); setResults([]); }} className="text-white/25 hover:text-white/60 transition-colors">
+                                <button
+                                    onClick={() => { setQuery(''); setSelected(null); setResults([]); }}
+                                    className="transition-colors"
+                                    style={{ color: '#8b5cf6' }}
+                                    onMouseEnter={e => (e.currentTarget.style.color = '#c4b5fd')}
+                                    onMouseLeave={e => (e.currentTarget.style.color = '#8b5cf6')}
+                                >
                                     <X className="w-3.5 h-3.5" />
                                 </button>
                             )}
                         </div>
 
-                        {/* Results list (inline, expands modal) */}
+                        {/* Results */}
                         {results.length > 0 && (
-                            <div className="mt-2 bg-[#111] border border-white/10 rounded-2xl overflow-hidden">
-                                {results.map(game => (
+                            <div
+                                className="mt-1 overflow-hidden"
+                                style={{
+                                    border: '1px solid rgba(168,85,247,0.15)',
+                                    borderRadius: '3px',
+                                    background: 'rgba(8,0,20,0.99)',
+                                }}
+                            >
+                                {results.map((game, i) => (
                                     <button
                                         key={game.slug}
                                         onClick={() => handleSelect(game)}
-                                        className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-white/6 transition-colors border-b border-white/5 last:border-0"
+                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors"
+                                        style={{
+                                            borderBottom: i < results.length - 1 ? '1px solid rgba(168,85,247,0.08)' : 'none',
+                                        }}
+                                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(168,85,247,0.06)')}
+                                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                                     >
-                                        <div className="w-10 h-10 shrink-0 rounded-lg overflow-hidden bg-white/5 border border-white/8">
+                                        <div
+                                            className="w-9 h-9 shrink-0 overflow-hidden"
+                                            style={{ borderRadius: '2px', border: '1px solid rgba(168,85,247,0.15)', background: 'rgba(168,85,247,0.04)' }}
+                                        >
                                             {game.image
                                                 ? <img src={game.image} alt={game.name} className="w-full h-full object-cover" />
-                                                : <GameController className="w-5 h-5 text-white/20 m-auto mt-2.5" />
+                                                : <GameController className="w-4 h-4 m-auto mt-2.5" style={{ color: '#8b5cf6' }} />
                                             }
                                         </div>
-                                        <div className="flex-1 text-left min-w-0">
-                                            <p className="text-sm font-bold text-white truncate">{game.name}</p>
-                                            <p className="text-[10px] text-white/35 truncate">
-                                                {game.genres.join(' · ') || 'Jeu vidéo'}
-                                                {game.metacritic && <span className="ml-2 text-amber-400/70">★ {game.metacritic}</span>}
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-mono text-sm truncate" style={{ color: '#c4b5fd' }}>{game.name}</p>
+                                            <p className="font-mono text-[10px] truncate" style={{ color: '#8b5cf6' }}>
+                                                {game.genres.join(' · ') || 'GAME'}
+                                                {game.metacritic ? <span className="ml-2" style={{ color: '#e879f9' }}>★ {game.metacritic}</span> : null}
                                             </p>
                                         </div>
                                     </button>
@@ -146,23 +193,36 @@ export function AddGameProposalModal({ isOpen, onClose, onSubmit }: AddGamePropo
                     {/* Selected preview */}
                     {selected && (
                         <div
-                            className="mt-4 rounded-2xl border-[3px] border-black overflow-hidden"
-                            style={{ background: '#0c0c0c', boxShadow: '4px 4px 0px #000' }}
+                            className="overflow-hidden"
+                            style={{
+                                borderRadius: '4px',
+                                border: '1px solid rgba(168,85,247,0.3)',
+                                boxShadow: '0 0 20px rgba(168,85,247,0.08)',
+                            }}
                         >
                             {selected.image && (
                                 <div className="relative w-full overflow-hidden" style={{ aspectRatio: '16/7' }}>
-                                    <img src={selected.image} alt={selected.name} className="w-full h-full object-cover" />
-                                    <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 60%)' }} />
+                                    <img
+                                        src={selected.image}
+                                        alt={selected.name}
+                                        className="w-full h-full object-cover"
+                                        style={{ filter: 'saturate(0.7) brightness(0.75)' }}
+                                    />
+                                    {/* CRT overlay */}
+                                    <div
+                                        className="absolute inset-0 pointer-events-none"
+                                        style={{
+                                            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 4px)',
+                                        }}
+                                    />
+                                    <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(8,0,20,0.95) 0%, transparent 60%)' }} />
                                     <div className="absolute bottom-0 left-0 px-3 pb-2">
-                                        <p
-                                            className="text-white font-black uppercase leading-none"
-                                            style={{ fontFamily: 'var(--font-barlow-condensed)', fontSize: '1.25rem', letterSpacing: '0.02em' }}
-                                        >
+                                        <p className="font-mono text-white leading-tight uppercase" style={{ fontSize: '1.1rem', letterSpacing: '0.04em' }}>
                                             {selected.name}
                                         </p>
                                         {selected.genres.length > 0 && (
-                                            <p className="text-[11px] text-white/50 font-black uppercase tracking-wider mt-0.5">
-                                                {selected.genres.join(' · ')}
+                                            <p className="font-mono text-[10px] uppercase tracking-[0.15em] mt-0.5" style={{ color: '#e879f9' }}>
+                                                [{selected.genres.join(' · ')}]
                                             </p>
                                         )}
                                     </div>
@@ -170,32 +230,50 @@ export function AddGameProposalModal({ isOpen, onClose, onSubmit }: AddGamePropo
                             )}
                             {!selected.image && (
                                 <div className="px-4 py-3">
-                                    <p className="font-black text-white" style={{ fontFamily: 'var(--font-barlow-condensed)', fontSize: '1.1rem' }}>{selected.name}</p>
-                                    {selected.genres.length > 0 && <p className="text-[11px] text-white/40 uppercase tracking-wider mt-0.5">{selected.genres.join(' · ')}</p>}
+                                    <p className="font-mono uppercase" style={{ color: '#c4b5fd', fontSize: '1rem' }}>{selected.name}</p>
+                                    {selected.genres.length > 0 && (
+                                        <p className="font-mono text-[10px] uppercase tracking-[0.15em] mt-0.5" style={{ color: '#e879f9' }}>
+                                            [{selected.genres.join(' · ')}]
+                                        </p>
+                                    )}
                                 </div>
                             )}
                         </div>
                     )}
 
-                    <div className="flex gap-3 mt-5">
+                    {/* Actions */}
+                    <div className="flex gap-2 mt-auto pt-1">
                         <button
                             onClick={onClose}
-                            className="flex-1 h-11 rounded-xl bg-white/5 border border-white/10 text-slate-300 text-sm font-bold hover:bg-white/10 transition-all"
+                            className="flex-1 h-10 font-mono text-[11px] uppercase tracking-[0.15em] transition-all"
+                            style={{
+                                background: 'transparent',
+                                border: '1px solid rgba(168,85,247,0.2)',
+                                borderRadius: '3px',
+                                color: '#8b5cf6',
+                            }}
+                            onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(168,85,247,0.4)')}
+                            onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(168,85,247,0.2)')}
                         >
-                            Annuler
+                            CANCEL
                         </button>
                         <button
                             onClick={handleSubmit}
                             disabled={!selected || submitting}
-                            className={cn(
-                                'flex-1 h-11 rounded-xl text-white font-bold text-sm transition-all flex items-center justify-center gap-2',
-                                selected && !submitting
-                                    ? 'btn-massive shadow-neon-primary'
-                                    : 'bg-white/5 border border-white/10 text-white/30 cursor-not-allowed'
-                            )}
+                            className="flex-1 h-10 font-mono text-[11px] uppercase tracking-[0.15em] transition-all flex items-center justify-center gap-2"
+                            style={{
+                                background: selected && !submitting ? 'rgba(168,85,247,0.15)' : 'rgba(168,85,247,0.05)',
+                                border: `1px solid ${selected && !submitting ? 'rgba(168,85,247,0.5)' : 'rgba(168,85,247,0.1)'}`,
+                                borderRadius: '3px',
+                                color: selected && !submitting ? '#c4b5fd' : '#8b5cf6',
+                                boxShadow: selected && !submitting ? '0 0 12px rgba(168,85,247,0.1)' : 'none',
+                                cursor: !selected || submitting ? 'not-allowed' : 'pointer',
+                            }}
                         >
-                            {submitting ? <CircleNotch className="w-4 h-4 animate-spin" /> : null}
-                            Proposer
+                            {submitting
+                                ? <><CircleNotch className="w-3.5 h-3.5 animate-spin" /> SUBMITTING...</>
+                                : '[ PROPOSE_GAME ]'
+                            }
                         </button>
                     </div>
                 </div>

@@ -3,9 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { CircleNotch, MapPin, MagnifyingGlass, Check } from '@phosphor-icons/react';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 
 interface Props {
     isOpen: boolean;
@@ -30,6 +27,8 @@ export function AddLocationProposalModal({ isOpen, onClose, city, baseLat, baseL
     }>({ name: '', address: '', link: '', image: null });
 
     const [loading, setLoading] = useState(false);
+    const [inputFocused, setInputFocused] = useState(false);
+    const [noteFocused, setNoteFocused] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -96,124 +95,241 @@ export function AddLocationProposalModal({ isOpen, onClose, city, baseLat, baseL
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="max-w-md glass-panel border-white/10 text-white rounded-3xl p-0 overflow-hidden flex flex-col" style={{ position: 'fixed', top: '5vh', left: '50%', transform: 'translateX(-50%)', maxHeight: '85dvh', width: 'calc(100% - 2rem)' }}>
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--v2-primary)] to-[var(--v2-accent)] shrink-0" />
-
-                <div className="p-6 flex flex-col h-full overflow-hidden">
-                    <DialogHeader className="mb-4 shrink-0">
-                        <DialogTitle className="text-xl font-bold flex items-center gap-2">
-                            <MapPin className="w-5 h-5 text-[var(--v2-primary)]" />
+            <DialogContent
+                className="flex flex-col overflow-hidden"
+                style={{
+                    position: 'fixed',
+                    top: '5vh',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    maxHeight: '85dvh',
+                    width: 'calc(100% - 2rem)',
+                    maxWidth: 460,
+                    background: '#0f0f0f',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '16px',
+                    boxShadow: '5px 5px 0 #000',
+                    padding: 0,
+                }}
+            >
+                {/* Inner wrapper */}
+                <div className="flex flex-col overflow-hidden" style={{ padding: 24, height: '100%' }}>
+                    <DialogHeader style={{ marginBottom: 16, flexShrink: 0 }}>
+                        <DialogTitle
+                            className="font-black uppercase tracking-widest flex items-center gap-2"
+                            style={{ color: 'white' }}
+                        >
+                            <MapPin className="w-5 h-5" style={{ color: 'var(--v2-primary)' }} />
                             Proposer un lieu
                         </DialogTitle>
-                        <DialogDescription className="text-slate-400">
+                        <DialogDescription style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>
                             Recherchez un endroit pour votre groupe{city ? ` à ${city}` : ""}. Les résultats privilégient la ville du groupe.
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="space-y-4 overflow-y-auto pr-1 pb-4 flex-1">
+                    <div className="flex flex-col overflow-y-auto flex-1" style={{ gap: 16, paddingBottom: 4 }}>
+                        {/* Search field */}
                         <div>
-                            <Label htmlFor="loc-name" className="text-slate-300 font-medium text-xs tracking-wide uppercase">Rechercher *</Label>
-                            <div className="flex gap-2 mt-2 items-center">
-                                <Input
-                                    id="loc-name"
-                                    placeholder="Ex: Bar de la Plage..."
-                                    value={searchQuery}
-                                    onChange={(e) => {
-                                        setSearchQuery(e.target.value);
-                                        setSelectedPlaceId(null);
+                            <div
+                                className="font-black uppercase tracking-widest text-xs"
+                                style={{ color: 'rgba(255,255,255,0.4)', marginBottom: 8 }}
+                            >
+                                Rechercher *
+                            </div>
+                            <div className="flex gap-2 items-stretch">
+                                <div
+                                    className="flex-1 flex items-center"
+                                    style={{
+                                        border: `1px solid ${inputFocused ? 'var(--v2-primary)' : 'rgba(255,255,255,0.2)'}`,
+                                        borderRadius: '10px',
+                                        background: 'rgba(255,255,255,0.03)',
+                                        padding: '8px 12px',
+                                        transition: 'border-color 0.15s',
                                     }}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                            e.preventDefault();
-                                            handleSearchPlace();
-                                        }
-                                    }}
-                                    className="w-full h-11 rounded-xl glass-input px-4 text-sm placeholder-slate-500 focus:border-[var(--v2-primary)] transition-all flex-1"
-                                    autoFocus
-                                />
-                                <Button
+                                >
+                                    <input
+                                        placeholder="Ex: Bar de la Plage..."
+                                        value={searchQuery}
+                                        onChange={(e) => {
+                                            setSearchQuery(e.target.value);
+                                            setSelectedPlaceId(null);
+                                        }}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                handleSearchPlace();
+                                            }
+                                        }}
+                                        onFocus={() => setInputFocused(true)}
+                                        onBlur={() => setInputFocused(false)}
+                                        autoFocus
+                                        style={{
+                                            background: 'transparent',
+                                            border: 'none',
+                                            outline: 'none',
+                                            color: 'white',
+                                            fontFamily: 'inherit',
+                                            fontSize: 14,
+                                            width: '100%',
+                                        }}
+                                    />
+                                </div>
+                                <button
                                     onClick={() => handleSearchPlace()}
                                     disabled={isSearchingPlace || !searchQuery.trim()}
-                                    className="bg-[var(--v2-primary)]/20 hover:bg-[var(--v2-primary)]/40 text-[var(--v2-primary)] border border-[var(--v2-primary)]/30 rounded-xl w-11 h-11 transition-all p-0 flex items-center justify-center shrink-0"
+                                    className="rounded-xl bg-[var(--v2-primary)] text-white border-2 border-black flex items-center justify-center shrink-0 transition-transform"
+                                    style={{
+                                        width: 44,
+                                        height: 44,
+                                        boxShadow: '2px 2px 0 #000',
+                                        cursor: isSearchingPlace || !searchQuery.trim() ? 'not-allowed' : 'pointer',
+                                        opacity: isSearchingPlace || !searchQuery.trim() ? 0.5 : 1,
+                                    }}
+                                    onMouseEnter={e => { if (!isSearchingPlace && searchQuery.trim()) e.currentTarget.style.transform = 'translate(-1px,-1px)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.transform = 'none'; }}
                                 >
                                     <MagnifyingGlass className="w-5 h-5" />
-                                </Button>
+                                </button>
                             </div>
                         </div>
 
-                        {/* Results Rendering */}
+                        {/* Loading */}
                         {isSearchingPlace && (
-                            <div className="flex justify-center p-6 shrink-0">
-                                <CircleNotch className="w-6 h-6 animate-spin text-slate-400" />
+                            <div className="flex justify-center" style={{ padding: '16px 0' }}>
+                                <CircleNotch className="w-6 h-6 animate-spin" style={{ color: 'rgba(255,255,255,0.5)' }} />
                             </div>
                         )}
 
+                        {/* Results */}
                         {!isSearchingPlace && placeResults.length > 0 && (
-                            <div className="space-y-2 shrink-0">
-                                <p className="text-xs text-slate-500 font-medium mb-2">Sélectionnez un lieu :</p>
-                                {placeResults.map((place) => (
-                                    <div
-                                        key={place.place_id}
-                                        onClick={() => selectPlace(place)}
-                                        className={`p-2 border rounded-xl flex gap-3 cursor-pointer transition-colors ${selectedPlaceId === place.place_id ? 'border-[var(--v2-primary)] bg-[var(--v2-primary)]/10' : 'border-white/10 bg-white/5 hover:bg-white/10'}`}
-                                    >
-                                        {place.image ? (
-                                            <div className="w-12 h-12 shrink-0 rounded-lg overflow-hidden bg-slate-800">
-                                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                <img src={place.image} alt={place.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                                            </div>
-                                        ) : (
-                                            <div className="w-12 h-12 shrink-0 rounded-lg bg-white/5 flex items-center justify-center">
-                                                <MapPin className="w-5 h-5 text-slate-500" />
-                                            </div>
-                                        )}
+                            <div className="flex flex-col" style={{ gap: 6 }}>
+                                {placeResults.map((place) => {
+                                    const isSelected = selectedPlaceId === place.place_id;
+                                    return (
+                                        <div
+                                            key={place.place_id}
+                                            onClick={() => selectPlace(place)}
+                                            className="flex gap-3 cursor-pointer transition-colors rounded-xl"
+                                            style={{
+                                                border: isSelected
+                                                    ? '1px solid rgba(255,46,46,0.4)'
+                                                    : '1px solid rgba(255,255,255,0.1)',
+                                                padding: 8,
+                                                background: isSelected ? 'rgba(255,46,46,0.06)' : 'transparent',
+                                            }}
+                                            onMouseEnter={e => {
+                                                if (!isSelected) {
+                                                    (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.25)';
+                                                    (e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.03)';
+                                                }
+                                            }}
+                                            onMouseLeave={e => {
+                                                if (!isSelected) {
+                                                    (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.1)';
+                                                    (e.currentTarget as HTMLDivElement).style.background = 'transparent';
+                                                }
+                                            }}
+                                        >
+                                            {place.image ? (
+                                                <div
+                                                    className="shrink-0 rounded-lg overflow-hidden"
+                                                    style={{ width: 48, height: 48, border: '1px solid rgba(255,255,255,0.12)' }}
+                                                >
+                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                    <img src={place.image} alt={place.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                                </div>
+                                            ) : (
+                                                <div
+                                                    className="shrink-0 flex items-center justify-center rounded-lg"
+                                                    style={{ width: 48, height: 48, border: '1px solid rgba(255,255,255,0.12)' }}
+                                                >
+                                                    <MapPin className="w-5 h-5" style={{ color: 'rgba(255,255,255,0.3)' }} />
+                                                </div>
+                                            )}
 
-                                        <div className="flex-1 min-w-0 py-0.5 flex flex-col justify-center">
-                                            <div className="font-bold text-sm text-white line-clamp-1 flex items-center justify-between">
-                                                {place.name}
-                                                {selectedPlaceId === place.place_id && <Check className="w-4 h-4 text-[var(--v2-primary)] shrink-0 ml-2" />}
+                                            <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                                <div className="font-bold text-sm flex items-center justify-between gap-2 line-clamp-1" style={{ color: 'white' }}>
+                                                    <span className="truncate">{place.name}</span>
+                                                    {isSelected && <Check className="w-4 h-4 shrink-0" style={{ color: 'var(--v2-primary)' }} />}
+                                                </div>
+                                                <div className="line-clamp-1 mt-0.5" style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)' }}>
+                                                    {place.formatted_address}
+                                                </div>
                                             </div>
-                                            <div className="text-[11px] text-slate-400 line-clamp-1 mt-0.5 leading-tight">{place.formatted_address}</div>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         )}
 
+                        {/* No results */}
                         {!isSearchingPlace && placeResults.length === 0 && searchQuery && !selectedPlaceId && (
-                            <div className="text-center p-4 text-xs text-slate-400 shrink-0">
+                            <div className="text-center" style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', padding: '8px 0' }}>
                                 Aucun résultat trouvé près de votre groupe.
                             </div>
                         )}
 
+                        {/* Note textarea */}
                         {selectedPlaceId && (
-                            <div className="shrink-0 mt-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                <Label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">
+                            <div className="shrink-0">
+                                <div
+                                    className="font-black uppercase tracking-widest text-xs"
+                                    style={{ color: 'rgba(255,255,255,0.4)', marginBottom: 6 }}
+                                >
                                     Note (optionnelle)
-                                </Label>
+                                </div>
                                 <textarea
-                                    className="w-full rounded-xl glass-input px-4 py-3 text-sm placeholder-slate-500 focus:border-[var(--v2-primary)] transition-all resize-none"
                                     placeholder="Pourquoi ce lieu ? (Ambiance, prix...)"
                                     rows={2}
                                     value={description}
                                     onChange={e => setDescription(e.target.value)}
+                                    onFocus={() => setNoteFocused(true)}
+                                    onBlur={() => setNoteFocused(false)}
+                                    className="w-full resize-none rounded-xl"
+                                    style={{
+                                        border: `1px solid ${noteFocused ? 'var(--v2-primary)' : 'rgba(255,255,255,0.2)'}`,
+                                        background: 'rgba(255,255,255,0.03)',
+                                        color: 'white',
+                                        padding: '10px 12px',
+                                        fontFamily: 'inherit',
+                                        fontSize: 14,
+                                        outline: 'none',
+                                        transition: 'border-color 0.15s',
+                                    }}
                                 />
                             </div>
                         )}
                     </div>
 
-                    <div className="flex gap-3 pt-4 border-t border-white/10 shrink-0 mt-auto">
+                    {/* Action buttons */}
+                    <div className="flex gap-3 shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 16, marginTop: 8 }}>
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 h-12 rounded-xl border border-white/10 text-slate-400 font-bold hover:bg-white/5 transition-all"
+                            className="flex-1 h-12 rounded-xl border border-white/20 font-bold uppercase tracking-widest bg-transparent"
+                            style={{ color: 'rgba(255,255,255,0.55)' }}
                         >
                             Annuler
                         </button>
                         <button
                             onClick={handleSubmit}
                             disabled={loading || (!selectedPlaceId && !searchQuery.trim())}
-                            className="flex-1 h-12 rounded-xl btn-massive text-white font-bold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 h-12 rounded-xl bg-[var(--v2-primary)] text-white border-[3px] border-black font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all"
+                            style={{
+                                boxShadow: '3px 3px 0 #000',
+                                opacity: loading || (!selectedPlaceId && !searchQuery.trim()) ? 0.45 : 1,
+                                cursor: loading || (!selectedPlaceId && !searchQuery.trim()) ? 'not-allowed' : 'pointer',
+                            }}
+                            onMouseEnter={e => {
+                                if (!loading && (selectedPlaceId || searchQuery.trim())) {
+                                    e.currentTarget.style.transform = 'translate(-1px,-1px)';
+                                    e.currentTarget.style.boxShadow = '4px 4px 0 #000';
+                                }
+                            }}
+                            onMouseLeave={e => {
+                                e.currentTarget.style.transform = 'none';
+                                e.currentTarget.style.boxShadow = '3px 3px 0 #000';
+                            }}
                         >
                             {loading ? <CircleNotch className="w-4 h-4 animate-spin" /> : 'Proposer'}
                         </button>

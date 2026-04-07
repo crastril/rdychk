@@ -3,7 +3,10 @@
     "allow": [
       "Bash(ls .env*)",
       "mcp__Claude_Preview__preview_start",
-      "Bash(grep -rn \"ROCKWOOD\\\\|topLocation\\\\|location_name\\\\|proposal.name\\\\|winning\" C:Userscyci_OneDriveDocumentsrdychkrdychk.claudeworktreespensive-shtern --include=*.tsx --include=*.ts)"
+      "Bash(grep -rn \"ROCKWOOD\\\\|topLocation\\\\|location_name\\\\|proposal.name\\\\|winning\" C:Userscyci_OneDriveDocumentsrdychkrdychk.claudeworktreespensive-shtern --include=*.tsx --include=*.ts)",
+      "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")",
+      "Bash(grep -r \"AddGameProposalModal\\\\|AddLocationProposalModal\\\\|EditLocationModal\\\\|GroupHistoryModal\\\\|GroupSettingsModal\\\\|JoinModal\\\\|ManageGroupModal\\\\|TimeProposalModal\" C:Userscyci_OneDriveDocumentsrdychkrdychk.claudeworktreesjolly-ride/app C:Userscyci_OneDriveDocumentsrdychkrdychk.claudeworktreesjolly-ride/components --include=*.tsx --include=*.ts)",
+      "Bash(npx tsc:*)"
     ]
   }
 }
