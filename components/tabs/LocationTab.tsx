@@ -273,8 +273,8 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
             <div
                 className="flex flex-col items-center gap-1 shrink-0"
                 style={{
-                    border: '2px solid rgba(255,255,255,0.15)',
-                    borderRadius: 0,
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    borderRadius: '8px',
                     padding: btnSm ? '4px' : '6px',
                     background: 'rgba(255,255,255,0.03)',
                 }}
@@ -286,7 +286,7 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                     style={{
                         width: btnWH,
                         height: btnWH,
-                        borderRadius: 0,
+                        borderRadius: '6px',
                         border: `2px solid ${upActive ? '#4ade80' : 'rgba(255,255,255,0.15)'}`,
                         background: upActive ? 'rgba(74,222,128,0.12)' : 'transparent',
                         color: upActive ? '#4ade80' : 'rgba(255,255,255,0.45)',
@@ -316,7 +316,7 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                     style={{
                         width: btnWH,
                         height: btnWH,
-                        borderRadius: 0,
+                        borderRadius: '6px',
                         border: `2px solid ${downActive ? '#ef4444' : 'rgba(255,255,255,0.15)'}`,
                         background: downActive ? 'rgba(239,68,68,0.12)' : 'transparent',
                         color: downActive ? '#ef4444' : 'rgba(255,255,255,0.45)',
@@ -600,15 +600,10 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                 {isAdmin && (
                     <button
                         onClick={() => setIsOverrideModalOpen(true)}
-                        className="font-bold uppercase tracking-widest text-xs transition-colors"
-                        style={{
-                            border: '2px solid rgba(251,191,36,0.5)',
-                            borderRadius: 0,
-                            color: '#fbbf24',
-                            padding: '4px 12px',
-                        }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(251,191,36,0.1)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                        className="rounded-lg border border-white/25 text-white/60 font-bold uppercase tracking-widest text-xs transition-colors"
+                        style={{ padding: '4px 12px' }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)'; e.currentTarget.style.color = 'white'; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; }}
                     >
                         Imposer un choix
                     </button>
@@ -618,10 +613,8 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
             {/* Empty state */}
             {proposals.length === 0 && (
                 <div
-                    className="flex items-center gap-3"
+                    className="flex items-center gap-3 rounded-xl border border-white/10"
                     style={{
-                        border: '2px solid rgba(255,255,255,0.1)',
-                        borderRadius: 0,
                         padding: '12px 16px',
                         background: 'rgba(255,255,255,0.02)',
                     }}
@@ -648,10 +641,8 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
                             transition={{ layout: { type: 'spring', stiffness: 300, damping: 25 }, opacity: { duration: 0.2 } }}
-                            className="overflow-hidden relative"
+                            className="overflow-hidden relative rounded-2xl border border-white/15"
                             style={{
-                                border: '2px solid rgba(255,255,255,0.6)',
-                                borderRadius: 0,
                                 background: '#111',
                                 boxShadow: '4px 4px 0 #000',
                             }}
@@ -661,8 +652,8 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                             {/* FAVORI badge */}
                             <div className="px-4 pt-3 pb-0 relative z-10">
                                 <span
-                                    className="font-black uppercase text-xs tracking-widest"
-                                    style={{ background: '#fbbf24', color: '#000', padding: '3px 10px', display: 'inline-block' }}
+                                    className="rounded-md font-black uppercase text-xs tracking-widest text-white inline-block px-3 py-1"
+                                    style={{ background: 'var(--v2-primary)' }}
                                 >
                                     FAVORI
                                 </span>
@@ -672,8 +663,8 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                                 <div className="flex-1 flex gap-3 items-start relative z-10 min-w-0">
                                     {featured.image && (
                                         <div
-                                            className="shrink-0 overflow-hidden"
-                                            style={{ width: 80, height: 80, border: '2px solid rgba(255,255,255,0.2)', borderRadius: 0 }}
+                                            className="shrink-0 overflow-hidden rounded-lg border border-white/15"
+                                            style={{ width: 80, height: 80 }}
                                         >
                                             {/* eslint-disable-next-line @next/next/no-img-element */}
                                             <img src={featured.image} alt={featured.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
@@ -697,11 +688,8 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                                     <button
                                         onClick={() => handleDelete(featured.id)}
                                         disabled={!!deletingId}
-                                        className="w-full flex items-center justify-center gap-2 font-black uppercase tracking-widest text-xs transition-colors"
+                                        className="w-full flex items-center justify-center gap-2 rounded-lg border border-red-500/25 text-red-400/60 font-black uppercase tracking-widest text-xs transition-colors"
                                         style={{
-                                            border: '2px solid rgba(239,68,68,0.3)',
-                                            borderRadius: 0,
-                                            color: 'rgba(239,68,68,0.65)',
                                             padding: '8px',
                                         }}
                                         onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.5)'; }}
@@ -720,16 +708,10 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                         <motion.div layout key="propose-btn">
                             <button
                                 onClick={() => setShowAddModal(true)}
-                                className="w-full flex items-center justify-center gap-3 font-black uppercase tracking-widest transition-all"
-                                style={{
-                                    border: '2px solid #fbbf24',
-                                    borderRadius: 0,
-                                    background: 'rgba(251,191,36,0.08)',
-                                    color: '#fbbf24',
-                                    padding: '14px',
-                                }}
-                                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(251,191,36,0.15)'; e.currentTarget.style.boxShadow = '3px 3px 0 #000'; }}
-                                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(251,191,36,0.08)'; e.currentTarget.style.boxShadow = 'none'; }}
+                                className="w-full rounded-xl border border-white/20 bg-white/2 text-white/70 font-black uppercase tracking-widest flex items-center justify-center gap-3 py-4 transition-all"
+                                style={{ background: 'rgba(255,255,255,0.02)' }}
+                                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)'; e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
+                                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; }}
                             >
                                 <Plus className="w-5 h-5" />
                                 Proposer un lieu
@@ -746,17 +728,17 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.98 }}
                             transition={{ layout: { type: 'spring', stiffness: 300, damping: 25 }, opacity: { duration: 0.2 } }}
-                            className="flex items-center gap-3 relative overflow-hidden"
-                            style={{ border: '2px solid rgba(255,255,255,0.12)', borderRadius: 0, background: 'transparent', padding: '10px 12px' }}
-                            onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.3)'; }}
-                            onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.12)'; }}
+                            className="flex items-center gap-3 relative overflow-hidden rounded-xl border border-white/10"
+                            style={{ background: 'transparent', padding: '10px 12px' }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.2)'; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.1)'; }}
                         >
                             <ProposalParticles score={p.score} />
                             <div className="flex items-center gap-3 flex-1 min-w-0 relative z-10">
                                 {p.image && (
                                     <div
-                                        className="shrink-0 overflow-hidden"
-                                        style={{ width: 44, height: 44, border: '2px solid rgba(255,255,255,0.15)', borderRadius: 0 }}
+                                        className="shrink-0 overflow-hidden rounded-lg border border-white/12"
+                                        style={{ width: 44, height: 44 }}
                                     >
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img src={p.image} alt={p.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
@@ -775,8 +757,7 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                                     <button
                                         onClick={() => handleDelete(p.id)}
                                         disabled={!!deletingId}
-                                        className="p-1.5 flex items-center justify-center transition-colors"
-                                        style={{ border: '2px solid rgba(239,68,68,0.2)', borderRadius: 0, color: 'rgba(239,68,68,0.5)' }}
+                                        className="p-1.5 flex items-center justify-center transition-colors rounded-md border border-red-500/20 text-red-400/50"
                                         onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)'; }}
                                         onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(239,68,68,0.5)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.2)'; }}
                                     >
@@ -810,20 +791,18 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
             {/* Override dialog — neo-brutalist */}
             <Dialog open={isOverrideModalOpen} onOpenChange={setIsOverrideModalOpen}>
                 <DialogContent
-                    className="flex flex-col p-0 overflow-hidden"
+                    className="flex flex-col p-0 overflow-hidden rounded-2xl border border-white/10"
                     style={{
                         maxWidth: 460,
                         width: 'calc(100% - 2rem)',
-                        background: '#0d0d0d',
-                        border: '2px solid rgba(255,255,255,0.7)',
-                        borderRadius: 0,
+                        background: '#0f0f0f',
+                        boxShadow: '5px 5px 0 #000',
                     }}
                 >
-                    <div style={{ height: 4, background: '#fbbf24', flexShrink: 0 }} />
                     <div className="p-5">
                         <DialogHeader className="mb-4">
                             <DialogTitle className="font-black uppercase tracking-widest flex items-center gap-2" style={{ color: 'white' }}>
-                                <WarningOctagon className="w-4 h-4" style={{ color: '#fbbf24' }} />
+                                <WarningOctagon className="w-4 h-4" style={{ color: 'var(--v2-primary)' }} />
                                 Imposer un lieu
                             </DialogTitle>
                         </DialogHeader>
@@ -836,15 +815,14 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                                         key={p.id}
                                         onClick={() => handleConfirmLocation(p)}
                                         disabled={!!confirmingLocationId}
-                                        className="flex items-center justify-between px-3 py-2.5 text-left transition-colors"
+                                        className="flex items-center justify-between px-3 py-2.5 text-left transition-colors rounded-xl"
                                         style={{
-                                            border: isSelected ? '2px solid #fbbf24' : '2px solid rgba(255,255,255,0.12)',
-                                            borderRadius: 0,
-                                            background: isSelected ? 'rgba(251,191,36,0.08)' : 'transparent',
-                                            color: isSelected ? '#fbbf24' : 'white',
+                                            border: isSelected ? '1px solid rgba(var(--v2-primary-rgb, 255,46,46),0.4)' : '1px solid rgba(255,255,255,0.1)',
+                                            background: isSelected ? 'rgba(var(--v2-primary-rgb, 255,46,46),0.06)' : 'transparent',
+                                            color: isSelected ? 'var(--v2-primary)' : 'rgba(255,255,255,0.8)',
                                         }}
-                                        onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.borderColor = 'white'; } }}
-                                        onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; } }}
+                                        onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; } }}
+                                        onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; } }}
                                     >
                                         <span className="font-bold text-sm truncate pr-3">{p.name}</span>
                                         <div className="flex items-center gap-2 shrink-0">
@@ -852,9 +830,9 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                                                 {p.score > 0 ? '+' : ''}{p.score} pts
                                             </span>
                                             {confirmingLocationId === p.id
-                                                ? <CircleNotch className="w-3.5 h-3.5 animate-spin" style={{ color: '#fbbf24' }} />
+                                                ? <CircleNotch className="w-3.5 h-3.5 animate-spin" style={{ color: 'var(--v2-primary)' }} />
                                                 : isSelected
-                                                ? <Check className="w-3.5 h-3.5" style={{ color: '#fbbf24' }} />
+                                                ? <Check className="w-3.5 h-3.5" style={{ color: 'var(--v2-primary)' }} />
                                                 : null
                                             }
                                         </div>
@@ -872,8 +850,7 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                                         setIsOverrideModalOpen(false);
                                     }}
                                     disabled={!!confirmingLocationId}
-                                    className="mt-2 px-3 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-between"
-                                    style={{ border: '2px solid rgba(239,68,68,0.3)', borderRadius: 0, color: 'rgba(239,68,68,0.65)' }}
+                                    className="mt-2 px-3 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-between rounded-lg border border-red-500/25 text-red-400/65"
                                     onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.06)'; e.currentTarget.style.color = '#ef4444'; }}
                                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(239,68,68,0.65)'; }}
                                 >

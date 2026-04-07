@@ -426,7 +426,7 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
 
     // ── IN-PERSON / NEO-BRUTALIST VARIANT ────────────────────────────────────────
 
-    // Square inline toggle — NOT the CyberToggle
+    // Rounded pill toggle — in_person variant
     const BrutToggle = ({ enabled, onChange, disabled: tog_disabled }: { enabled: boolean; onChange: () => void; disabled: boolean }) => (
         <div
             onClick={() => !tog_disabled && onChange()}
@@ -434,10 +434,11 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
             style={{
                 width: '36px',
                 height: '20px',
-                borderRadius: 0,
-                border: `2px solid ${enabled ? '#fbbf24' : 'rgba(255,255,255,0.25)'}`,
-                background: enabled ? 'rgba(251,191,36,0.15)' : 'transparent',
+                borderRadius: '10px',
+                border: '1px solid rgba(255,255,255,0.15)',
+                background: enabled ? 'rgba(255,46,46,0.25)' : 'rgba(255,255,255,0.06)',
                 cursor: tog_disabled ? 'not-allowed' : 'pointer',
+                transition: 'background 0.2s',
             }}
         >
             <motion.div
@@ -446,8 +447,8 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                 style={{
                     width: '12px',
                     height: '12px',
-                    borderRadius: 0,
-                    background: enabled ? '#fbbf24' : 'rgba(255,255,255,0.4)',
+                    borderRadius: '6px',
+                    background: enabled ? 'var(--v2-primary)' : 'rgba(255,255,255,0.4)',
                 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
             />
@@ -457,42 +458,31 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent
-                className="flex flex-col p-0 overflow-hidden"
+                className="flex flex-col p-0 overflow-hidden rounded-2xl border border-white/10 bg-[#0f0f0f]"
                 style={{
                     maxWidth: '460px',
                     width: 'calc(100% - 2rem)',
                     maxHeight: '90vh',
                     overflowY: 'auto',
-                    background: '#0d0d0d',
-                    border: '2px solid rgba(255,255,255,0.7)',
-                    borderRadius: 0,
+                    boxShadow: '5px 5px 0 #000',
                 }}
             >
-                {/* Top amber bar */}
-                <div style={{ height: '4px', background: '#fbbf24', width: '100%', flexShrink: 0 }} />
-
                 <div className="p-6 flex flex-col gap-6">
                     <DialogHeader>
-                        <DialogTitle
-                            className="font-black uppercase tracking-widest text-lg"
-                            style={{ color: 'white' }}
-                        >
+                        <DialogTitle className="font-black uppercase tracking-widest text-white text-lg">
                             Paramètres du groupe
                         </DialogTitle>
                     </DialogHeader>
 
                     {loading ? (
                         <div className="flex justify-center py-10">
-                            <CircleNotch className="w-6 h-6 animate-spin" style={{ color: '#fbbf24' }} />
+                            <CircleNotch className="w-6 h-6 animate-spin" style={{ color: 'var(--v2-primary)' }} />
                         </div>
                     ) : (
                         <>
                             {/* ── GROUP TYPE ── */}
                             <div>
-                                <h3
-                                    className="font-black uppercase tracking-widest text-xs"
-                                    style={{ color: 'rgba(255,255,255,0.4)', marginBottom: '10px' }}
-                                >
+                                <h3 className="font-black uppercase tracking-widest text-xs text-white/40" style={{ marginBottom: '10px' }}>
                                     Mode de fonctionnement
                                 </h3>
                                 <GroupTypeSelector
@@ -507,10 +497,7 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                             {/* ── CITY (in_person only) ── */}
                             {groupType === 'in_person' && (
                                 <div>
-                                    <h3
-                                        className="font-black uppercase tracking-widest text-xs flex items-center gap-2"
-                                        style={{ color: 'rgba(255,255,255,0.4)', marginBottom: '10px' }}
-                                    >
+                                    <h3 className="font-black uppercase tracking-widest text-xs text-white/40 flex items-center gap-2" style={{ marginBottom: '10px' }}>
                                         <MapPin className="w-3.5 h-3.5" />
                                         Ville du groupe
                                     </h3>
@@ -523,25 +510,14 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                             }}
                                             placeholder="Rechercher une ville..."
                                             disabled={!isAdmin}
-                                            className="w-full bg-transparent text-sm outline-none px-3 py-2.5"
-                                            style={{
-                                                border: '2px solid rgba(255,255,255,0.4)',
-                                                borderRadius: 0,
-                                                color: 'white',
-                                                caretColor: '#fbbf24',
-                                            }}
-                                            onFocus={e => (e.currentTarget.style.borderColor = '#fbbf24')}
-                                            onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)')}
+                                            className="w-full text-white text-sm outline-none px-3 py-2.5 rounded-xl border border-white/20 bg-white/[0.03] transition-colors"
+                                            style={{ caretColor: 'var(--v2-primary)' }}
+                                            onFocus={e => (e.currentTarget.style.borderColor = 'var(--v2-primary)')}
+                                            onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)')}
                                         />
                                         {locationResults.length > 0 && isAdmin && (
                                             <div
-                                                className="absolute top-full left-0 w-full z-50 overflow-hidden"
-                                                style={{
-                                                    background: '#0d0d0d',
-                                                    border: '2px solid rgba(255,255,255,0.5)',
-                                                    borderRadius: 0,
-                                                    marginTop: '2px',
-                                                }}
+                                                className="absolute top-full left-0 w-full mt-1 z-50 overflow-hidden rounded-xl border border-white/10 bg-[#0f0f0f]"
                                             >
                                                 {locationResults.map((cityName) => (
                                                     <button
@@ -552,9 +528,9 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                                             setLocationSearch(cityName);
                                                             setLocationResults([]);
                                                         }}
-                                                        className="w-full text-left px-3 py-2 text-sm transition-colors"
-                                                        style={{ color: 'white', borderBottom: '1px solid rgba(255,255,255,0.08)' }}
-                                                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.07)')}
+                                                        className="w-full text-left px-3 py-2 text-white/70 text-sm transition-colors"
+                                                        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+                                                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
                                                         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                                                     >
                                                         {cityName}
@@ -564,7 +540,7 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                         )}
                                     </div>
                                     {!isAdmin && (
-                                        <p className="text-xs mt-2" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                                        <p className="text-xs mt-2 text-white/35">
                                             Seul l'administrateur peut modifier la ville.
                                         </p>
                                     )}
@@ -573,38 +549,22 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
 
                             {/* ── PHASE TOGGLE ── */}
                             <div>
-                                <h3
-                                    className="font-black uppercase tracking-widest text-xs"
-                                    style={{ color: 'rgba(255,255,255,0.4)', marginBottom: '10px' }}
-                                >
+                                <h3 className="font-black uppercase tracking-widest text-xs text-white/40" style={{ marginBottom: '10px' }}>
                                     Phase du groupe
                                 </h3>
-                                <div
-                                    style={{
-                                        border: '2px solid rgba(255,255,255,0.15)',
-                                        borderRadius: 0,
-                                        background: 'rgba(255,255,255,0.02)',
-                                        padding: '4px',
-                                        display: 'grid',
-                                        gridTemplateColumns: '1fr 1fr',
-                                        gap: '4px',
-                                    }}
-                                >
+                                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-1 grid grid-cols-2 gap-1">
                                     {/* Planification */}
                                     <button
                                         type="button"
                                         disabled={!isAdmin}
                                         onClick={setModePlanning}
-                                        className="flex flex-col items-center gap-1.5 py-3 px-2 text-center transition-all"
+                                        className={cn(
+                                            'flex flex-col items-center gap-1.5 py-3 px-2 text-center transition-all',
+                                            phase === 'planning'
+                                                ? 'rounded-xl border border-black bg-black/40 text-white'
+                                                : 'rounded-lg border border-transparent bg-transparent text-white/40',
+                                        )}
                                         style={{
-                                            borderRadius: 0,
-                                            border: phase === 'planning'
-                                                ? '2px solid rgba(255,255,255,0.6)'
-                                                : '2px solid transparent',
-                                            background: phase === 'planning'
-                                                ? 'rgba(255,255,255,0.06)'
-                                                : 'transparent',
-                                            color: phase === 'planning' ? 'white' : 'rgba(255,255,255,0.45)',
                                             cursor: !isAdmin ? 'not-allowed' : 'pointer',
                                             opacity: !isAdmin ? 0.5 : 1,
                                         }}
@@ -615,7 +575,7 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                             style={{ color: phase === 'planning' ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.3)' }}
                                         />
                                         <span className="font-black uppercase text-xs tracking-widest">Planification</span>
-                                        <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>On se met d'accord</span>
+                                        <span className="text-[10px] text-white/35">On se met d'accord</span>
                                     </button>
 
                                     {/* Jour J */}
@@ -623,16 +583,13 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                         type="button"
                                         disabled={!isAdmin}
                                         onClick={setModeDayOf}
-                                        className="flex flex-col items-center gap-1.5 py-3 px-2 text-center transition-all"
+                                        className={cn(
+                                            'flex flex-col items-center gap-1.5 py-3 px-2 text-center transition-all',
+                                            phase === 'day-of'
+                                                ? 'rounded-xl border border-green-500/40 bg-green-500/[0.08] text-green-400'
+                                                : 'rounded-lg border border-transparent bg-transparent text-white/40',
+                                        )}
                                         style={{
-                                            borderRadius: 0,
-                                            border: phase === 'day-of'
-                                                ? '2px solid #4ade80'
-                                                : '2px solid transparent',
-                                            background: phase === 'day-of'
-                                                ? 'rgba(74,222,128,0.06)'
-                                                : 'transparent',
-                                            color: phase === 'day-of' ? '#4ade80' : 'rgba(255,255,255,0.45)',
                                             cursor: !isAdmin ? 'not-allowed' : 'pointer',
                                             opacity: !isAdmin ? 0.5 : 1,
                                         }}
@@ -643,17 +600,14 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                             style={{ color: phase === 'day-of' ? '#4ade80' : 'rgba(255,255,255,0.3)' }}
                                         />
                                         <span className="font-black uppercase text-xs tracking-widest">Jour J</span>
-                                        <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>C'est décidé</span>
+                                        <span className="text-[10px] text-white/35">C'est décidé</span>
                                     </button>
                                 </div>
                             </div>
 
                             {/* ── FEATURE TOGGLES ── */}
                             <div>
-                                <h3
-                                    className="font-black uppercase tracking-widest text-xs"
-                                    style={{ color: 'rgba(255,255,255,0.4)', marginBottom: '10px' }}
-                                >
+                                <h3 className="font-black uppercase tracking-widest text-xs text-white/40" style={{ marginBottom: '10px' }}>
                                     Fonctionnalités
                                 </h3>
                                 <div className="flex flex-col gap-2">
@@ -661,40 +615,44 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                     {/* Calendrier */}
                                     <div
                                         onClick={() => isAdmin && setCalendarEnabled(!calendarEnabled)}
-                                        className="flex items-center justify-between transition-all"
+                                        className="rounded-xl border border-white/10 bg-white/[0.02] p-4 flex items-center justify-between transition-all"
                                         style={{
-                                            border: `2px solid ${calendarEnabled ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.12)'}`,
-                                            borderRadius: 0,
-                                            padding: '14px 16px',
-                                            background: calendarEnabled ? 'rgba(255,255,255,0.04)' : 'transparent',
+                                            border: calendarEnabled ? '1px solid color-mix(in srgb, var(--v2-primary) 30%, transparent)' : undefined,
+                                            background: calendarEnabled ? 'color-mix(in srgb, var(--v2-primary) 4%, transparent)' : undefined,
                                             cursor: isAdmin ? 'pointer' : 'default',
+                                        }}
+                                        onMouseEnter={e => {
+                                            if (!calendarEnabled) {
+                                                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+                                                e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                                            }
+                                        }}
+                                        onMouseLeave={e => {
+                                            if (!calendarEnabled) {
+                                                e.currentTarget.style.borderColor = '';
+                                                e.currentTarget.style.background = '';
+                                            }
                                         }}
                                     >
                                         <div className="flex items-center gap-3">
                                             <div
-                                                className="flex items-center justify-center shrink-0"
-                                                style={{
-                                                    width: '36px',
-                                                    height: '36px',
-                                                    border: `2px solid ${calendarEnabled ? '#fbbf24' : 'rgba(255,255,255,0.2)'}`,
-                                                    borderRadius: 0,
-                                                    background: calendarEnabled ? 'rgba(251,191,36,0.08)' : 'transparent',
-                                                }}
+                                                className="w-9 h-9 rounded-xl border border-white/[0.12] bg-white/[0.04] flex items-center justify-center shrink-0"
+                                                style={calendarEnabled ? {
+                                                    border: '1px solid color-mix(in srgb, var(--v2-primary) 30%, transparent)',
+                                                    background: 'color-mix(in srgb, var(--v2-primary) 8%, transparent)',
+                                                } : undefined}
                                             >
                                                 <CalendarDots
                                                     className="w-4 h-4"
                                                     weight="fill"
-                                                    style={{ color: calendarEnabled ? '#fbbf24' : 'rgba(255,255,255,0.35)' }}
+                                                    style={{ color: calendarEnabled ? 'var(--v2-primary)' : 'rgba(255,255,255,0.35)' }}
                                                 />
                                             </div>
                                             <div>
-                                                <p
-                                                    className="font-bold text-sm"
-                                                    style={{ color: calendarEnabled ? 'white' : 'rgba(255,255,255,0.55)' }}
-                                                >
+                                                <p className={cn('font-bold text-sm', calendarEnabled ? 'text-white/80' : 'text-white/45')}>
                                                     Calendrier
                                                 </p>
-                                                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)' }}>
+                                                <p className="text-[11px] text-white/35">
                                                     Voter pour des dates
                                                 </p>
                                             </div>
@@ -709,39 +667,43 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                     {/* Lieux */}
                                     <div
                                         onClick={() => isAdmin && setLocationEnabled(!locationEnabled)}
-                                        className="flex items-center justify-between transition-all"
+                                        className="rounded-xl border border-white/10 bg-white/[0.02] p-4 flex items-center justify-between transition-all"
                                         style={{
-                                            border: `2px solid ${locationEnabled ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.12)'}`,
-                                            borderRadius: 0,
-                                            padding: '14px 16px',
-                                            background: locationEnabled ? 'rgba(255,255,255,0.04)' : 'transparent',
+                                            border: locationEnabled ? '1px solid color-mix(in srgb, var(--v2-primary) 30%, transparent)' : undefined,
+                                            background: locationEnabled ? 'color-mix(in srgb, var(--v2-primary) 4%, transparent)' : undefined,
                                             cursor: isAdmin ? 'pointer' : 'default',
+                                        }}
+                                        onMouseEnter={e => {
+                                            if (!locationEnabled) {
+                                                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+                                                e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                                            }
+                                        }}
+                                        onMouseLeave={e => {
+                                            if (!locationEnabled) {
+                                                e.currentTarget.style.borderColor = '';
+                                                e.currentTarget.style.background = '';
+                                            }
                                         }}
                                     >
                                         <div className="flex items-center gap-3">
                                             <div
-                                                className="flex items-center justify-center shrink-0"
-                                                style={{
-                                                    width: '36px',
-                                                    height: '36px',
-                                                    border: `2px solid ${locationEnabled ? '#fbbf24' : 'rgba(255,255,255,0.2)'}`,
-                                                    borderRadius: 0,
-                                                    background: locationEnabled ? 'rgba(251,191,36,0.08)' : 'transparent',
-                                                }}
+                                                className="w-9 h-9 rounded-xl border border-white/[0.12] bg-white/[0.04] flex items-center justify-center shrink-0"
+                                                style={locationEnabled ? {
+                                                    border: '1px solid color-mix(in srgb, var(--v2-primary) 30%, transparent)',
+                                                    background: 'color-mix(in srgb, var(--v2-primary) 8%, transparent)',
+                                                } : undefined}
                                             >
                                                 <MapPin
                                                     className="w-4 h-4"
-                                                    style={{ color: locationEnabled ? '#fbbf24' : 'rgba(255,255,255,0.35)' }}
+                                                    style={{ color: locationEnabled ? 'var(--v2-primary)' : 'rgba(255,255,255,0.35)' }}
                                                 />
                                             </div>
                                             <div>
-                                                <p
-                                                    className="font-bold text-sm"
-                                                    style={{ color: locationEnabled ? 'white' : 'rgba(255,255,255,0.55)' }}
-                                                >
+                                                <p className={cn('font-bold text-sm', locationEnabled ? 'text-white/80' : 'text-white/45')}>
                                                     Lieux
                                                 </p>
-                                                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)' }}>
+                                                <p className="text-[11px] text-white/35">
                                                     Proposer et voter pour des lieux
                                                 </p>
                                             </div>
@@ -757,39 +719,19 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
 
                             {/* ── ACTIONS ── */}
                             <div
-                                className="flex flex-col gap-2"
-                                style={{ borderTop: '2px solid rgba(255,255,255,0.1)', paddingTop: '20px' }}
+                                className="flex flex-col gap-2 pt-5"
+                                style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}
                             >
                                 {isAdmin && (
                                     <button
                                         onClick={handleSave}
                                         disabled={saving}
-                                        className="w-full flex items-center justify-center gap-2 transition-all"
+                                        className="w-full h-12 rounded-xl bg-[var(--v2-primary)] text-white border-[3px] border-black font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all"
                                         style={{
-                                            height: '48px',
-                                            background: '#fbbf24',
-                                            color: '#000',
-                                            fontWeight: 900,
-                                            textTransform: 'uppercase',
-                                            letterSpacing: '0.12em',
-                                            border: '2px solid #000',
-                                            borderRadius: 0,
                                             boxShadow: '3px 3px 0 #000',
                                             opacity: saving ? 0.5 : 1,
                                             cursor: saving ? 'not-allowed' : 'pointer',
                                             fontSize: '13px',
-                                        }}
-                                        onMouseEnter={e => {
-                                            if (!saving) {
-                                                e.currentTarget.style.transform = 'translate(-1px,-1px)';
-                                                e.currentTarget.style.boxShadow = '4px 4px 0 #000';
-                                            }
-                                        }}
-                                        onMouseLeave={e => {
-                                            if (!saving) {
-                                                e.currentTarget.style.transform = 'translate(0,0)';
-                                                e.currentTarget.style.boxShadow = '3px 3px 0 #000';
-                                            }
                                         }}
                                     >
                                         {saving ? (
@@ -807,24 +749,17 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                                 onLeaveGroup();
                                             }
                                         }}
-                                        className="w-full flex items-center justify-center gap-2 font-bold uppercase tracking-widest text-sm transition-all"
-                                        style={{
-                                            height: '44px',
-                                            border: '2px solid rgba(239,68,68,0.4)',
-                                            borderRadius: 0,
-                                            color: 'rgba(239,68,68,0.7)',
-                                            background: 'transparent',
-                                            cursor: 'pointer',
-                                        }}
+                                        className="w-full h-11 rounded-xl border border-red-500/30 text-red-400/70 font-bold uppercase tracking-widest bg-transparent flex items-center justify-center gap-2 transition-all"
+                                        style={{ cursor: 'pointer' }}
                                         onMouseEnter={e => {
-                                            e.currentTarget.style.borderColor = '#ef4444';
-                                            e.currentTarget.style.color = '#ef4444';
+                                            e.currentTarget.style.borderColor = 'rgba(239,68,68,0.5)';
+                                            e.currentTarget.style.color = 'rgb(248,113,113)';
                                             e.currentTarget.style.background = 'rgba(239,68,68,0.06)';
                                         }}
                                         onMouseLeave={e => {
-                                            e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)';
-                                            e.currentTarget.style.color = 'rgba(239,68,68,0.7)';
-                                            e.currentTarget.style.background = 'transparent';
+                                            e.currentTarget.style.borderColor = '';
+                                            e.currentTarget.style.color = '';
+                                            e.currentTarget.style.background = '';
                                         }}
                                     >
                                         <SignOut className="w-4 h-4" />

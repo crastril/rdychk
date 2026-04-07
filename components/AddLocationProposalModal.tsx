@@ -105,16 +105,13 @@ export function AddLocationProposalModal({ isOpen, onClose, city, baseLat, baseL
                     maxHeight: '85dvh',
                     width: 'calc(100% - 2rem)',
                     maxWidth: 460,
-                    background: '#0d0d0d',
-                    border: '2px solid rgba(255,255,255,0.7)',
-                    borderRadius: 0,
-                    boxShadow: '6px 6px 0 #000',
+                    background: '#0f0f0f',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '16px',
+                    boxShadow: '5px 5px 0 #000',
                     padding: 0,
                 }}
             >
-                {/* Top amber bar */}
-                <div style={{ height: 4, background: '#fbbf24', flexShrink: 0 }} />
-
                 {/* Inner wrapper */}
                 <div className="flex flex-col overflow-hidden" style={{ padding: 24, height: '100%' }}>
                     <DialogHeader style={{ marginBottom: 16, flexShrink: 0 }}>
@@ -122,7 +119,7 @@ export function AddLocationProposalModal({ isOpen, onClose, city, baseLat, baseL
                             className="font-black uppercase tracking-widest flex items-center gap-2"
                             style={{ color: 'white' }}
                         >
-                            <MapPin className="w-5 h-5" style={{ color: '#fbbf24' }} />
+                            <MapPin className="w-5 h-5" style={{ color: 'var(--v2-primary)' }} />
                             Proposer un lieu
                         </DialogTitle>
                         <DialogDescription style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>
@@ -143,8 +140,8 @@ export function AddLocationProposalModal({ isOpen, onClose, city, baseLat, baseL
                                 <div
                                     className="flex-1 flex items-center"
                                     style={{
-                                        border: `2px solid ${inputFocused ? '#fbbf24' : 'rgba(255,255,255,0.4)'}`,
-                                        borderRadius: 0,
+                                        border: `1px solid ${inputFocused ? 'var(--v2-primary)' : 'rgba(255,255,255,0.2)'}`,
+                                        borderRadius: '10px',
                                         background: 'rgba(255,255,255,0.03)',
                                         padding: '8px 12px',
                                         transition: 'border-color 0.15s',
@@ -180,14 +177,10 @@ export function AddLocationProposalModal({ isOpen, onClose, city, baseLat, baseL
                                 <button
                                     onClick={() => handleSearchPlace()}
                                     disabled={isSearchingPlace || !searchQuery.trim()}
-                                    className="flex items-center justify-center shrink-0 transition-transform"
+                                    className="rounded-xl bg-[var(--v2-primary)] text-white border-2 border-black flex items-center justify-center shrink-0 transition-transform"
                                     style={{
                                         width: 44,
                                         height: 44,
-                                        background: '#fbbf24',
-                                        color: '#000',
-                                        border: '2px solid #000',
-                                        borderRadius: 0,
                                         boxShadow: '2px 2px 0 #000',
                                         cursor: isSearchingPlace || !searchQuery.trim() ? 'not-allowed' : 'pointer',
                                         opacity: isSearchingPlace || !searchQuery.trim() ? 0.5 : 1,
@@ -216,38 +209,39 @@ export function AddLocationProposalModal({ isOpen, onClose, city, baseLat, baseL
                                         <div
                                             key={place.place_id}
                                             onClick={() => selectPlace(place)}
-                                            className="flex gap-3 cursor-pointer transition-colors"
+                                            className="flex gap-3 cursor-pointer transition-colors rounded-xl"
                                             style={{
-                                                border: isSelected ? '2px solid #fbbf24' : '2px solid rgba(255,255,255,0.12)',
-                                                borderRadius: 0,
+                                                border: isSelected
+                                                    ? '1px solid rgba(255,46,46,0.4)'
+                                                    : '1px solid rgba(255,255,255,0.1)',
                                                 padding: 8,
-                                                background: isSelected ? 'rgba(251,191,36,0.06)' : 'transparent',
+                                                background: isSelected ? 'rgba(255,46,46,0.06)' : 'transparent',
                                             }}
                                             onMouseEnter={e => {
                                                 if (!isSelected) {
-                                                    (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.4)';
+                                                    (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.25)';
                                                     (e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.03)';
                                                 }
                                             }}
                                             onMouseLeave={e => {
                                                 if (!isSelected) {
-                                                    (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.12)';
+                                                    (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.1)';
                                                     (e.currentTarget as HTMLDivElement).style.background = 'transparent';
                                                 }
                                             }}
                                         >
                                             {place.image ? (
                                                 <div
-                                                    className="shrink-0 overflow-hidden"
-                                                    style={{ width: 48, height: 48, border: '2px solid rgba(255,255,255,0.15)', borderRadius: 0 }}
+                                                    className="shrink-0 rounded-lg overflow-hidden"
+                                                    style={{ width: 48, height: 48, border: '1px solid rgba(255,255,255,0.12)' }}
                                                 >
                                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                                     <img src={place.image} alt={place.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                                                 </div>
                                             ) : (
                                                 <div
-                                                    className="shrink-0 flex items-center justify-center"
-                                                    style={{ width: 48, height: 48, border: '2px solid rgba(255,255,255,0.15)', borderRadius: 0 }}
+                                                    className="shrink-0 flex items-center justify-center rounded-lg"
+                                                    style={{ width: 48, height: 48, border: '1px solid rgba(255,255,255,0.12)' }}
                                                 >
                                                     <MapPin className="w-5 h-5" style={{ color: 'rgba(255,255,255,0.3)' }} />
                                                 </div>
@@ -256,7 +250,7 @@ export function AddLocationProposalModal({ isOpen, onClose, city, baseLat, baseL
                                             <div className="flex-1 min-w-0 flex flex-col justify-center">
                                                 <div className="font-bold text-sm flex items-center justify-between gap-2 line-clamp-1" style={{ color: 'white' }}>
                                                     <span className="truncate">{place.name}</span>
-                                                    {isSelected && <Check className="w-4 h-4 shrink-0" style={{ color: '#fbbf24' }} />}
+                                                    {isSelected && <Check className="w-4 h-4 shrink-0" style={{ color: 'var(--v2-primary)' }} />}
                                                 </div>
                                                 <div className="line-clamp-1 mt-0.5" style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)' }}>
                                                     {place.formatted_address}
@@ -291,10 +285,9 @@ export function AddLocationProposalModal({ isOpen, onClose, city, baseLat, baseL
                                     onChange={e => setDescription(e.target.value)}
                                     onFocus={() => setNoteFocused(true)}
                                     onBlur={() => setNoteFocused(false)}
-                                    className="w-full resize-none"
+                                    className="w-full resize-none rounded-xl"
                                     style={{
-                                        border: `2px solid ${noteFocused ? '#fbbf24' : 'rgba(255,255,255,0.3)'}`,
-                                        borderRadius: 0,
+                                        border: `1px solid ${noteFocused ? 'var(--v2-primary)' : 'rgba(255,255,255,0.2)'}`,
                                         background: 'rgba(255,255,255,0.03)',
                                         color: 'white',
                                         padding: '10px 12px',
@@ -309,33 +302,20 @@ export function AddLocationProposalModal({ isOpen, onClose, city, baseLat, baseL
                     </div>
 
                     {/* Action buttons */}
-                    <div className="flex gap-3 shrink-0" style={{ borderTop: '2px solid rgba(255,255,255,0.1)', paddingTop: 16, marginTop: 8 }}>
+                    <div className="flex gap-3 shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 16, marginTop: 8 }}>
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 font-bold uppercase tracking-widest transition-colors"
-                            style={{
-                                height: 48,
-                                border: '2px solid rgba(255,255,255,0.3)',
-                                borderRadius: 0,
-                                color: 'rgba(255,255,255,0.6)',
-                                background: 'transparent',
-                            }}
-                            onMouseEnter={e => { e.currentTarget.style.borderColor = 'white'; e.currentTarget.style.color = 'white'; }}
-                            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; }}
+                            className="flex-1 h-12 rounded-xl border border-white/20 font-bold uppercase tracking-widest bg-transparent"
+                            style={{ color: 'rgba(255,255,255,0.55)' }}
                         >
                             Annuler
                         </button>
                         <button
                             onClick={handleSubmit}
                             disabled={loading || (!selectedPlaceId && !searchQuery.trim())}
-                            className="flex-1 font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all"
+                            className="flex-1 h-12 rounded-xl bg-[var(--v2-primary)] text-white border-[3px] border-black font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all"
                             style={{
-                                height: 48,
-                                background: '#fbbf24',
-                                color: '#000',
-                                border: '2px solid #000',
-                                borderRadius: 0,
                                 boxShadow: '3px 3px 0 #000',
                                 opacity: loading || (!selectedPlaceId && !searchQuery.trim()) ? 0.45 : 1,
                                 cursor: loading || (!selectedPlaceId && !searchQuery.trim()) ? 'not-allowed' : 'pointer',

@@ -227,49 +227,13 @@ export function ShareMenu({ groupName, url, variant = 'icon', isRemote }: ShareM
                 <DropdownMenuTrigger asChild>
                     {variant === 'icon' ? (
                         <button
-                            className="flex items-center justify-center transition-colors"
-                            style={{
-                                width: 32,
-                                height: 32,
-                                border: '2px solid rgba(255,255,255,0.5)',
-                                borderRadius: 0,
-                                background: 'transparent',
-                                color: 'rgba(255,255,255,0.7)',
-                            }}
-                            onMouseEnter={e => {
-                                e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-                                e.currentTarget.style.color = 'white';
-                                e.currentTarget.style.borderColor = 'white';
-                            }}
-                            onMouseLeave={e => {
-                                e.currentTarget.style.background = 'transparent';
-                                e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
-                                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)';
-                            }}
+                            className="w-8 h-8 flex items-center justify-center rounded-lg border border-white/15 bg-transparent text-white/55 transition-colors hover:border-white/30 hover:text-white hover:bg-white/5"
                         >
                             <ShareNetwork className="w-4 h-4" />
                         </button>
                     ) : (
                         <button
-                            className="flex items-center gap-2 px-3 py-1.5 transition-colors"
-                            style={{
-                                border: '2px solid rgba(255,255,255,0.5)',
-                                borderRadius: 0,
-                                background: 'transparent',
-                                color: 'rgba(255,255,255,0.7)',
-                                fontWeight: 700,
-                                fontSize: 12,
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.1em',
-                            }}
-                            onMouseEnter={e => {
-                                e.currentTarget.style.borderColor = 'white';
-                                e.currentTarget.style.color = 'white';
-                            }}
-                            onMouseLeave={e => {
-                                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)';
-                                e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
-                            }}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-white/15 bg-transparent text-white/55 font-bold uppercase tracking-wider text-sm transition-colors hover:border-white/30 hover:text-white"
                         >
                             <ShareNetwork className="w-4 h-4" />
                             <span>Partager</span>
@@ -278,41 +242,33 @@ export function ShareMenu({ groupName, url, variant = 'icon', isRemote }: ShareM
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                     align="end"
-                    className="p-1"
+                    className="p-1 rounded-xl border border-white/10 bg-[#0f0f0f]"
                     style={{
                         width: 220,
-                        background: '#0d0d0d',
-                        border: '2px solid rgba(255,255,255,0.7)',
-                        borderRadius: 0,
                         boxShadow: '4px 4px 0 #000',
                         color: 'white',
                     }}
                 >
-                    <DropdownMenuLabel
-                        className="font-black uppercase tracking-widest text-xs px-2 py-1.5"
-                        style={{ color: 'rgba(255,255,255,0.45)' }}
-                    >
+                    <DropdownMenuLabel className="font-black uppercase tracking-widest text-xs px-2 py-1.5 text-white/40">
                         Inviter des amis
                     </DropdownMenuLabel>
-                    <DropdownMenuSeparator style={{ height: 2, background: 'rgba(255,255,255,0.1)', margin: '2px 4px' }} />
+                    <DropdownMenuSeparator className="bg-white/8 h-px mx-1 mb-1" />
 
                     <DropdownMenuItem
                         onClick={handleCopy}
-                        className="cursor-pointer font-bold gap-2"
-                        style={{ borderRadius: 0 }}
+                        className="cursor-pointer font-bold text-white/80 gap-2 rounded-lg hover:bg-white/5 hover:text-white"
                     >
                         {copied
-                            ? <Check className="w-4 h-4 shrink-0" style={{ color: '#4ade80' }} />
+                            ? <Check className="w-4 h-4 shrink-0 text-green-400" />
                             : <Copy className="w-4 h-4 shrink-0" />}
-                        <span style={copied ? { color: '#4ade80' } : undefined}>
+                        <span className={copied ? 'text-green-400' : undefined}>
                             {copied ? 'Lien copié !' : 'Copier le lien'}
                         </span>
                     </DropdownMenuItem>
 
                     <DropdownMenuItem
                         onClick={() => setQrOpen(true)}
-                        className="cursor-pointer font-bold gap-2"
-                        style={{ borderRadius: 0 }}
+                        className="cursor-pointer font-bold text-white/80 gap-2 rounded-lg hover:bg-white/5 hover:text-white"
                     >
                         <QrCode className="w-4 h-4 shrink-0" />
                         Code QR
@@ -320,35 +276,31 @@ export function ShareMenu({ groupName, url, variant = 'icon', isRemote }: ShareM
 
                     <DropdownMenuItem
                         onClick={handleNativeShare}
-                        className="cursor-pointer font-bold gap-2 sm:hidden"
-                        style={{ borderRadius: 0 }}
+                        className="cursor-pointer font-bold text-white/80 gap-2 rounded-lg hover:bg-white/5 hover:text-white sm:hidden"
                     >
                         <ShareNetwork className="w-4 h-4 shrink-0" />
                         Autres options...
                     </DropdownMenuItem>
 
-                    <DropdownMenuSeparator style={{ height: 2, background: 'rgba(255,255,255,0.1)', margin: '2px 4px' }} />
+                    <DropdownMenuSeparator className="bg-white/8 h-px mx-1 my-1" />
 
                     <DropdownMenuItem
                         onClick={() => handleShare('whatsapp')}
-                        className="cursor-pointer font-bold gap-2"
-                        style={{ borderRadius: 0 }}
+                        className="cursor-pointer font-bold text-white/80 gap-2 rounded-lg hover:bg-white/5 hover:text-white"
                     >
                         <ChatCircle className="w-4 h-4 shrink-0 text-green-500" />
                         WhatsApp
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onClick={() => handleShare('messenger')}
-                        className="cursor-pointer font-bold gap-2"
-                        style={{ borderRadius: 0 }}
+                        className="cursor-pointer font-bold text-white/80 gap-2 rounded-lg hover:bg-white/5 hover:text-white"
                     >
                         <FacebookLogo className="w-4 h-4 shrink-0 text-blue-400" />
                         Messenger
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onClick={() => handleShare('instagram')}
-                        className="cursor-pointer font-bold gap-2"
-                        style={{ borderRadius: 0 }}
+                        className="cursor-pointer font-bold text-white/80 gap-2 rounded-lg hover:bg-white/5 hover:text-white"
                     >
                         <InstagramLogo className="w-4 h-4 shrink-0 text-pink-400" />
                         Instagram
@@ -359,40 +311,26 @@ export function ShareMenu({ groupName, url, variant = 'icon', isRemote }: ShareM
             {/* QR Dialog — neo-brutalist */}
             <Dialog open={qrOpen} onOpenChange={setQrOpen}>
                 <DialogContent
-                    className="flex flex-col items-center p-0"
+                    className="flex flex-col items-center p-0 overflow-hidden rounded-2xl border border-white/10 bg-[#0f0f0f]"
                     style={{
                         maxWidth: 320,
                         width: 'calc(100% - 2rem)',
-                        background: '#0d0d0d',
-                        border: '2px solid rgba(255,255,255,0.7)',
-                        borderRadius: 0,
+                        boxShadow: '5px 5px 0 #000',
                     }}
                 >
-                    <div style={{ width: '100%', height: 4, background: '#fbbf24', flexShrink: 0 }} />
                     <div className="flex flex-col items-center gap-5 p-6">
                         <DialogHeader>
-                            <DialogTitle
-                                className="font-black uppercase tracking-widest text-center"
-                                style={{ color: 'white', fontSize: '0.85rem' }}
-                            >
+                            <DialogTitle className="font-black uppercase tracking-widest text-white text-[0.85rem] text-center">
                                 Scanner pour rejoindre
                             </DialogTitle>
                         </DialogHeader>
                         <div
-                            style={{
-                                border: '3px solid rgba(255,255,255,0.7)',
-                                borderRadius: 0,
-                                padding: 12,
-                                background: 'white',
-                                boxShadow: '4px 4px 0 #000',
-                            }}
+                            className="rounded-xl border-2 border-white/20 p-3 bg-white"
+                            style={{ boxShadow: '4px 4px 0 #000' }}
                         >
                             <QRCode value={url} size={180} />
                         </div>
-                        <p
-                            className="font-black uppercase tracking-widest text-center"
-                            style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)' }}
-                        >
+                        <p className="font-black uppercase tracking-widest text-center text-[10px] text-white/40">
                             {groupName}
                         </p>
                     </div>

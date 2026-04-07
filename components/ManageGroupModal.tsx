@@ -181,44 +181,25 @@ export function ManageGroupModal({ isOpen, onOpenChange, slug, members, loading,
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent
-                className="flex flex-col p-0 overflow-hidden"
+                className="flex flex-col p-0 overflow-hidden rounded-2xl"
                 style={{
-                    background: '#0d0d0d',
-                    border: '2px solid rgba(255,255,255,0.7)',
-                    borderRadius: 0,
+                    background: '#0f0f0f',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    boxShadow: '5px 5px 0 #000',
                     maxWidth: '480px',
                     width: 'calc(100% - 2rem)',
                     height: '80vh',
                 }}
             >
-                {/* Top amber bar */}
-                <div className="w-full shrink-0" style={{ height: '4px', background: '#fbbf24' }} />
-
                 {/* Header */}
                 <div
-                    className="shrink-0"
-                    style={{
-                        paddingLeft: 20,
-                        paddingRight: 20,
-                        paddingTop: 16,
-                        paddingBottom: 16,
-                        borderBottom: '2px solid rgba(255,255,255,0.1)',
-                    }}
+                    className="px-5 py-4 shrink-0"
+                    style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}
                 >
-                    <DialogTitle
-                        className="font-black uppercase tracking-widest"
-                        style={{ fontSize: '1rem', color: '#ffffff' }}
-                    >
+                    <DialogTitle className="font-black uppercase tracking-widest text-white" style={{ fontSize: '1rem' }}>
                         Gérer les membres
                     </DialogTitle>
-                    <DialogDescription
-                        className="uppercase tracking-widest"
-                        style={{
-                            fontSize: 11,
-                            color: 'rgba(255,255,255,0.4)',
-                            fontWeight: 700,
-                        }}
-                    >
+                    <DialogDescription className="font-black uppercase tracking-widest text-[11px] text-white/40 mt-1">
                         {members.length} MEMBRE{members.length !== 1 ? 'S' : ''} · ACCÈS ADMIN
                     </DialogDescription>
                 </div>
@@ -227,19 +208,11 @@ export function ManageGroupModal({ isOpen, onOpenChange, slug, members, loading,
                 <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
                     {loading && members.length === 0 ? (
                         <div className="flex items-center justify-center py-10">
-                            <span
-                                className="font-black uppercase tracking-widest"
-                                style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}
-                            >
-                                <CircleNotch className="w-5 h-5 animate-spin inline-block" />
-                            </span>
+                            <CircleNotch className="w-5 h-5 animate-spin text-white/40" />
                         </div>
                     ) : members.length === 0 ? (
                         <div className="flex items-center justify-center py-10">
-                            <span
-                                className="font-black uppercase tracking-widest"
-                                style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}
-                            >
+                            <span className="font-black uppercase tracking-widest text-[11px] text-white/40">
                                 Aucun membre trouvé
                             </span>
                         </div>
@@ -250,32 +223,28 @@ export function ManageGroupModal({ isOpen, onOpenChange, slug, members, loading,
                             return (
                                 <div
                                     key={member.id}
-                                    className="flex items-center justify-between transition-colors"
-                                    style={{
-                                        border: '2px solid rgba(255,255,255,0.1)',
-                                        borderRadius: 0,
-                                        padding: '10px 12px',
-                                    }}
+                                    className="flex items-center justify-between px-3 py-2.5 rounded-xl border border-white/8 bg-white/2 transition-colors"
                                     onMouseEnter={e => {
-                                        (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.25)';
-                                        (e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.02)';
+                                        (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.15)';
+                                        (e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.04)';
                                     }}
                                     onMouseLeave={e => {
-                                        (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.1)';
-                                        (e.currentTarget as HTMLDivElement).style.background = 'transparent';
+                                        (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.08)';
+                                        (e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.02)';
                                     }}
                                 >
                                     <div className="flex items-center gap-3">
                                         {/* Avatar */}
                                         <div
-                                            className="flex items-center justify-center shrink-0 font-black text-sm"
-                                            style={{
-                                                width: 40,
-                                                height: 40,
-                                                borderRadius: 0,
-                                                border: isAdmin ? '2px solid #fbbf24' : '2px solid rgba(255,255,255,0.3)',
-                                                background: isAdmin ? 'rgba(251,191,36,0.08)' : 'rgba(255,255,255,0.05)',
-                                                color: isAdmin ? '#fbbf24' : '#ffffff',
+                                            className="w-9 h-9 flex items-center justify-center shrink-0 font-black text-[11px] rounded-full"
+                                            style={isAdmin ? {
+                                                border: '2px solid rgba(255,46,46,0.4)',
+                                                background: 'rgba(255,46,46,0.08)',
+                                                color: 'rgba(255,46,46,0.7)',
+                                            } : {
+                                                border: '2px solid rgba(255,255,255,0.15)',
+                                                background: 'rgba(255,255,255,0.06)',
+                                                color: 'rgba(255,255,255,0.45)',
                                             }}
                                         >
                                             {getInitials(member.name)}
@@ -283,33 +252,16 @@ export function ManageGroupModal({ isOpen, onOpenChange, slug, members, loading,
 
                                         {/* Name + badges */}
                                         <div className="flex items-center gap-2 flex-wrap">
-                                            <span className="font-bold text-sm" style={{ color: '#ffffff' }}>
+                                            <span className="font-black uppercase tracking-widest text-sm text-white">
                                                 {member.name}
                                             </span>
                                             {isCurrentUser && (
-                                                <span
-                                                    className="uppercase"
-                                                    style={{
-                                                        border: '1px solid rgba(255,255,255,0.35)',
-                                                        fontSize: 9,
-                                                        color: 'rgba(255,255,255,0.6)',
-                                                        padding: '1px 5px',
-                                                        fontFamily: 'inherit',
-                                                    }}
-                                                >
+                                                <span className="rounded-full border border-white/25 text-white/50 text-[9px] px-2 py-px uppercase">
                                                     Vous
                                                 </span>
                                             )}
                                             {isAdmin && (
-                                                <span
-                                                    className="flex items-center gap-1 uppercase"
-                                                    style={{
-                                                        border: '1px solid #fbbf24',
-                                                        color: '#fbbf24',
-                                                        fontSize: 9,
-                                                        padding: '1px 5px',
-                                                    }}
-                                                >
+                                                <span className="flex items-center gap-1 rounded-full border border-[#ff2e2e]/40 text-[#ff2e2e]/70 text-[9px] px-2 py-px uppercase">
                                                     <Crown className="w-2.5 h-2.5" weight="fill" />
                                                     Admin
                                                 </span>
@@ -320,35 +272,27 @@ export function ManageGroupModal({ isOpen, onOpenChange, slug, members, loading,
                                     {/* Kick button */}
                                     {!isCurrentUser ? (
                                         <button
-                                            className="flex items-center justify-center transition-all shrink-0"
-                                            style={{
-                                                width: 40,
-                                                height: 40,
-                                                border: '2px solid rgba(239,68,68,0.25)',
-                                                borderRadius: 0,
-                                                color: 'rgba(239,68,68,0.55)',
-                                                background: 'transparent',
-                                            }}
+                                            className="w-8 h-8 flex items-center justify-center rounded-lg border border-red-500/25 text-red-400/55 bg-transparent transition-all shrink-0"
                                             onClick={() => handleDeleteMember(member.id)}
                                             disabled={deletingId === member.id}
                                             onMouseEnter={e => {
-                                                (e.currentTarget.style.borderColor = '#ef4444');
+                                                (e.currentTarget.style.borderColor = 'rgba(239,68,68,0.5)');
                                                 (e.currentTarget.style.background = 'rgba(239,68,68,0.08)');
-                                                (e.currentTarget.style.color = '#ef4444');
+                                                (e.currentTarget.style.color = 'rgb(248,113,113)');
                                             }}
                                             onMouseLeave={e => {
                                                 (e.currentTarget.style.borderColor = 'rgba(239,68,68,0.25)');
                                                 (e.currentTarget.style.background = 'transparent');
-                                                (e.currentTarget.style.color = 'rgba(239,68,68,0.55)');
+                                                (e.currentTarget.style.color = 'rgba(248,113,113,0.55)');
                                             }}
                                         >
                                             {deletingId === member.id
-                                                ? <CircleNotch className="w-4 h-4 animate-spin" />
-                                                : <Trash className="w-4 h-4" />
+                                                ? <CircleNotch className="w-3.5 h-3.5 animate-spin" />
+                                                : <Trash className="w-3.5 h-3.5" />
                                             }
                                         </button>
                                     ) : (
-                                        <div style={{ width: 40, height: 40 }} />
+                                        <div className="w-8 h-8" />
                                     )}
                                 </div>
                             );
