@@ -424,44 +424,98 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
         );
     }
 
-    // ── IN-PERSON / NEO-BRUTALIST VARIANT ────────────────────────────────────
+    // ── IN-PERSON / NEO-BRUTALIST VARIANT ────────────────────────────────────────
+
+    // Square inline toggle — NOT the CyberToggle
+    const BrutToggle = ({ enabled, onChange, disabled: tog_disabled }: { enabled: boolean; onChange: () => void; disabled: boolean }) => (
+        <div
+            onClick={() => !tog_disabled && onChange()}
+            className="relative shrink-0 transition-colors"
+            style={{
+                width: '36px',
+                height: '20px',
+                borderRadius: 0,
+                border: `2px solid ${enabled ? '#fbbf24' : 'rgba(255,255,255,0.25)'}`,
+                background: enabled ? 'rgba(251,191,36,0.15)' : 'transparent',
+                cursor: tog_disabled ? 'not-allowed' : 'pointer',
+            }}
+        >
+            <motion.div
+                animate={{ x: enabled ? 18 : 2 }}
+                className="absolute top-1"
+                style={{
+                    width: '12px',
+                    height: '12px',
+                    borderRadius: 0,
+                    background: enabled ? '#fbbf24' : 'rgba(255,255,255,0.4)',
+                }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+            />
+        </div>
+    );
+
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-md glass-panel border-white/10 text-white rounded-3xl p-0 overflow-hidden max-h-[90vh] overflow-y-auto">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--v2-primary)] to-[var(--v2-accent)]"></div>
-                <div className="p-6">
-                    <DialogHeader className="mb-6">
-                        <DialogTitle className="text-xl font-bold">
+            <DialogContent
+                className="flex flex-col p-0 overflow-hidden"
+                style={{
+                    maxWidth: '460px',
+                    width: 'calc(100% - 2rem)',
+                    maxHeight: '90vh',
+                    overflowY: 'auto',
+                    background: '#0d0d0d',
+                    border: '2px solid rgba(255,255,255,0.7)',
+                    borderRadius: 0,
+                }}
+            >
+                {/* Top amber bar */}
+                <div style={{ height: '4px', background: '#fbbf24', width: '100%', flexShrink: 0 }} />
+
+                <div className="p-6 flex flex-col gap-6">
+                    <DialogHeader>
+                        <DialogTitle
+                            className="font-black uppercase tracking-widest text-lg"
+                            style={{ color: 'white' }}
+                        >
                             Paramètres du groupe
                         </DialogTitle>
                     </DialogHeader>
 
                     {loading ? (
-                        <div className="flex justify-center py-8">
-                            <CircleNotch className="w-8 h-8 animate-spin text-slate-400" />
+                        <div className="flex justify-center py-10">
+                            <CircleNotch className="w-6 h-6 animate-spin" style={{ color: '#fbbf24' }} />
                         </div>
                     ) : (
-                        <div className="space-y-8">
+                        <>
+                            {/* ── GROUP TYPE ── */}
                             <div>
-                                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3">
+                                <h3
+                                    className="font-black uppercase tracking-widest text-xs"
+                                    style={{ color: 'rgba(255,255,255,0.4)', marginBottom: '10px' }}
+                                >
                                     Mode de fonctionnement
                                 </h3>
                                 <GroupTypeSelector
                                     value={groupType}
                                     onValueChange={(val) => setGroupType(val)}
-                                    idPrefix="settings-"
+                                    idPrefix="settings-brut-"
                                     disabled={!isAdmin}
+                                    isRemote={false}
                                 />
                             </div>
 
+                            {/* ── CITY (in_person only) ── */}
                             {groupType === 'in_person' && (
-                                <div className="space-y-3">
-                                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                        <MapPin className="w-4 h-4" />
+                                <div>
+                                    <h3
+                                        className="font-black uppercase tracking-widest text-xs flex items-center gap-2"
+                                        style={{ color: 'rgba(255,255,255,0.4)', marginBottom: '10px' }}
+                                    >
+                                        <MapPin className="w-3.5 h-3.5" />
                                         Ville du groupe
                                     </h3>
                                     <div className="relative">
-                                        <Input
+                                        <input
                                             value={locationSearch}
                                             onChange={(e) => {
                                                 setLocationSearch(e.target.value);
@@ -469,11 +523,26 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                             }}
                                             placeholder="Rechercher une ville..."
                                             disabled={!isAdmin}
-                                            className="bg-white/5 border-white/10 rounded-xl h-11 focus:ring-[var(--v2-primary)]/50"
+                                            className="w-full bg-transparent text-sm outline-none px-3 py-2.5"
+                                            style={{
+                                                border: '2px solid rgba(255,255,255,0.4)',
+                                                borderRadius: 0,
+                                                color: 'white',
+                                                caretColor: '#fbbf24',
+                                            }}
+                                            onFocus={e => (e.currentTarget.style.borderColor = '#fbbf24')}
+                                            onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)')}
                                         />
-
                                         {locationResults.length > 0 && isAdmin && (
-                                            <div className="absolute top-full left-0 w-full mt-2 bg-black border border-white/10 rounded-xl overflow-hidden z-50 shadow-2xl max-h-48 overflow-y-auto">
+                                            <div
+                                                className="absolute top-full left-0 w-full z-50 overflow-hidden"
+                                                style={{
+                                                    background: '#0d0d0d',
+                                                    border: '2px solid rgba(255,255,255,0.5)',
+                                                    borderRadius: 0,
+                                                    marginTop: '2px',
+                                                }}
+                                            >
                                                 {locationResults.map((cityName) => (
                                                     <button
                                                         key={cityName}
@@ -483,7 +552,10 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                                             setLocationSearch(cityName);
                                                             setLocationResults([]);
                                                         }}
-                                                        className="w-full text-left px-4 py-3 hover:bg-white/10 text-sm transition-colors border-b border-white/5 last:border-0"
+                                                        className="w-full text-left px-3 py-2 text-sm transition-colors"
+                                                        style={{ color: 'white', borderBottom: '1px solid rgba(255,255,255,0.08)' }}
+                                                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.07)')}
+                                                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                                                     >
                                                         {cityName}
                                                     </button>
@@ -492,162 +564,275 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                         )}
                                     </div>
                                     {!isAdmin && (
-                                        <p className="text-xs text-slate-500 italic">
+                                        <p className="text-xs mt-2" style={{ color: 'rgba(255,255,255,0.35)' }}>
                                             Seul l'administrateur peut modifier la ville.
                                         </p>
                                     )}
                                 </div>
                             )}
 
-                            {/* ── MODE TOGGLE ── */}
+                            {/* ── PHASE TOGGLE ── */}
                             <div>
-                                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3">
+                                <h3
+                                    className="font-black uppercase tracking-widest text-xs"
+                                    style={{ color: 'rgba(255,255,255,0.4)', marginBottom: '10px' }}
+                                >
                                     Phase du groupe
                                 </h3>
-                                <div className="grid grid-cols-2 gap-2 p-1 bg-black/40 rounded-xl border border-white/5">
+                                <div
+                                    style={{
+                                        border: '2px solid rgba(255,255,255,0.15)',
+                                        borderRadius: 0,
+                                        background: 'rgba(255,255,255,0.02)',
+                                        padding: '4px',
+                                        display: 'grid',
+                                        gridTemplateColumns: '1fr 1fr',
+                                        gap: '4px',
+                                    }}
+                                >
+                                    {/* Planification */}
                                     <button
                                         type="button"
                                         disabled={!isAdmin}
                                         onClick={setModePlanning}
-                                        className={cn(
-                                            'flex flex-col items-center gap-1.5 py-3 px-2 rounded-lg transition-all text-center',
-                                            phase === 'planning'
-                                                ? 'bg-[var(--v2-primary)]/15 text-white'
-                                                : 'text-slate-400 hover:text-slate-200',
-                                            !isAdmin && 'opacity-50 cursor-not-allowed'
-                                        )}
+                                        className="flex flex-col items-center gap-1.5 py-3 px-2 text-center transition-all"
+                                        style={{
+                                            borderRadius: 0,
+                                            border: phase === 'planning'
+                                                ? '2px solid rgba(255,255,255,0.6)'
+                                                : '2px solid transparent',
+                                            background: phase === 'planning'
+                                                ? 'rgba(255,255,255,0.06)'
+                                                : 'transparent',
+                                            color: phase === 'planning' ? 'white' : 'rgba(255,255,255,0.45)',
+                                            cursor: !isAdmin ? 'not-allowed' : 'pointer',
+                                            opacity: !isAdmin ? 0.5 : 1,
+                                        }}
                                     >
-                                        <CalendarDots className={cn('w-4 h-4', phase === 'planning' ? 'text-[var(--v2-primary)]' : 'text-slate-500')} weight="fill" />
-                                        <span className="text-xs font-bold">Planification</span>
-                                        <span className="text-[10px] text-white/35 leading-tight">On se met d'accord</span>
+                                        <CalendarDots
+                                            className="w-4 h-4"
+                                            weight="fill"
+                                            style={{ color: phase === 'planning' ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.3)' }}
+                                        />
+                                        <span className="font-black uppercase text-xs tracking-widest">Planification</span>
+                                        <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>On se met d'accord</span>
                                     </button>
+
+                                    {/* Jour J */}
                                     <button
                                         type="button"
                                         disabled={!isAdmin}
                                         onClick={setModeDayOf}
-                                        className={cn(
-                                            'flex flex-col items-center gap-1.5 py-3 px-2 rounded-lg transition-all text-center',
-                                            phase === 'day-of'
-                                                ? 'bg-green-500/15 text-white'
-                                                : 'text-slate-400 hover:text-slate-200',
-                                            !isAdmin && 'opacity-50 cursor-not-allowed'
-                                        )}
+                                        className="flex flex-col items-center gap-1.5 py-3 px-2 text-center transition-all"
+                                        style={{
+                                            borderRadius: 0,
+                                            border: phase === 'day-of'
+                                                ? '2px solid #4ade80'
+                                                : '2px solid transparent',
+                                            background: phase === 'day-of'
+                                                ? 'rgba(74,222,128,0.06)'
+                                                : 'transparent',
+                                            color: phase === 'day-of' ? '#4ade80' : 'rgba(255,255,255,0.45)',
+                                            cursor: !isAdmin ? 'not-allowed' : 'pointer',
+                                            opacity: !isAdmin ? 0.5 : 1,
+                                        }}
                                     >
-                                        <CheckSquare className={cn('w-4 h-4', phase === 'day-of' ? 'text-green-400' : 'text-slate-500')} weight="fill" />
-                                        <span className="text-xs font-bold">Jour J</span>
-                                        <span className="text-[10px] text-white/35 leading-tight">C'est décidé</span>
+                                        <CheckSquare
+                                            className="w-4 h-4"
+                                            weight="fill"
+                                            style={{ color: phase === 'day-of' ? '#4ade80' : 'rgba(255,255,255,0.3)' }}
+                                        />
+                                        <span className="font-black uppercase text-xs tracking-widest">Jour J</span>
+                                        <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>C'est décidé</span>
                                     </button>
                                 </div>
                             </div>
 
                             {/* ── FEATURE TOGGLES ── */}
-                            <div className="pt-2">
-                                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">
+                            <div>
+                                <h3
+                                    className="font-black uppercase tracking-widest text-xs"
+                                    style={{ color: 'rgba(255,255,255,0.4)', marginBottom: '10px' }}
+                                >
                                     Fonctionnalités
                                 </h3>
-                                <div className="space-y-3">
+                                <div className="flex flex-col gap-2">
+
+                                    {/* Calendrier */}
                                     <div
                                         onClick={() => isAdmin && setCalendarEnabled(!calendarEnabled)}
-                                        className={cn(
-                                            "flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 cursor-pointer",
-                                            calendarEnabled
-                                                ? "bg-[var(--v2-primary)]/10 border-[var(--v2-primary)]/40 shadow-[0_0_15px_rgba(var(--v2-primary-rgb),0.1)]"
-                                                : "bg-white/5 border-white/5 hover:bg-white/10"
-                                        )}
+                                        className="flex items-center justify-between transition-all"
+                                        style={{
+                                            border: `2px solid ${calendarEnabled ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.12)'}`,
+                                            borderRadius: 0,
+                                            padding: '14px 16px',
+                                            background: calendarEnabled ? 'rgba(255,255,255,0.04)' : 'transparent',
+                                            cursor: isAdmin ? 'pointer' : 'default',
+                                        }}
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className={cn(
-                                                "size-10 rounded-xl flex items-center justify-center transition-colors",
-                                                calendarEnabled ? "bg-[var(--v2-primary)]/20 text-[var(--v2-primary)]" : "bg-white/5 text-slate-400"
-                                            )}>
-                                                <CalendarDots className="size-5" weight="fill" />
+                                            <div
+                                                className="flex items-center justify-center shrink-0"
+                                                style={{
+                                                    width: '36px',
+                                                    height: '36px',
+                                                    border: `2px solid ${calendarEnabled ? '#fbbf24' : 'rgba(255,255,255,0.2)'}`,
+                                                    borderRadius: 0,
+                                                    background: calendarEnabled ? 'rgba(251,191,36,0.08)' : 'transparent',
+                                                }}
+                                            >
+                                                <CalendarDots
+                                                    className="w-4 h-4"
+                                                    weight="fill"
+                                                    style={{ color: calendarEnabled ? '#fbbf24' : 'rgba(255,255,255,0.35)' }}
+                                                />
                                             </div>
                                             <div>
-                                                <p className={cn("font-bold text-sm", calendarEnabled ? "text-white" : "text-slate-300")}>Calendrier</p>
-                                                <p className="text-[11px] text-slate-500">Voter pour des dates</p>
+                                                <p
+                                                    className="font-bold text-sm"
+                                                    style={{ color: calendarEnabled ? 'white' : 'rgba(255,255,255,0.55)' }}
+                                                >
+                                                    Calendrier
+                                                </p>
+                                                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)' }}>
+                                                    Voter pour des dates
+                                                </p>
                                             </div>
                                         </div>
-                                        <div className={cn(
-                                            "w-10 h-6 rounded-full relative transition-colors duration-300",
-                                            calendarEnabled ? "bg-[var(--v2-primary)]" : "bg-white/10"
-                                        )}>
-                                            <motion.div
-                                                animate={{ x: calendarEnabled ? 18 : 2 }}
-                                                className="absolute top-1 left-0 size-4 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.5)]"
-                                                transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                            />
-                                        </div>
+                                        <BrutToggle
+                                            enabled={calendarEnabled}
+                                            onChange={() => setCalendarEnabled(!calendarEnabled)}
+                                            disabled={!isAdmin}
+                                        />
                                     </div>
 
+                                    {/* Lieux */}
                                     <div
                                         onClick={() => isAdmin && setLocationEnabled(!locationEnabled)}
-                                        className={cn(
-                                            "flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 cursor-pointer",
-                                            locationEnabled
-                                                ? "bg-[var(--v2-primary)]/10 border-[var(--v2-primary)]/40 shadow-[0_0_15px_rgba(var(--v2-primary-rgb),0.1)]"
-                                                : "bg-white/5 border-white/5 hover:bg-white/10"
-                                        )}
+                                        className="flex items-center justify-between transition-all"
+                                        style={{
+                                            border: `2px solid ${locationEnabled ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.12)'}`,
+                                            borderRadius: 0,
+                                            padding: '14px 16px',
+                                            background: locationEnabled ? 'rgba(255,255,255,0.04)' : 'transparent',
+                                            cursor: isAdmin ? 'pointer' : 'default',
+                                        }}
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className={cn(
-                                                "size-10 rounded-xl flex items-center justify-center transition-colors",
-                                                locationEnabled ? "bg-[var(--v2-primary)]/20 text-[var(--v2-primary)]" : "bg-white/5 text-slate-400"
-                                            )}>
-                                                {groupType === 'remote' ? <GameController className="size-5" /> : <MapPin className="size-5" />}
+                                            <div
+                                                className="flex items-center justify-center shrink-0"
+                                                style={{
+                                                    width: '36px',
+                                                    height: '36px',
+                                                    border: `2px solid ${locationEnabled ? '#fbbf24' : 'rgba(255,255,255,0.2)'}`,
+                                                    borderRadius: 0,
+                                                    background: locationEnabled ? 'rgba(251,191,36,0.08)' : 'transparent',
+                                                }}
+                                            >
+                                                <MapPin
+                                                    className="w-4 h-4"
+                                                    style={{ color: locationEnabled ? '#fbbf24' : 'rgba(255,255,255,0.35)' }}
+                                                />
                                             </div>
                                             <div>
-                                                <p className={cn("font-bold text-sm", locationEnabled ? "text-white" : "text-slate-300")}>{groupType === 'remote' ? 'Jeux' : 'Lieux'}</p>
-                                                <p className="text-[11px] text-slate-500">{groupType === 'remote' ? 'Proposer et voter pour un jeu' : 'Proposer et voter pour des lieux'}</p>
+                                                <p
+                                                    className="font-bold text-sm"
+                                                    style={{ color: locationEnabled ? 'white' : 'rgba(255,255,255,0.55)' }}
+                                                >
+                                                    Lieux
+                                                </p>
+                                                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)' }}>
+                                                    Proposer et voter pour des lieux
+                                                </p>
                                             </div>
                                         </div>
-                                        <div className={cn(
-                                            "w-10 h-6 rounded-full relative transition-colors duration-300",
-                                            locationEnabled ? "bg-[var(--v2-primary)]" : "bg-white/10"
-                                        )}>
-                                            <motion.div
-                                                animate={{ x: locationEnabled ? 18 : 2 }}
-                                                className="absolute top-1 left-0 size-4 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.5)]"
-                                                transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                            />
-                                        </div>
+                                        <BrutToggle
+                                            enabled={locationEnabled}
+                                            onChange={() => setLocationEnabled(!locationEnabled)}
+                                            disabled={!isAdmin}
+                                        />
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex flex-col gap-3 pt-6 border-t border-white/10">
+                            {/* ── ACTIONS ── */}
+                            <div
+                                className="flex flex-col gap-2"
+                                style={{ borderTop: '2px solid rgba(255,255,255,0.1)', paddingTop: '20px' }}
+                            >
                                 {isAdmin && (
-                                    <Button
+                                    <button
                                         onClick={handleSave}
                                         disabled={saving}
-                                        className="w-full btn-massive h-12 rounded-xl text-white font-bold"
+                                        className="w-full flex items-center justify-center gap-2 transition-all"
+                                        style={{
+                                            height: '48px',
+                                            background: '#fbbf24',
+                                            color: '#000',
+                                            fontWeight: 900,
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.12em',
+                                            border: '2px solid #000',
+                                            borderRadius: 0,
+                                            boxShadow: '3px 3px 0 #000',
+                                            opacity: saving ? 0.5 : 1,
+                                            cursor: saving ? 'not-allowed' : 'pointer',
+                                            fontSize: '13px',
+                                        }}
+                                        onMouseEnter={e => {
+                                            if (!saving) {
+                                                e.currentTarget.style.transform = 'translate(-1px,-1px)';
+                                                e.currentTarget.style.boxShadow = '4px 4px 0 #000';
+                                            }
+                                        }}
+                                        onMouseLeave={e => {
+                                            if (!saving) {
+                                                e.currentTarget.style.transform = 'translate(0,0)';
+                                                e.currentTarget.style.boxShadow = '3px 3px 0 #000';
+                                            }
+                                        }}
                                     >
                                         {saving ? (
-                                            <>
-                                                <CircleNotch className="mr-2 h-5 w-5 animate-spin" />
-                                                Enregistrement...
-                                            </>
+                                            <><CircleNotch className="w-4 h-4 animate-spin" /> Enregistrement...</>
                                         ) : (
-                                            "Enregistrer les paramètres"
+                                            'Enregistrer les paramètres'
                                         )}
-                                    </Button>
+                                    </button>
                                 )}
 
                                 {onLeaveGroup && (
-                                    <Button
-                                        variant="outline"
+                                    <button
                                         onClick={() => {
-                                            if (confirm("Voulez-vous vraiment quitter ce groupe ?")) {
+                                            if (confirm('Voulez-vous vraiment quitter ce groupe ?')) {
                                                 onLeaveGroup();
                                             }
                                         }}
-                                        className="w-full bg-red-500/10 border-red-500/20 text-red-500 hover:bg-red-500/20 hover:text-red-400 font-bold h-12 rounded-xl transition-all"
+                                        className="w-full flex items-center justify-center gap-2 font-bold uppercase tracking-widest text-sm transition-all"
+                                        style={{
+                                            height: '44px',
+                                            border: '2px solid rgba(239,68,68,0.4)',
+                                            borderRadius: 0,
+                                            color: 'rgba(239,68,68,0.7)',
+                                            background: 'transparent',
+                                            cursor: 'pointer',
+                                        }}
+                                        onMouseEnter={e => {
+                                            e.currentTarget.style.borderColor = '#ef4444';
+                                            e.currentTarget.style.color = '#ef4444';
+                                            e.currentTarget.style.background = 'rgba(239,68,68,0.06)';
+                                        }}
+                                        onMouseLeave={e => {
+                                            e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)';
+                                            e.currentTarget.style.color = 'rgba(239,68,68,0.7)';
+                                            e.currentTarget.style.background = 'transparent';
+                                        }}
                                     >
-                                        <SignOut className="mr-2 h-4 w-4" />
+                                        <SignOut className="w-4 h-4" />
                                         Quitter le groupe
-                                    </Button>
+                                    </button>
                                 )}
                             </div>
-                        </div>
+                        </>
                     )}
                 </div>
             </DialogContent>

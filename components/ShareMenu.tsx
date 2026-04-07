@@ -226,63 +226,175 @@ export function ShareMenu({ groupName, url, variant = 'icon', isRemote }: ShareM
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     {variant === 'icon' ? (
-                        <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
-                            <ShareNetwork className="w-5 h-5" />
-                        </Button>
+                        <button
+                            className="flex items-center justify-center transition-colors"
+                            style={{
+                                width: 32,
+                                height: 32,
+                                border: '2px solid rgba(255,255,255,0.5)',
+                                borderRadius: 0,
+                                background: 'transparent',
+                                color: 'rgba(255,255,255,0.7)',
+                            }}
+                            onMouseEnter={e => {
+                                e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                                e.currentTarget.style.color = 'white';
+                                e.currentTarget.style.borderColor = 'white';
+                            }}
+                            onMouseLeave={e => {
+                                e.currentTarget.style.background = 'transparent';
+                                e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
+                                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)';
+                            }}
+                        >
+                            <ShareNetwork className="w-4 h-4" />
+                        </button>
                     ) : (
-                        <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white flex items-center gap-2 px-3 py-1.5 h-auto text-sm">
+                        <button
+                            className="flex items-center gap-2 px-3 py-1.5 transition-colors"
+                            style={{
+                                border: '2px solid rgba(255,255,255,0.5)',
+                                borderRadius: 0,
+                                background: 'transparent',
+                                color: 'rgba(255,255,255,0.7)',
+                                fontWeight: 700,
+                                fontSize: 12,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.1em',
+                            }}
+                            onMouseEnter={e => {
+                                e.currentTarget.style.borderColor = 'white';
+                                e.currentTarget.style.color = 'white';
+                            }}
+                            onMouseLeave={e => {
+                                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)';
+                                e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
+                            }}
+                        >
                             <ShareNetwork className="w-4 h-4" />
                             <span>Partager</span>
-                        </Button>
+                        </button>
                     )}
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 glass-panel border-white/10 text-white rounded-2xl">
-                    <DropdownMenuLabel className="font-bold text-slate-300">Inviter des amis</DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuContent
+                    align="end"
+                    className="p-1"
+                    style={{
+                        width: 220,
+                        background: '#0d0d0d',
+                        border: '2px solid rgba(255,255,255,0.7)',
+                        borderRadius: 0,
+                        boxShadow: '4px 4px 0 #000',
+                        color: 'white',
+                    }}
+                >
+                    <DropdownMenuLabel
+                        className="font-black uppercase tracking-widest text-xs px-2 py-1.5"
+                        style={{ color: 'rgba(255,255,255,0.45)' }}
+                    >
+                        Inviter des amis
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator style={{ height: 2, background: 'rgba(255,255,255,0.1)', margin: '2px 4px' }} />
 
-                    <DropdownMenuItem onClick={handleCopy} className="cursor-pointer gap-2 focus:bg-white/10 focus:text-white dark:focus:bg-white/10">
-                        <Copy className="w-4 h-4" />
-                        {copied ? 'Lien copié !' : 'Copier le lien'}
+                    <DropdownMenuItem
+                        onClick={handleCopy}
+                        className="cursor-pointer font-bold gap-2"
+                        style={{ borderRadius: 0 }}
+                    >
+                        {copied
+                            ? <Check className="w-4 h-4 shrink-0" style={{ color: '#4ade80' }} />
+                            : <Copy className="w-4 h-4 shrink-0" />}
+                        <span style={copied ? { color: '#4ade80' } : undefined}>
+                            {copied ? 'Lien copié !' : 'Copier le lien'}
+                        </span>
                     </DropdownMenuItem>
 
-                    <DropdownMenuItem onClick={() => setQrOpen(true)} className="cursor-pointer gap-2 focus:bg-white/10 focus:text-white dark:focus:bg-white/10">
-                        <QrCode className="w-4 h-4" />
+                    <DropdownMenuItem
+                        onClick={() => setQrOpen(true)}
+                        className="cursor-pointer font-bold gap-2"
+                        style={{ borderRadius: 0 }}
+                    >
+                        <QrCode className="w-4 h-4 shrink-0" />
                         Code QR
                     </DropdownMenuItem>
 
-                    <DropdownMenuItem onClick={handleNativeShare} className="cursor-pointer gap-2 sm:hidden focus:bg-white/10 focus:text-white dark:focus:bg-white/10">
-                        <ShareNetwork className="w-4 h-4" />
+                    <DropdownMenuItem
+                        onClick={handleNativeShare}
+                        className="cursor-pointer font-bold gap-2 sm:hidden"
+                        style={{ borderRadius: 0 }}
+                    >
+                        <ShareNetwork className="w-4 h-4 shrink-0" />
                         Autres options...
                     </DropdownMenuItem>
 
-                    <DropdownMenuSeparator className="bg-white/10" />
+                    <DropdownMenuSeparator style={{ height: 2, background: 'rgba(255,255,255,0.1)', margin: '2px 4px' }} />
 
-                    <DropdownMenuItem onClick={() => handleShare('whatsapp')} className="cursor-pointer gap-2 focus:bg-white/10 focus:text-white dark:focus:bg-white/10">
-                        <ChatCircle className="w-4 h-4 text-green-500" />
+                    <DropdownMenuItem
+                        onClick={() => handleShare('whatsapp')}
+                        className="cursor-pointer font-bold gap-2"
+                        style={{ borderRadius: 0 }}
+                    >
+                        <ChatCircle className="w-4 h-4 shrink-0 text-green-500" />
                         WhatsApp
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleShare('messenger')} className="cursor-pointer gap-2 focus:bg-white/10 focus:text-white dark:focus:bg-white/10">
-                        <FacebookLogo className="w-4 h-4 text-blue-500" />
+                    <DropdownMenuItem
+                        onClick={() => handleShare('messenger')}
+                        className="cursor-pointer font-bold gap-2"
+                        style={{ borderRadius: 0 }}
+                    >
+                        <FacebookLogo className="w-4 h-4 shrink-0 text-blue-400" />
                         Messenger
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleShare('instagram')} className="cursor-pointer gap-2 focus:bg-white/10 focus:text-white dark:focus:bg-white/10">
-                        <InstagramLogo className="w-4 h-4 text-pink-500" />
+                    <DropdownMenuItem
+                        onClick={() => handleShare('instagram')}
+                        className="cursor-pointer font-bold gap-2"
+                        style={{ borderRadius: 0 }}
+                    >
+                        <InstagramLogo className="w-4 h-4 shrink-0 text-pink-400" />
                         Instagram
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
 
+            {/* QR Dialog — neo-brutalist */}
             <Dialog open={qrOpen} onOpenChange={setQrOpen}>
-                <DialogContent className="sm:max-w-md glass-panel border-white/10 text-white rounded-3xl p-0 overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--v2-primary)] to-[var(--v2-accent)]"></div>
-                    <div className="flex flex-col items-center justify-center p-8">
-                        <DialogHeader className="mb-4">
-                            <DialogTitle className="text-center">Scanner pour rejoindre</DialogTitle>
+                <DialogContent
+                    className="flex flex-col items-center p-0"
+                    style={{
+                        maxWidth: 320,
+                        width: 'calc(100% - 2rem)',
+                        background: '#0d0d0d',
+                        border: '2px solid rgba(255,255,255,0.7)',
+                        borderRadius: 0,
+                    }}
+                >
+                    <div style={{ width: '100%', height: 4, background: '#fbbf24', flexShrink: 0 }} />
+                    <div className="flex flex-col items-center gap-5 p-6">
+                        <DialogHeader>
+                            <DialogTitle
+                                className="font-black uppercase tracking-widest text-center"
+                                style={{ color: 'white', fontSize: '0.85rem' }}
+                            >
+                                Scanner pour rejoindre
+                            </DialogTitle>
                         </DialogHeader>
-                        <div className="bg-white p-4 rounded-2xl shadow-[0_0_30px_rgba(255,255,255,0.1)]">
-                            <QRCode value={url} size={200} />
+                        <div
+                            style={{
+                                border: '3px solid rgba(255,255,255,0.7)',
+                                borderRadius: 0,
+                                padding: 12,
+                                background: 'white',
+                                boxShadow: '4px 4px 0 #000',
+                            }}
+                        >
+                            <QRCode value={url} size={180} />
                         </div>
-                        <p className="mt-6 text-sm text-center text-slate-400 w-full font-medium">{groupName}</p>
+                        <p
+                            className="font-black uppercase tracking-widest text-center"
+                            style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)' }}
+                        >
+                            {groupName}
+                        </p>
                     </div>
                 </DialogContent>
             </Dialog>

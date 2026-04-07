@@ -263,37 +263,68 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
         const isVoting = votingIds.has(p.id);
         const upActive = myVotes[p.id] === 1;
         const downActive = myVotes[p.id] === -1;
-
         const btnSm = size === 'sm';
-        const btnClass = btnSm
-            ? "w-7 h-7 rounded-lg flex items-center justify-center transition-all active:scale-90"
-            : "w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition-all active:scale-90";
-        const chevronClass = btnSm ? "w-4 h-4 stroke-[3]" : "w-5 h-5 sm:w-6 sm:h-6 stroke-[3]";
-        const loaderClass = btnSm ? "w-3.5 h-3.5 animate-spin" : "w-4 h-4 animate-spin";
-        const scoreClass = btnSm
-            ? "font-bold text-[10px] sm:text-[11px]"
-            : "font-bold text-xs sm:text-sm";
-        const scoreColor = p.score > 0 ? "text-green-400" : p.score < 0 ? "text-red-400" : "text-white";
-        const containerClass = btnSm
-            ? "flex flex-col items-center gap-1 shrink-0 bg-white/5 rounded-xl p-1 border border-white/5"
-            : "flex flex-col items-center gap-1 shrink-0 bg-white/5 rounded-2xl p-1.5 border border-white/5 self-start";
+        const btnWH = btnSm ? 28 : 34;
+        const chevronClass = btnSm ? 'w-3.5 h-3.5' : 'w-4 h-4';
+        const loaderClass = btnSm ? 'w-3.5 h-3.5 animate-spin' : 'w-4 h-4 animate-spin';
+        const scoreColor = p.score > 0 ? '#4ade80' : p.score < 0 ? '#ef4444' : 'white';
 
         return (
-            <div className={containerClass}>
+            <div
+                className="flex flex-col items-center gap-1 shrink-0"
+                style={{
+                    border: '2px solid rgba(255,255,255,0.15)',
+                    borderRadius: 0,
+                    padding: btnSm ? '4px' : '6px',
+                    background: 'rgba(255,255,255,0.03)',
+                }}
+            >
                 <button
                     onClick={() => handleVote(p.id, 1)}
                     disabled={!memberId || isVoting}
-                    className={cn(btnClass, upActive ? "text-green-400 bg-green-400/20 shadow-[0_0_15px_rgba(74,222,128,0.15)]" : "text-slate-400 hover:text-green-400 hover:bg-green-400/10", isVoting && "opacity-50 cursor-not-allowed")}
+                    className="flex items-center justify-center transition-all"
+                    style={{
+                        width: btnWH,
+                        height: btnWH,
+                        borderRadius: 0,
+                        border: `2px solid ${upActive ? '#4ade80' : 'rgba(255,255,255,0.15)'}`,
+                        background: upActive ? 'rgba(74,222,128,0.12)' : 'transparent',
+                        color: upActive ? '#4ade80' : 'rgba(255,255,255,0.45)',
+                        opacity: isVoting ? 0.5 : 1,
+                        cursor: !memberId || isVoting ? 'not-allowed' : 'pointer',
+                    }}
+                    onMouseEnter={e => { if (!upActive && memberId && !isVoting) { e.currentTarget.style.borderColor = '#4ade80'; e.currentTarget.style.color = '#4ade80'; e.currentTarget.style.background = 'rgba(74,222,128,0.08)'; } }}
+                    onMouseLeave={e => { if (!upActive) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = 'rgba(255,255,255,0.45)'; e.currentTarget.style.background = 'transparent'; } }}
                 >
                     {isVoting ? <CircleNotch className={loaderClass} /> : <CaretUp className={chevronClass} />}
                 </button>
-                <span className={cn(scoreClass, isVoting ? "opacity-0" : scoreColor)}>
+                <span
+                    className="font-black tabular-nums"
+                    style={{
+                        fontSize: btnSm ? '10px' : '12px',
+                        color: isVoting ? 'transparent' : scoreColor,
+                        minWidth: '20px',
+                        textAlign: 'center',
+                    }}
+                >
                     {p.score > 0 ? `+${p.score}` : p.score}
                 </span>
                 <button
                     onClick={() => handleVote(p.id, -1)}
                     disabled={!memberId || isVoting}
-                    className={cn(btnClass, downActive ? "text-red-400 bg-red-400/20 shadow-[0_0_15px_rgba(248,113,113,0.15)]" : "text-slate-400 hover:text-red-400 hover:bg-red-400/10", isVoting && "opacity-50 cursor-not-allowed")}
+                    className="flex items-center justify-center transition-all"
+                    style={{
+                        width: btnWH,
+                        height: btnWH,
+                        borderRadius: 0,
+                        border: `2px solid ${downActive ? '#ef4444' : 'rgba(255,255,255,0.15)'}`,
+                        background: downActive ? 'rgba(239,68,68,0.12)' : 'transparent',
+                        color: downActive ? '#ef4444' : 'rgba(255,255,255,0.45)',
+                        opacity: isVoting ? 0.5 : 1,
+                        cursor: !memberId || isVoting ? 'not-allowed' : 'pointer',
+                    }}
+                    onMouseEnter={e => { if (!downActive && memberId && !isVoting) { e.currentTarget.style.borderColor = '#ef4444'; e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; } }}
+                    onMouseLeave={e => { if (!downActive) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = 'rgba(255,255,255,0.45)'; e.currentTarget.style.background = 'transparent'; } }}
                 >
                     {isVoting ? <CircleNotch className={loaderClass} /> : <CaretDown className={chevronClass} />}
                 </button>
@@ -557,27 +588,49 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
     // ── NEO-BRUTALIST IN-PERSON RENDER ───────────────────────────────────────
     return (
         <div className="flex flex-col gap-5">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 whitespace-nowrap">
-                        Propositions ({proposals.length})
-                    </h3>
-                    {isAdmin && (
-                        <button
-                            onClick={() => setIsOverrideModalOpen(true)}
-                            className="text-[10px] sm:text-xs font-bold text-amber-500 hover:bg-amber-500/10 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg transition-colors flex items-center gap-1.5 border border-amber-500/20 whitespace-nowrap"
-                        >
-                            <WarningOctagon className="w-3.5 h-3.5" />
-                            Imposer un choix
-                        </button>
-                    )}
-                </div>
+
+            {/* Header row */}
+            <div className="flex items-center justify-between">
+                <span
+                    className="font-black uppercase tracking-widest text-xs"
+                    style={{ color: 'rgba(255,255,255,0.4)' }}
+                >
+                    PROPOSITIONS ({proposals.length})
+                </span>
+                {isAdmin && (
+                    <button
+                        onClick={() => setIsOverrideModalOpen(true)}
+                        className="font-bold uppercase tracking-widest text-xs transition-colors"
+                        style={{
+                            border: '2px solid rgba(251,191,36,0.5)',
+                            borderRadius: 0,
+                            color: '#fbbf24',
+                            padding: '4px 12px',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(251,191,36,0.1)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                    >
+                        Imposer un choix
+                    </button>
+                )}
             </div>
 
+            {/* Empty state */}
             {proposals.length === 0 && (
-                <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/5">
-                    <span className="text-base leading-none mt-0.5">📍</span>
-                    <p className="text-[11px] text-white/35 font-medium leading-relaxed">
+                <div
+                    className="flex items-center gap-3"
+                    style={{
+                        border: '2px solid rgba(255,255,255,0.1)',
+                        borderRadius: 0,
+                        padding: '12px 16px',
+                        background: 'rgba(255,255,255,0.02)',
+                    }}
+                >
+                    <span className="text-base leading-none shrink-0">📍</span>
+                    <p
+                        className="text-xs font-medium italic"
+                        style={{ color: 'rgba(255,255,255,0.4)' }}
+                    >
                         Propose un lieu — le groupe votera pour le meilleur endroit.
                     </p>
                 </div>
@@ -585,38 +638,58 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
 
             <div className="flex flex-col gap-5">
                 <AnimatePresence mode="popLayout" initial={false}>
+
+                    {/* Featured card */}
                     {featured && (
                         <motion.div
                             key={featured.id}
                             layout
-                            initial={{ opacity: 0, scale: 0.9 }}
+                            initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            transition={{ layout: { type: "spring", stiffness: 300, damping: 25 }, opacity: { duration: 0.2 } }}
-                            className="glass-panel rounded-2xl border border-white/10 overflow-hidden relative group/card"
+                            transition={{ layout: { type: 'spring', stiffness: 300, damping: 25 }, opacity: { duration: 0.2 } }}
+                            className="overflow-hidden relative"
+                            style={{
+                                border: '2px solid rgba(255,255,255,0.6)',
+                                borderRadius: 0,
+                                background: '#111',
+                                boxShadow: '4px 4px 0 #000',
+                            }}
                         >
                             <ProposalParticles score={featured.score} />
-                            <div className="px-4 pt-4 pb-0 flex items-center relative z-10">
-                                <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-amber-400">
-                                    <Star className="w-3 h-3" />
-                                    Favori
-                                </div>
+
+                            {/* FAVORI badge */}
+                            <div className="px-4 pt-3 pb-0 relative z-10">
+                                <span
+                                    className="font-black uppercase text-xs tracking-widest"
+                                    style={{ background: '#fbbf24', color: '#000', padding: '3px 10px', display: 'inline-block' }}
+                                >
+                                    FAVORI
+                                </span>
                             </div>
 
-                            <div className="flex gap-4 p-4 pb-4">
-                                <div className="flex-1 flex gap-4 items-start relative z-10 min-w-0">
+                            <div className="flex gap-3 p-4">
+                                <div className="flex-1 flex gap-3 items-start relative z-10 min-w-0">
                                     {featured.image && (
-                                        <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-xl overflow-hidden bg-slate-800 border border-white/10">
+                                        <div
+                                            className="shrink-0 overflow-hidden"
+                                            style={{ width: 80, height: 80, border: '2px solid rgba(255,255,255,0.2)', borderRadius: 0 }}
+                                        >
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
                                             <img src={featured.image} alt={featured.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                                         </div>
                                     )}
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-white font-bold text-sm sm:text-base line-clamp-1">{featured.name}</p>
-                                        <p className="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1">Proposé par <span className="text-slate-300 font-medium">{members.find(m => m.id === featured.member_id)?.name || 'Inconnu'}</span></p>
-                                        {featured.description && <p className="text-slate-400 text-[11px] sm:text-sm mt-1 leading-relaxed line-clamp-2">{featured.description}</p>}
+                                        <p className="font-black text-base line-clamp-1" style={{ color: 'white' }}>{featured.name}</p>
+                                        <p className="mt-0.5" style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)' }}>
+                                            Proposé par <span style={{ color: 'rgba(255,255,255,0.75)' }}>{members.find(m => m.id === featured.member_id)?.name || 'Inconnu'}</span>
+                                        </p>
+                                        {featured.description && (
+                                            <p className="mt-1 line-clamp-2" style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>{featured.description}</p>
+                                        )}
                                     </div>
                                 </div>
-                                <div className="relative z-10">{renderVoteControls(featured, 'lg')}</div>
+                                <div className="relative z-10 shrink-0">{renderVoteControls(featured, 'lg')}</div>
                             </div>
 
                             {featured.member_id === memberId && (
@@ -624,56 +697,90 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                                     <button
                                         onClick={() => handleDelete(featured.id)}
                                         disabled={!!deletingId}
-                                        className="btn-massive bg-red-500/10 hover:bg-red-500 text-white border border-red-500/20 w-full rounded-xl py-2.5 sm:py-3 flex items-center justify-center gap-2 transition-all"
+                                        className="w-full flex items-center justify-center gap-2 font-black uppercase tracking-widest text-xs transition-colors"
+                                        style={{
+                                            border: '2px solid rgba(239,68,68,0.3)',
+                                            borderRadius: 0,
+                                            color: 'rgba(239,68,68,0.65)',
+                                            padding: '8px',
+                                        }}
+                                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.5)'; }}
+                                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(239,68,68,0.65)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)'; }}
                                     >
                                         {deletingId === featured.id ? <CircleNotch className="w-4 h-4 animate-spin" /> : <Trash className="w-4 h-4" />}
-                                        <span className="text-[10px] font-black uppercase tracking-widest">Supprimer ma proposition</span>
+                                        Supprimer ma proposition
                                     </button>
                                 </div>
                             )}
                         </motion.div>
                     )}
 
+                    {/* Propose button */}
                     {!hasProposed && memberId && (
-                        <motion.div layout key="propose-btn" className="flex justify-center -mt-2 mb-3">
+                        <motion.div layout key="propose-btn">
                             <button
                                 onClick={() => setShowAddModal(true)}
-                                className="btn-massive w-full rounded-2xl py-3.5 sm:py-4 flex items-center justify-center gap-3 transition-all group"
+                                className="w-full flex items-center justify-center gap-3 font-black uppercase tracking-widest transition-all"
+                                style={{
+                                    border: '2px solid #fbbf24',
+                                    borderRadius: 0,
+                                    background: 'rgba(251,191,36,0.08)',
+                                    color: '#fbbf24',
+                                    padding: '14px',
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(251,191,36,0.15)'; e.currentTarget.style.boxShadow = '3px 3px 0 #000'; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(251,191,36,0.08)'; e.currentTarget.style.boxShadow = 'none'; }}
                             >
-                                <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                                <span className="text-sm font-black uppercase tracking-widest">Proposer un lieu</span>
+                                <Plus className="w-5 h-5" />
+                                Proposer un lieu
                             </button>
                         </motion.div>
                     )}
 
+                    {/* Rest cards */}
                     {rest.map((p) => (
                         <motion.div
                             key={p.id}
                             layout
-                            initial={{ opacity: 0, y: 15 }}
+                            initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.98 }}
-                            transition={{ layout: { type: "spring", stiffness: 300, damping: 25 }, opacity: { duration: 0.2 } }}
-                            className="glass-panel rounded-xl border border-white/5 p-3 flex items-center gap-3 relative overflow-hidden group/card"
+                            transition={{ layout: { type: 'spring', stiffness: 300, damping: 25 }, opacity: { duration: 0.2 } }}
+                            className="flex items-center gap-3 relative overflow-hidden"
+                            style={{ border: '2px solid rgba(255,255,255,0.12)', borderRadius: 0, background: 'transparent', padding: '10px 12px' }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.3)'; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.12)'; }}
                         >
                             <ProposalParticles score={p.score} />
                             <div className="flex items-center gap-3 flex-1 min-w-0 relative z-10">
                                 {p.image && (
-                                    <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-lg overflow-hidden bg-slate-800 border border-white/5">
+                                    <div
+                                        className="shrink-0 overflow-hidden"
+                                        style={{ width: 44, height: 44, border: '2px solid rgba(255,255,255,0.15)', borderRadius: 0 }}
+                                    >
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img src={p.image} alt={p.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                                     </div>
                                 )}
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-xs sm:text-sm font-bold text-white truncate">{p.name}</p>
-                                    <p className="text-[9px] sm:text-[10px] text-slate-500 truncate">Par {members.find(m => m.id === p.member_id)?.name || 'Inconnu'}</p>
-                                    {p.description && <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 line-clamp-1 sm:line-clamp-2">{p.description}</p>}
+                                    <p className="font-bold text-sm truncate" style={{ color: 'white' }}>{p.name}</p>
+                                    <p className="truncate" style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>
+                                        {members.find(m => m.id === p.member_id)?.name || 'Inconnu'}
+                                    </p>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-3 shrink-0 relative z-10">
+                            <div className="flex items-center gap-2 shrink-0 relative z-10">
                                 {p.member_id === memberId && (
-                                    <button onClick={() => handleDelete(p.id)} disabled={!!deletingId} className="p-2 text-slate-500 hover:text-red-400 transition-all active:scale-90">
-                                        {deletingId === p.id ? <CircleNotch className="w-4 h-4 animate-spin" /> : <Trash className="w-4 h-4" />}
+                                    <button
+                                        onClick={() => handleDelete(p.id)}
+                                        disabled={!!deletingId}
+                                        className="p-1.5 flex items-center justify-center transition-colors"
+                                        style={{ border: '2px solid rgba(239,68,68,0.2)', borderRadius: 0, color: 'rgba(239,68,68,0.5)' }}
+                                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)'; }}
+                                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(239,68,68,0.5)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.2)'; }}
+                                    >
+                                        {deletingId === p.id ? <CircleNotch className="w-3.5 h-3.5 animate-spin" /> : <Trash className="w-3.5 h-3.5" />}
                                     </button>
                                 )}
                                 {renderVoteControls(p, 'sm')}
@@ -683,6 +790,7 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                 </AnimatePresence>
             </div>
 
+            {/* Add modal */}
             {showAddModal && memberId && (
                 <AddLocationProposalModal
                     isOpen={showAddModal}
@@ -699,36 +807,60 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                 />
             )}
 
+            {/* Override dialog — neo-brutalist */}
             <Dialog open={isOverrideModalOpen} onOpenChange={setIsOverrideModalOpen}>
-                <DialogContent className="max-w-md glass-panel border-white/10 text-white rounded-3xl p-6">
-                    <DialogHeader className="mb-4">
-                        <DialogTitle className="text-xl font-bold flex items-center gap-2">
-                            <WarningOctagon className="w-5 h-5 text-amber-500" />
-                            Imposer un lieu
-                        </DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                        <p className="text-sm text-slate-400">Sélectionnez un lieu à imposer.</p>
-                        <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-                            {proposals.map((p) => (
-                                <button
-                                    key={p.id}
-                                    onClick={() => handleConfirmLocation(p)}
-                                    disabled={!!confirmingLocationId}
-                                    className={cn(
-                                        'flex items-center justify-between p-3 rounded-xl border transition-all text-sm',
-                                        group.location?.name === p.name ? 'bg-[var(--v2-primary)]/10 border-[var(--v2-primary)]/30 text-[var(--v2-primary)]' : 'border-white/10 hover:bg-white/5'
-                                    )}
-                                >
-                                    <span className="font-bold truncate pr-3">{p.name}</span>
-                                    <div className="flex items-center gap-2 shrink-0">
-                                        <span className={cn('text-xs font-bold', p.score > 0 ? 'text-green-500' : p.score < 0 ? 'text-red-500' : 'text-slate-500')}>
-                                            {p.score > 0 ? '+' : ''}{p.score} pts
-                                        </span>
-                                        {confirmingLocationId === p.id ? <CircleNotch className="w-4 h-4 animate-spin" /> : group.location?.name === p.name ? <Check className="w-4 h-4" /> : null}
-                                    </div>
-                                </button>
-                            ))}
+                <DialogContent
+                    className="flex flex-col p-0 overflow-hidden"
+                    style={{
+                        maxWidth: 460,
+                        width: 'calc(100% - 2rem)',
+                        background: '#0d0d0d',
+                        border: '2px solid rgba(255,255,255,0.7)',
+                        borderRadius: 0,
+                    }}
+                >
+                    <div style={{ height: 4, background: '#fbbf24', flexShrink: 0 }} />
+                    <div className="p-5">
+                        <DialogHeader className="mb-4">
+                            <DialogTitle className="font-black uppercase tracking-widest flex items-center gap-2" style={{ color: 'white' }}>
+                                <WarningOctagon className="w-4 h-4" style={{ color: '#fbbf24' }} />
+                                Imposer un lieu
+                            </DialogTitle>
+                        </DialogHeader>
+                        <div className="flex flex-col gap-1.5 max-h-[60vh] overflow-y-auto pr-1">
+                            {proposals.map((p) => {
+                                const isSelected = group.location?.name === p.name;
+                                const scoreColor = p.score > 0 ? '#4ade80' : p.score < 0 ? '#ef4444' : 'white';
+                                return (
+                                    <button
+                                        key={p.id}
+                                        onClick={() => handleConfirmLocation(p)}
+                                        disabled={!!confirmingLocationId}
+                                        className="flex items-center justify-between px-3 py-2.5 text-left transition-colors"
+                                        style={{
+                                            border: isSelected ? '2px solid #fbbf24' : '2px solid rgba(255,255,255,0.12)',
+                                            borderRadius: 0,
+                                            background: isSelected ? 'rgba(251,191,36,0.08)' : 'transparent',
+                                            color: isSelected ? '#fbbf24' : 'white',
+                                        }}
+                                        onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.borderColor = 'white'; } }}
+                                        onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; } }}
+                                    >
+                                        <span className="font-bold text-sm truncate pr-3">{p.name}</span>
+                                        <div className="flex items-center gap-2 shrink-0">
+                                            <span className="font-bold text-xs" style={{ color: scoreColor }}>
+                                                {p.score > 0 ? '+' : ''}{p.score} pts
+                                            </span>
+                                            {confirmingLocationId === p.id
+                                                ? <CircleNotch className="w-3.5 h-3.5 animate-spin" style={{ color: '#fbbf24' }} />
+                                                : isSelected
+                                                ? <Check className="w-3.5 h-3.5" style={{ color: '#fbbf24' }} />
+                                                : null
+                                            }
+                                        </div>
+                                    </button>
+                                );
+                            })}
                             {group.location && (
                                 <button
                                     onClick={async () => {
@@ -740,10 +872,13 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                                         setIsOverrideModalOpen(false);
                                     }}
                                     disabled={!!confirmingLocationId}
-                                    className="mt-4 p-3 rounded-xl border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors text-xs font-bold uppercase tracking-widest flex items-center justify-between"
+                                    className="mt-2 px-3 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-between"
+                                    style={{ border: '2px solid rgba(239,68,68,0.3)', borderRadius: 0, color: 'rgba(239,68,68,0.65)' }}
+                                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.06)'; e.currentTarget.style.color = '#ef4444'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(239,68,68,0.65)'; }}
                                 >
                                     <span>Annuler le lieu imposé</span>
-                                    {confirmingLocationId === 'clear' ? <CircleNotch className="w-4 h-4 animate-spin" /> : null}
+                                    {confirmingLocationId === 'clear' && <CircleNotch className="w-3.5 h-3.5 animate-spin" />}
                                 </button>
                             )}
                         </div>

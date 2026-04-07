@@ -180,61 +180,180 @@ export function ManageGroupModal({ isOpen, onOpenChange, slug, members, loading,
     // ── IN-PERSON / NEO-BRUTALIST VARIANT ──
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-md sm:max-w-lg h-[80vh] flex flex-col p-0 glass-panel border-white/10 text-white rounded-3xl overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--v2-primary)] to-[var(--v2-accent)] z-50"></div>
-                <DialogHeader className="p-6 pb-4 border-b border-white/10 bg-black/20 mt-1">
-                    <DialogTitle className="text-xl font-bold">Gérer les membres</DialogTitle>
-                    <DialogDescription className="text-slate-400">
-                        Liste des membres du groupe.
-                    </DialogDescription>
-                </DialogHeader>
+            <DialogContent
+                className="flex flex-col p-0 overflow-hidden"
+                style={{
+                    background: '#0d0d0d',
+                    border: '2px solid rgba(255,255,255,0.7)',
+                    borderRadius: 0,
+                    maxWidth: '480px',
+                    width: 'calc(100% - 2rem)',
+                    height: '80vh',
+                }}
+            >
+                {/* Top amber bar */}
+                <div className="w-full shrink-0" style={{ height: '4px', background: '#fbbf24' }} />
 
-                <div className="flex-1 overflow-hidden p-6 pt-4">
-                    <div className="space-y-3 h-full overflow-y-auto pr-2 custom-scrollbar">
-                        {loading && members.length === 0 ? (
-                            <div className="flex justify-center py-8">
-                                <CircleNotch className="w-6 h-6 animate-spin text-slate-400" />
-                            </div>
-                        ) : members.length === 0 ? (
-                            <p className="text-center text-slate-400 py-8">Aucun membre trouvé.</p>
-                        ) : (
-                            members.map((member) => (
-                                <div key={member.id} className="flex items-center justify-between p-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--v2-primary)]/20 to-transparent border border-[var(--v2-primary)]/30 flex items-center justify-center text-sm font-bold shadow-neon-primary text-white">
-                                            {member.name.substring(0, 2).toUpperCase()}
+                {/* Header */}
+                <div
+                    className="shrink-0"
+                    style={{
+                        paddingLeft: 20,
+                        paddingRight: 20,
+                        paddingTop: 16,
+                        paddingBottom: 16,
+                        borderBottom: '2px solid rgba(255,255,255,0.1)',
+                    }}
+                >
+                    <DialogTitle
+                        className="font-black uppercase tracking-widest"
+                        style={{ fontSize: '1rem', color: '#ffffff' }}
+                    >
+                        Gérer les membres
+                    </DialogTitle>
+                    <DialogDescription
+                        className="uppercase tracking-widest"
+                        style={{
+                            fontSize: 11,
+                            color: 'rgba(255,255,255,0.4)',
+                            fontWeight: 700,
+                        }}
+                    >
+                        {members.length} MEMBRE{members.length !== 1 ? 'S' : ''} · ACCÈS ADMIN
+                    </DialogDescription>
+                </div>
+
+                {/* Member list */}
+                <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
+                    {loading && members.length === 0 ? (
+                        <div className="flex items-center justify-center py-10">
+                            <span
+                                className="font-black uppercase tracking-widest"
+                                style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}
+                            >
+                                <CircleNotch className="w-5 h-5 animate-spin inline-block" />
+                            </span>
+                        </div>
+                    ) : members.length === 0 ? (
+                        <div className="flex items-center justify-center py-10">
+                            <span
+                                className="font-black uppercase tracking-widest"
+                                style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}
+                            >
+                                Aucun membre trouvé
+                            </span>
+                        </div>
+                    ) : (
+                        members.map((member) => {
+                            const isCurrentUser = member.id === currentMemberId;
+                            const isAdmin = member.role === 'admin';
+                            return (
+                                <div
+                                    key={member.id}
+                                    className="flex items-center justify-between transition-colors"
+                                    style={{
+                                        border: '2px solid rgba(255,255,255,0.1)',
+                                        borderRadius: 0,
+                                        padding: '10px 12px',
+                                    }}
+                                    onMouseEnter={e => {
+                                        (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.25)';
+                                        (e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.02)';
+                                    }}
+                                    onMouseLeave={e => {
+                                        (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.1)';
+                                        (e.currentTarget as HTMLDivElement).style.background = 'transparent';
+                                    }}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        {/* Avatar */}
+                                        <div
+                                            className="flex items-center justify-center shrink-0 font-black text-sm"
+                                            style={{
+                                                width: 40,
+                                                height: 40,
+                                                borderRadius: 0,
+                                                border: isAdmin ? '2px solid #fbbf24' : '2px solid rgba(255,255,255,0.3)',
+                                                background: isAdmin ? 'rgba(251,191,36,0.08)' : 'rgba(255,255,255,0.05)',
+                                                color: isAdmin ? '#fbbf24' : '#ffffff',
+                                            }}
+                                        >
+                                            {getInitials(member.name)}
                                         </div>
-                                        <div>
-                                            <p className="font-bold text-sm flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-white">
+
+                                        {/* Name + badges */}
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <span className="font-bold text-sm" style={{ color: '#ffffff' }}>
                                                 {member.name}
-                                                <span className="flex items-center gap-1">
-                                                    {member.id === currentMemberId && <Badge variant="secondary" className="text-[10px] h-4 bg-white/10 text-white hover:bg-white/20 border-white/20">Vous</Badge>}
-                                                    {member.role === 'admin' && <Badge variant="outline" className="text-[10px] h-4 border-[var(--v2-primary)] text-[var(--v2-primary)] bg-[var(--v2-primary)]/10">Admin</Badge>}
+                                            </span>
+                                            {isCurrentUser && (
+                                                <span
+                                                    className="uppercase"
+                                                    style={{
+                                                        border: '1px solid rgba(255,255,255,0.35)',
+                                                        fontSize: 9,
+                                                        color: 'rgba(255,255,255,0.6)',
+                                                        padding: '1px 5px',
+                                                        fontFamily: 'inherit',
+                                                    }}
+                                                >
+                                                    Vous
                                                 </span>
-                                            </p>
+                                            )}
+                                            {isAdmin && (
+                                                <span
+                                                    className="flex items-center gap-1 uppercase"
+                                                    style={{
+                                                        border: '1px solid #fbbf24',
+                                                        color: '#fbbf24',
+                                                        fontSize: 9,
+                                                        padding: '1px 5px',
+                                                    }}
+                                                >
+                                                    <Crown className="w-2.5 h-2.5" weight="fill" />
+                                                    Admin
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
 
-                                    {member.id !== currentMemberId ? (
+                                    {/* Kick button */}
+                                    {!isCurrentUser ? (
                                         <button
-                                            className="h-10 w-10 flex items-center justify-center rounded-xl text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                                            className="flex items-center justify-center transition-all shrink-0"
+                                            style={{
+                                                width: 40,
+                                                height: 40,
+                                                border: '2px solid rgba(239,68,68,0.25)',
+                                                borderRadius: 0,
+                                                color: 'rgba(239,68,68,0.55)',
+                                                background: 'transparent',
+                                            }}
                                             onClick={() => handleDeleteMember(member.id)}
                                             disabled={deletingId === member.id}
+                                            onMouseEnter={e => {
+                                                (e.currentTarget.style.borderColor = '#ef4444');
+                                                (e.currentTarget.style.background = 'rgba(239,68,68,0.08)');
+                                                (e.currentTarget.style.color = '#ef4444');
+                                            }}
+                                            onMouseLeave={e => {
+                                                (e.currentTarget.style.borderColor = 'rgba(239,68,68,0.25)');
+                                                (e.currentTarget.style.background = 'transparent');
+                                                (e.currentTarget.style.color = 'rgba(239,68,68,0.55)');
+                                            }}
                                         >
                                             {deletingId === member.id
                                                 ? <CircleNotch className="w-4 h-4 animate-spin" />
-                                                : <Trash className="w-5 h-5" />
+                                                : <Trash className="w-4 h-4" />
                                             }
                                         </button>
                                     ) : (
-                                        <div className="h-10 w-10 flex items-center justify-center">
-                                            <WarningOctagon className="w-5 h-5 text-slate-600" />
-                                        </div>
+                                        <div style={{ width: 40, height: 40 }} />
                                     )}
                                 </div>
-                            ))
-                        )}
-                    </div>
+                            );
+                        })
+                    )}
                 </div>
             </DialogContent>
         </Dialog>

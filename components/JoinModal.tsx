@@ -271,132 +271,259 @@ export default function JoinModal({ onJoin, onReclaim, groupName, existingGuests
     // ── IN-PERSON / NEO-BRUTALIST VARIANT ──
     return (
         <Dialog open={true}>
-            <DialogContent className="sm:max-w-[425px] glass-panel border-white/10 text-white rounded-3xl p-0 overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--v2-primary)] to-[var(--v2-accent)]"></div>
+            <DialogContent
+                className="p-0 overflow-hidden"
+                style={{
+                    background: '#0d0d0d',
+                    border: '2px solid rgba(255,255,255,0.7)',
+                    borderRadius: '0',
+                    maxWidth: '420px',
+                    width: 'calc(100% - 2rem)',
+                }}
+            >
+                {/* Top amber accent bar */}
+                <div className="w-full" style={{ height: '4px', background: '#fbbf24' }} />
 
                 {view === 'create' ? (
-                    <div className="p-6">
-                        <DialogHeader className="mb-6">
-                            <DialogTitle className="text-2xl font-black tracking-tight leading-tight">
-                                Rejoindre le groupe <span className="text-theme-gradient">{groupName}</span>
+                    <div className="p-6 flex flex-col gap-5">
+                        <DialogHeader>
+                            <DialogTitle
+                                className="text-2xl font-black uppercase tracking-widest leading-tight"
+                                style={{ color: '#ffffff' }}
+                            >
+                                Rejoindre{' '}
+                                <span style={{ color: '#fbbf24' }}>{groupName}</span>
                             </DialogTitle>
-                            <DialogDescription className="text-slate-400 text-base mt-2">
+                            <DialogDescription
+                                className="text-sm mt-1"
+                                style={{ color: 'rgba(255,255,255,0.45)' }}
+                            >
                                 Entrez votre nom pour rejoindre la session.
                             </DialogDescription>
                         </DialogHeader>
 
-                        <form onSubmit={handleSubmitCreate} className="space-y-6">
-                            <div className="space-y-2">
-                                <Label htmlFor="name" className="text-xs font-bold uppercase tracking-widest text-slate-500 ml-1">Votre Nom</Label>
+                        <form onSubmit={handleSubmitCreate} className="flex flex-col gap-4">
+                            <div className="flex flex-col gap-1.5">
+                                <label
+                                    htmlFor="nb-name"
+                                    className="text-xs font-black uppercase tracking-widest"
+                                    style={{ color: 'rgba(255,255,255,0.6)' }}
+                                >
+                                    Votre Nom
+                                </label>
                                 <div className="relative">
-                                    <Input
-                                        id="name"
-                                        type="text"
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                        placeholder="Comment tu t'appelles ?"
-                                        autoFocus
-                                        maxLength={20}
-                                        required
-                                        className="h-12 input-rdychk !pl-10 !py-2"
-                                        disabled={isLoading}
-                                    />
-                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                                    {user && !name && (
-                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase tracking-tighter text-[var(--v2-primary)] animate-pulse">
-                                            Profil détecté
-                                        </span>
-                                    )}
+                                    <div
+                                        data-nb-input
+                                        className="flex items-center gap-2 px-3 py-2.5"
+                                        style={{
+                                            background: 'rgba(255,255,255,0.03)',
+                                            border: '2px solid rgba(255,255,255,0.4)',
+                                            borderRadius: '0',
+                                        }}
+                                    >
+                                        <User className="w-4 h-4 shrink-0" style={{ color: 'rgba(255,255,255,0.4)' }} />
+                                        <input
+                                            id="nb-name"
+                                            type="text"
+                                            value={name}
+                                            onChange={(e) => setName(e.target.value)}
+                                            placeholder="Comment tu t'appelles ?"
+                                            autoFocus
+                                            maxLength={20}
+                                            required
+                                            disabled={isLoading}
+                                            className="flex-1 bg-transparent text-sm outline-none placeholder:opacity-30"
+                                            style={{
+                                                color: '#ffffff',
+                                                caretColor: '#fbbf24',
+                                                fontFamily: 'inherit',
+                                            }}
+                                            onFocus={e => {
+                                                const wrapper = e.currentTarget.closest('[data-nb-input]') as HTMLElement | null;
+                                                if (wrapper) wrapper.style.borderColor = '#fbbf24';
+                                            }}
+                                            onBlur={e => {
+                                                const wrapper = e.currentTarget.closest('[data-nb-input]') as HTMLElement | null;
+                                                if (wrapper) wrapper.style.borderColor = 'rgba(255,255,255,0.4)';
+                                            }}
+                                        />
+                                        {user && !name && (
+                                            <span
+                                                className="text-[9px] font-black uppercase tracking-widest animate-pulse shrink-0"
+                                                style={{ color: '#fbbf24' }}
+                                            >
+                                                Profil détecté
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="space-y-4">
-                                <Button
+                            <div className="flex flex-col gap-2">
+                                <button
                                     type="submit"
                                     disabled={!name.trim() || isLoading}
-                                    className="w-full h-14 btn-massive text-lg font-black text-white rounded-xl border-0"
-                                    size="lg"
+                                    className="w-full h-13 flex items-center justify-center gap-2 text-sm font-black uppercase tracking-widest transition-all"
+                                    style={{
+                                        background: '#fbbf24',
+                                        color: '#000000',
+                                        border: '2px solid #000000',
+                                        borderRadius: '0',
+                                        boxShadow: '3px 3px 0 #000000',
+                                        cursor: !name.trim() || isLoading ? 'not-allowed' : 'pointer',
+                                        opacity: !name.trim() || isLoading ? 0.5 : 1,
+                                        padding: '0.75rem 1rem',
+                                    }}
+                                    onMouseEnter={e => {
+                                        if (!name.trim() || isLoading) return;
+                                        e.currentTarget.style.transform = 'translate(-1px,-1px)';
+                                        e.currentTarget.style.boxShadow = '4px 4px 0 #000000';
+                                    }}
+                                    onMouseLeave={e => {
+                                        e.currentTarget.style.transform = 'translate(0,0)';
+                                        e.currentTarget.style.boxShadow = '3px 3px 0 #000000';
+                                    }}
                                 >
                                     {isLoading ? (
-                                        <>
-                                            <CircleNotch className="w-5 h-5 mr-2 animate-spin" />
-                                            Connexion...
-                                        </>
+                                        <><CircleNotch className="w-4 h-4 animate-spin" /> Connexion...</>
                                     ) : (
-                                        <>
-                                            Rejoindre
-                                            <Sparkle className="w-5 h-5 ml-2" />
-                                        </>
+                                        <>Rejoindre <Sparkle className="w-4 h-4" /></>
                                     )}
-                                </Button>
+                                </button>
 
                                 {existingGuests.length > 0 && (
                                     <button
                                         type="button"
-                                        className="w-full text-center text-sm font-medium text-slate-400 hover:text-white transition-colors py-2"
+                                        className="w-full text-center text-sm py-2 transition-colors"
+                                        style={{ color: 'rgba(255,255,255,0.45)', background: 'transparent', border: 'none' }}
                                         onClick={() => setView('reclaim')}
                                         disabled={isLoading}
+                                        onMouseEnter={e => (e.currentTarget.style.color = '#ffffff')}
+                                        onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.45)')}
                                     >
-                                        Je fais déjà partie de ce groupe
+                                        Déjà dans ce groupe →
                                     </button>
                                 )}
                             </div>
                         </form>
                     </div>
                 ) : (
-                    <div className="p-6">
-                        <DialogHeader className="mb-6">
+                    <div className="p-6 flex flex-col gap-5">
+                        <DialogHeader>
                             <div className="flex items-center gap-3">
                                 <button
-                                    className="h-9 w-9 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all"
+                                    className="w-9 h-9 flex items-center justify-center transition-colors"
+                                    style={{
+                                        border: '2px solid rgba(255,255,255,0.4)',
+                                        borderRadius: '0',
+                                        color: 'rgba(255,255,255,0.6)',
+                                        background: 'transparent',
+                                    }}
                                     onClick={() => setView('create')}
+                                    onMouseEnter={e => {
+                                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.8)';
+                                        e.currentTarget.style.color = '#ffffff';
+                                    }}
+                                    onMouseLeave={e => {
+                                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)';
+                                        e.currentTarget.style.color = 'rgba(255,255,255,0.6)';
+                                    }}
                                 >
                                     <ArrowLeft className="w-4 h-4" />
                                 </button>
-                                <DialogTitle className="text-xl font-black tracking-tight">Qui êtes-vous ?</DialogTitle>
+                                <DialogTitle
+                                    className="text-xl font-black uppercase tracking-widest"
+                                    style={{ color: '#ffffff' }}
+                                >
+                                    Qui êtes-vous ?
+                                </DialogTitle>
                             </div>
-                            <DialogDescription className="text-slate-400 mt-2">
+                            <DialogDescription
+                                className="text-sm mt-1"
+                                style={{ color: 'rgba(255,255,255,0.45)' }}
+                            >
                                 Sélectionnez votre profil existant dans la liste.
                             </DialogDescription>
                         </DialogHeader>
 
-                        <div className="space-y-6">
-                            <ScrollArea className="h-[240px] rounded-2xl border border-white/10 bg-black/20 p-2">
+                        <div className="flex flex-col gap-4">
+                            <div
+                                className="h-[200px] overflow-y-auto p-1.5 space-y-1"
+                                style={{
+                                    border: '2px solid rgba(255,255,255,0.12)',
+                                    borderRadius: '0',
+                                    background: 'transparent',
+                                }}
+                            >
                                 <RadioGroup value={selectedGuestId || ''} onValueChange={setSelectedGuestId} className="gap-1">
                                     {existingGuests.map((guest) => (
-                                        <div key={guest.id} className="relative group">
-                                            <RadioGroupItem value={guest.id} id={guest.id} className="sr-only" />
+                                        <div key={guest.id} className="relative">
+                                            <RadioGroupItem value={guest.id} id={`nb-${guest.id}`} className="sr-only" />
                                             <Label
-                                                htmlFor={guest.id}
-                                                className={`flex items-center gap-4 p-4 rounded-xl cursor-pointer transition-all border border-transparent ${selectedGuestId === guest.id
-                                                    ? 'bg-[var(--v2-primary)]/10 border-[var(--v2-primary)]/30 text-white'
-                                                    : 'hover:bg-white/5 text-slate-400 hover:text-slate-200'
-                                                    }`}
+                                                htmlFor={`nb-${guest.id}`}
+                                                className="flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-all"
+                                                style={{
+                                                    borderRadius: '0',
+                                                    border: `2px solid ${selectedGuestId === guest.id ? '#fbbf24' : 'rgba(255,255,255,0.12)'}`,
+                                                    background: selectedGuestId === guest.id ? 'rgba(251,191,36,0.06)' : 'transparent',
+                                                }}
                                             >
-                                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ring-1 transition-all ${selectedGuestId === guest.id
-                                                    ? 'bg-[var(--v2-primary)]/20 ring-[var(--v2-primary)]/50'
-                                                    : 'bg-white/5 ring-white/10'
-                                                    }`}>
-                                                    <User className={`w-5 h-5 ${selectedGuestId === guest.id ? 'text-white' : 'text-slate-500'}`} />
+                                                <div
+                                                    className="w-8 h-8 flex items-center justify-center text-xs font-black uppercase shrink-0"
+                                                    style={{
+                                                        borderRadius: '0',
+                                                        border: `2px solid ${selectedGuestId === guest.id ? '#fbbf24' : 'rgba(255,255,255,0.3)'}`,
+                                                        background: 'transparent',
+                                                        color: selectedGuestId === guest.id ? '#fbbf24' : 'rgba(255,255,255,0.6)',
+                                                    }}
+                                                >
+                                                    {guest.name.slice(0, 2).toUpperCase()}
                                                 </div>
-                                                <span className="font-bold text-base flex-1">{guest.name}</span>
+                                                <span
+                                                    className="text-sm font-black uppercase tracking-widest flex-1"
+                                                    style={{ color: selectedGuestId === guest.id ? '#fbbf24' : 'rgba(255,255,255,0.7)' }}
+                                                >
+                                                    {guest.name}
+                                                </span>
                                                 {selectedGuestId === guest.id && (
-                                                    <div className="w-2 h-2 rounded-full bg-[var(--v2-primary)] shadow-[0_0_10px_var(--v2-primary)]" />
+                                                    <div
+                                                        className="w-2 h-2 shrink-0"
+                                                        style={{ background: '#fbbf24' }}
+                                                    />
                                                 )}
                                             </Label>
                                         </div>
                                     ))}
                                 </RadioGroup>
-                            </ScrollArea>
+                            </div>
 
-                            <Button
+                            <button
                                 type="button"
                                 disabled={!selectedGuestId}
                                 onClick={handleReclaim}
-                                className="w-full h-12 text-lg font-bold bg-[var(--v2-primary)] hover:bg-[var(--v2-primary)]/80 text-white rounded-xl shadow-neon-primary transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                                className="w-full flex items-center justify-center font-black uppercase tracking-widest text-sm transition-all"
+                                style={{
+                                    background: '#fbbf24',
+                                    color: '#000000',
+                                    border: '2px solid #000000',
+                                    borderRadius: '0',
+                                    boxShadow: '3px 3px 0 #000000',
+                                    cursor: !selectedGuestId ? 'not-allowed' : 'pointer',
+                                    opacity: !selectedGuestId ? 0.4 : 1,
+                                    padding: '0.75rem 1rem',
+                                }}
+                                onMouseEnter={e => {
+                                    if (!selectedGuestId) return;
+                                    e.currentTarget.style.transform = 'translate(-1px,-1px)';
+                                    e.currentTarget.style.boxShadow = '4px 4px 0 #000000';
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.transform = 'translate(0,0)';
+                                    e.currentTarget.style.boxShadow = '3px 3px 0 #000000';
+                                }}
                             >
                                 Valider et Rejoindre
-                            </Button>
+                            </button>
                         </div>
                     </div>
                 )}
