@@ -277,14 +277,18 @@ export function HomeTab({
                     <div
                         ref={calendarRef}
                         className={cn(
-                            'flex flex-col rounded-2xl border-[3px] border-black overflow-hidden h-full transition-all duration-300',
-                            needsCalendarVote ? 'animate-vote-nudge' : ''
+                            'flex flex-col overflow-hidden h-full transition-all duration-300',
+                            !isRemote && 'rounded-2xl border-[3px] border-black',
+                            !isRemote && (needsCalendarVote ? 'animate-vote-nudge' : ''),
                         )}
-                        style={{
+                        style={isRemote ? {
+                            borderRadius: '4px',
+                            border: needsCalendarVote ? '1px solid rgba(168,85,247,0.5)' : '1px solid rgba(168,85,247,0.2)',
+                            background: 'rgba(8,0,20,0.95)',
+                            boxShadow: needsCalendarVote ? '0 0 20px rgba(168,85,247,0.15)' : '0 0 12px rgba(168,85,247,0.05)',
+                        } : {
                             background: '#0c0c0c',
-                            boxShadow: needsCalendarVote
-                                ? `5px 5px 0px var(--v2-primary)`
-                                : '5px 5px 0px #000',
+                            boxShadow: needsCalendarVote ? `5px 5px 0px var(--v2-primary)` : '5px 5px 0px #000',
                         }}
                     >
                         <button
@@ -293,56 +297,64 @@ export function HomeTab({
                                 setIsCalendarOpen(v => !v);
                                 if (!isCalendarOpen) setIsLocationOpen(false);
                             }}
-                            className="flex flex-col gap-1.5 px-4 pt-3 pb-3 text-left hover:bg-white/[0.025] transition-colors"
+                            className={cn('flex flex-col gap-1.5 px-4 pt-3 pb-3 text-left transition-colors', !isRemote && 'hover:bg-white/[0.025]')}
                         >
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <CalendarDots
                                         className="w-4 h-4 shrink-0"
-                                        style={{ color: needsCalendarVote ? 'var(--v2-primary)' : 'rgba(255,255,255,0.4)' }}
+                                        style={{ color: needsCalendarVote ? 'var(--v2-primary)' : isRemote ? '#8b5cf6' : 'rgba(255,255,255,0.4)' }}
                                         weight="fill"
                                     />
-                                    <span
-                                        className="uppercase leading-none"
-                                        style={{
-                                            fontFamily: 'var(--font-barlow-condensed)',
-                                            fontWeight: 900,
-                                            fontSize: '1.05rem',
-                                            letterSpacing: '0.12em',
-                                            color: needsCalendarVote ? 'var(--v2-primary)' : 'rgba(255,255,255,0.75)',
-                                        }}
-                                    >
-                                        Quand ?
-                                    </span>
+                                    {isRemote ? (
+                                        <span className="font-mono text-[0.8rem] uppercase tracking-[0.18em]" style={{ color: needsCalendarVote ? '#a855f7' : '#c4b5fd' }}>
+                                            DATE_SESSION {'>'}
+                                        </span>
+                                    ) : (
+                                        <span
+                                            className="uppercase leading-none"
+                                            style={{ fontFamily: 'var(--font-barlow-condensed)', fontWeight: 900, fontSize: '1.05rem', letterSpacing: '0.12em', color: needsCalendarVote ? 'var(--v2-primary)' : 'rgba(255,255,255,0.75)' }}
+                                        >
+                                            Quand ?
+                                        </span>
+                                    )}
                                 </div>
                                 <CaretDown
-                                    className={cn('w-3.5 h-3.5 text-white/25 transition-transform duration-200 shrink-0', isCalendarOpen && 'rotate-180')}
+                                    className={cn('w-3.5 h-3.5 transition-transform duration-200 shrink-0', isCalendarOpen && 'rotate-180')}
+                                    style={{ color: isRemote ? 'rgba(168,85,247,0.25)' : 'rgba(255,255,255,0.25)' }}
                                     weight="bold"
                                 />
                             </div>
                             {displayDate ? (
-                                <p
-                                    className="capitalize leading-tight text-white"
-                                    style={{
-                                        fontFamily: 'var(--font-barlow-condensed)',
-                                        fontWeight: 900,
-                                        fontSize: '1.35rem',
-                                        letterSpacing: '0.01em',
-                                    }}
-                                >{displayDate}</p>
+                                isRemote ? (
+                                    <p className="font-mono capitalize leading-tight text-white/80" style={{ fontSize: '1.05rem', letterSpacing: '0.02em' }}>{displayDate}</p>
+                                ) : (
+                                    <p className="capitalize leading-tight text-white" style={{ fontFamily: 'var(--font-barlow-condensed)', fontWeight: 900, fontSize: '1.35rem', letterSpacing: '0.01em' }}>{displayDate}</p>
+                                )
                             ) : (
-                                <p className="text-xs text-white/25 font-black uppercase tracking-wider">À déterminer</p>
+                                isRemote
+                                    ? <p className="font-mono text-[11px] uppercase tracking-[0.18em]" style={{ color: '#8b5cf6' }}>TIMESTAMP_TBD</p>
+                                    : <p className="text-xs text-white/25 font-black uppercase tracking-wider">À déterminer</p>
                             )}
-                            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/30">
-                                {uniqueVotedDates} date{uniqueVotedDates !== 1 ? 's' : ''} · {myVoteCount} vote{myVoteCount !== 1 ? 's' : ''}
-                            </p>
+                            {isRemote ? (
+                                <p className="font-mono text-[10px] uppercase tracking-[0.15em]" style={{ color: '#a78bfa' }}>
+                                    {uniqueVotedDates}_DATE{uniqueVotedDates !== 1 ? 'S' : ''} · {myVoteCount}_VOTE{myVoteCount !== 1 ? 'S' : ''}
+                                </p>
+                            ) : (
+                                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/30">
+                                    {uniqueVotedDates} date{uniqueVotedDates !== 1 ? 's' : ''} · {myVoteCount} vote{myVoteCount !== 1 ? 's' : ''}
+                                </p>
+                            )}
                             {needsCalendarVote && (
-                                <span
-                                    className="self-start text-[10px] font-black uppercase tracking-[0.12em] px-2 py-0.5 rounded-md border border-[var(--v2-primary)]/40 bg-[var(--v2-primary)]/10 text-[var(--v2-primary)]"
-                                    style={{ fontFamily: 'var(--font-barlow-condensed)' }}
-                                >
-                                    Ton vote →
-                                </span>
+                                isRemote ? (
+                                    <span className="self-start font-mono text-[10px] uppercase tracking-[0.12em] px-2 py-0.5" style={{ border: '1px solid rgba(168,85,247,0.4)', background: 'rgba(168,85,247,0.08)', color: '#a855f7', borderRadius: '2px' }}>
+                                        VOTE_REQUIRED {'>'}
+                                    </span>
+                                ) : (
+                                    <span className="self-start text-[10px] font-black uppercase tracking-[0.12em] px-2 py-0.5 rounded-md border border-[var(--v2-primary)]/40 bg-[var(--v2-primary)]/10 text-[var(--v2-primary)]" style={{ fontFamily: 'var(--font-barlow-condensed)' }}>
+                                        Ton vote →
+                                    </span>
+                                )
                             )}
                         </button>
                         <div className={cn(
@@ -350,7 +362,7 @@ export function HomeTab({
                             isCalendarOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
                         )}>
                             <div className="overflow-hidden">
-                                <div className="border-t-[3px] border-black p-3">
+                                <div className={isRemote ? 'p-3' : 'border-t-[3px] border-black p-3'} style={isRemote ? { borderTop: '1px solid rgba(168,85,247,0.12)' } : {}}>
                                     <CalendarTab
                                         group={group}
                                         slug={slug}
@@ -381,14 +393,18 @@ export function HomeTab({
                     <div
                         ref={locationRef}
                         className={cn(
-                            'flex flex-col rounded-2xl border-[3px] border-black overflow-hidden h-full transition-all duration-300',
-                            needsLocationAction ? 'animate-vote-nudge' : ''
+                            'flex flex-col overflow-hidden h-full transition-all duration-300',
+                            !isRemote && 'rounded-2xl border-[3px] border-black',
+                            !isRemote && (needsLocationAction ? 'animate-vote-nudge' : ''),
                         )}
-                        style={{
+                        style={isRemote ? {
+                            borderRadius: '4px',
+                            border: needsLocationAction ? '1px solid rgba(217,70,239,0.5)' : '1px solid rgba(168,85,247,0.2)',
+                            background: 'rgba(8,0,20,0.95)',
+                            boxShadow: needsLocationAction ? '0 0 20px rgba(217,70,239,0.15)' : '0 0 12px rgba(168,85,247,0.05)',
+                        } : {
                             background: '#0c0c0c',
-                            boxShadow: needsLocationAction
-                                ? '5px 5px 0px #fbbf24'
-                                : '5px 5px 0px #000',
+                            boxShadow: needsLocationAction ? '5px 5px 0px #fbbf24' : '5px 5px 0px #000',
                         }}
                     >
                         <button
@@ -397,60 +413,69 @@ export function HomeTab({
                                 setIsLocationOpen(v => !v);
                                 if (!isLocationOpen) setIsCalendarOpen(false);
                             }}
-                            className="flex flex-col gap-1.5 px-4 pt-3 pb-3 text-left hover:bg-white/[0.025] transition-colors"
+                            className={cn('flex flex-col gap-1.5 px-4 pt-3 pb-3 text-left transition-colors', !isRemote && 'hover:bg-white/[0.025]')}
                         >
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     {isRemote
-                                        ? <GameController className="w-4 h-4 shrink-0" style={{ color: needsLocationAction ? '#fbbf24' : 'rgba(255,255,255,0.4)' }} weight="fill" />
+                                        ? <GameController className="w-4 h-4 shrink-0" style={{ color: needsLocationAction ? '#d946ef' : '#8b5cf6' }} weight="fill" />
                                         : <MapTrifold className="w-4 h-4 shrink-0" style={{ color: needsLocationAction ? '#fbbf24' : 'rgba(255,255,255,0.4)' }} weight="fill" />
                                     }
-                                    <span
-                                        className="uppercase leading-none"
-                                        style={{
-                                            fontFamily: 'var(--font-barlow-condensed)',
-                                            fontWeight: 900,
-                                            fontSize: '1.05rem',
-                                            letterSpacing: '0.12em',
-                                            color: needsLocationAction ? '#fbbf24' : 'rgba(255,255,255,0.75)',
-                                        }}
-                                    >
-                                        {isRemote ? 'Jeu ?' : 'Où ?'}
-                                    </span>
+                                    {isRemote ? (
+                                        <span className="font-mono text-[0.8rem] uppercase tracking-[0.18em]" style={{ color: needsLocationAction ? '#d946ef' : '#c4b5fd' }}>
+                                            SESSION_GAME {'>'}
+                                        </span>
+                                    ) : (
+                                        <span
+                                            className="uppercase leading-none"
+                                            style={{ fontFamily: 'var(--font-barlow-condensed)', fontWeight: 900, fontSize: '1.05rem', letterSpacing: '0.12em', color: needsLocationAction ? '#fbbf24' : 'rgba(255,255,255,0.75)' }}
+                                        >
+                                            {isRemote ? 'Jeu ?' : 'Où ?'}
+                                        </span>
+                                    )}
                                 </div>
                                 <CaretDown
-                                    className={cn('w-3.5 h-3.5 text-white/25 transition-transform duration-200 shrink-0', isLocationOpen && 'rotate-180')}
+                                    className={cn('w-3.5 h-3.5 transition-transform duration-200 shrink-0', isLocationOpen && 'rotate-180')}
+                                    style={{ color: isRemote ? 'rgba(168,85,247,0.25)' : 'rgba(255,255,255,0.25)' }}
                                     weight="bold"
                                 />
                             </div>
                             {displayLocation ? (
-                                <p
-                                    className="leading-tight text-white truncate"
-                                    style={{
-                                        fontFamily: 'var(--font-barlow-condensed)',
-                                        fontWeight: 900,
-                                        fontSize: '1.35rem',
-                                        letterSpacing: '0.01em',
-                                    }}
-                                >{displayLocation}</p>
+                                isRemote ? (
+                                    <p className="font-mono leading-tight text-white/80 truncate" style={{ fontSize: '1.05rem', letterSpacing: '0.02em' }}>{displayLocation}</p>
+                                ) : (
+                                    <p className="leading-tight text-white truncate" style={{ fontFamily: 'var(--font-barlow-condensed)', fontWeight: 900, fontSize: '1.35rem', letterSpacing: '0.01em' }}>{displayLocation}</p>
+                                )
                             ) : (
-                                <p className="text-xs text-white/25 font-black uppercase tracking-wider">
-                                    {isRemote
-                                        ? (needsLocationAction ? 'Vote pour un jeu !' : 'Aucune prop.')
-                                        : (needsLocationAction ? 'Vote pour un endroit !' : 'Aucune prop.')
-                                    }
+                                isRemote ? (
+                                    <p className="font-mono text-[11px] uppercase tracking-[0.18em]" style={{ color: '#8b5cf6' }}>
+                                        {needsLocationAction ? 'GAME_VOTE_REQUIRED' : 'NO_PROPOSALS'}
+                                    </p>
+                                ) : (
+                                    <p className="text-xs text-white/25 font-black uppercase tracking-wider">
+                                        {needsLocationAction ? 'Vote pour un endroit !' : 'Aucune prop.'}
+                                    </p>
+                                )
+                            )}
+                            {isRemote ? (
+                                <p className="font-mono text-[10px] uppercase tracking-[0.15em]" style={{ color: '#a78bfa' }}>
+                                    {proposals.length}_PROP{proposals.length !== 1 ? 'S' : ''}
+                                </p>
+                            ) : (
+                                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/30">
+                                    {proposals.length} proposition{proposals.length !== 1 ? 's' : ''}
                                 </p>
                             )}
-                            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/30">
-                                {proposals.length} proposition{proposals.length !== 1 ? 's' : ''}
-                            </p>
                             {needsLocationAction && (
-                                <span
-                                    className="self-start text-[10px] font-black uppercase tracking-[0.12em] px-2 py-0.5 rounded-md border border-amber-400/40 bg-amber-400/10 text-amber-400"
-                                    style={{ fontFamily: 'var(--font-barlow-condensed)' }}
-                                >
-                                    Ton vote →
-                                </span>
+                                isRemote ? (
+                                    <span className="self-start font-mono text-[10px] uppercase tracking-[0.12em] px-2 py-0.5" style={{ border: '1px solid rgba(217,70,239,0.4)', background: 'rgba(217,70,239,0.08)', color: '#d946ef', borderRadius: '2px' }}>
+                                        VOTE_REQUIRED {'>'}
+                                    </span>
+                                ) : (
+                                    <span className="self-start text-[10px] font-black uppercase tracking-[0.12em] px-2 py-0.5 rounded-md border border-amber-400/40 bg-amber-400/10 text-amber-400" style={{ fontFamily: 'var(--font-barlow-condensed)' }}>
+                                        Ton vote →
+                                    </span>
+                                )
                             )}
                         </button>
                         <div className={cn(
@@ -458,7 +483,7 @@ export function HomeTab({
                             isLocationOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
                         )}>
                             <div className="overflow-hidden">
-                                <div className="border-t-[3px] border-black p-3">
+                                <div className={isRemote ? 'p-3' : 'border-t-[3px] border-black p-3'} style={isRemote ? { borderTop: '1px solid rgba(168,85,247,0.12)' } : {}}>
                                     <LocationTab
                                         group={group}
                                         slug={slug}
@@ -524,6 +549,7 @@ export function HomeTab({
                                 members={members}
                                 localOptimisticReady={localOptimisticReady}
                                 onOptimisticChange={onSetLocalOptimisticReady}
+                                isRemote={isRemote}
                             />
                         )}
 
@@ -544,6 +570,7 @@ export function HomeTab({
                                                 if (!memberId) return;
                                                 await updateMemberAction(slug, memberId, updates);
                                             }}
+                                            isRemote={isRemote}
                                         />
                                     </div>
                                 </motion.div>
@@ -557,6 +584,7 @@ export function HomeTab({
                             onOpenManage={onOpenManage}
                             isAdmin={isAdmin}
                             mode="day-of"
+                            isRemote={isRemote}
                         />
 
                         {/* Voting cards visible in day-of if re-enabled (last-minute change) */}
@@ -567,6 +595,7 @@ export function HomeTab({
                                 groupName={group.name}
                                 url={typeof window !== 'undefined' ? window.location.href : ''}
                                 memberCount={members.length}
+                                isRemote={isRemote}
                             />
                         )}
                     </motion.div>
@@ -605,9 +634,15 @@ export function HomeTab({
                             <div className="flex items-center gap-2 px-0.5">
                                 <div className="flex items-center gap-2">
                                     <span className="w-1.5 h-1.5 rounded-full bg-[var(--v2-primary)] animate-pulse shrink-0" />
-                                    <span className="text-xs font-black text-white/40">
-                                        Commence par voter une date ↓
-                                    </span>
+                                    {isRemote ? (
+                                        <span className="font-mono text-[11px] uppercase tracking-[0.15em]" style={{ color: '#a78bfa' }}>
+                                            {'// SESSION_DATE: NOT_SET ↓'}
+                                        </span>
+                                    ) : (
+                                        <span className="text-xs font-black text-white/40">
+                                            Commence par voter une date ↓
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -622,6 +657,7 @@ export function HomeTab({
                             isAdmin={isAdmin}
                             mode="planning"
                             votedMemberIds={votedMemberIds}
+                            isRemote={isRemote}
                         />
 
                         {!isAdmin && memberId && votedMemberIds.has(memberId) && (
@@ -640,6 +676,7 @@ export function HomeTab({
                                 groupName={group.name}
                                 url={typeof window !== 'undefined' ? window.location.href : ''}
                                 memberCount={members.length}
+                                isRemote={isRemote}
                             />
                         )}
                     </motion.div>

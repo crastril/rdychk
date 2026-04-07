@@ -85,23 +85,17 @@ interface LocationTabProps {
 
 export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes: initialMyVotes, onProposalsChange, members, onGroupChange }: LocationTabProps) {
     const isRemote = group.type === 'remote';
-    // Local copies of votes & scores that we control; synced from parent but overridden locally after voting
     const [myVotes, setMyVotes] = useState<Record<string, 1 | -1>>(initialMyVotes);
     const [localScores, setLocalScores] = useState<Record<string, number>>({});
-
-    // IDs currently being voted on — we block Realtime overwrites for these
     const [votingIds, setVotingIds] = useState<Set<string>>(new Set());
-
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [showAddModal, setShowAddModal] = useState(false);
     const [isOverrideModalOpen, setIsOverrideModalOpen] = useState(false);
     const [confirmingLocationId, setConfirmingLocationId] = useState<string | null>(null);
 
-    // Sync parent votes into local state when they change (but not for active proposals)
     useEffect(() => {
         setMyVotes(prev => {
             const next = { ...initialMyVotes };
-            // Keep locally-overridden votes for proposals currently being voted on
             votingIds.forEach(id => {
                 if (prev[id] !== undefined) next[id] = prev[id];
                 else delete next[id];
@@ -110,7 +104,6 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
         });
     }, [initialMyVotes]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Merge parent proposals with local score overrides (for proposals where vote just completed)
     const mergedProposals = useMemo(() => {
         return proposals.map(p => ({
             ...p,
@@ -130,19 +123,13 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
 
     const handleVote = async (proposalId: string, vote: 1 | -1) => {
         if (!memberId || votingIds.has(proposalId)) return;
-
-        // Mark this proposal as "being voted on"
         setVotingIds(prev => new Set(prev).add(proposalId));
-
         try {
             const result = await voteLocationProposalAction(slug, memberId, proposalId, vote);
-
             if (result.success) {
-                // Update local score with server-confirmed value
                 if (result.score !== undefined) {
                     setLocalScores(prev => ({ ...prev, [proposalId]: result.score! }));
                 }
-                // Update local vote state with server-confirmed vote
                 setMyVotes(prev => {
                     const next = { ...prev };
                     if (result.myVote === null || result.myVote === undefined) {
@@ -156,7 +143,6 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
         } catch (err) {
             console.error("Vote failed:", err);
         } finally {
-            // Unblock this proposal — Realtime can now update it freely
             setVotingIds(prev => {
                 const next = new Set(prev);
                 next.delete(proposalId);
@@ -200,7 +186,80 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
         );
     }
 
+    // ── Vote controls — cyberpunk variant ────────────────────────────────────
+    const renderVoteControlsRemote = (p: LocationProposal & { score: number }, size: 'lg' | 'sm') => {
+        const isVoting = votingIds.has(p.id);
+        const upActive = myVotes[p.id] === 1;
+        const downActive = myVotes[p.id] === -1;
+        const scoreColor = p.score > 0 ? '#4ade80' : p.score < 0 ? '#f87171' : '#a78bfa';
+
+        const chevronSize = size === 'sm' ? 'w-3.5 h-3.5' : 'w-4 h-4';
+        const btnSize = size === 'sm' ? 'w-7 h-7' : 'w-8 h-8';
+
+        return (
+            <div
+                className="flex flex-col items-center gap-1 shrink-0"
+                style={{
+                    border: '1px solid rgba(168,85,247,0.15)',
+                    borderRadius: '3px',
+                    background: 'rgba(168,85,247,0.03)',
+                    padding: size === 'sm' ? '4px' : '6px',
+                }}
+            >
+                <button
+                    onClick={() => handleVote(p.id, 1)}
+                    disabled={!memberId || isVoting}
+                    className={`${btnSize} flex items-center justify-center transition-all`}
+                    style={{
+                        borderRadius: '2px',
+                        border: `1px solid ${upActive ? 'rgba(168,85,247,0.4)' : 'rgba(168,85,247,0.1)'}`,
+                        background: upActive ? 'rgba(168,85,247,0.15)' : 'transparent',
+                        color: upActive ? '#c4b5fd' : '#8b5cf6',
+                        opacity: isVoting ? 0.5 : 1,
+                        cursor: !memberId || isVoting ? 'not-allowed' : 'pointer',
+                    }}
+                    onMouseEnter={e => { if (!upActive && memberId && !isVoting) { e.currentTarget.style.borderColor = 'rgba(168,85,247,0.3)'; e.currentTarget.style.color = '#a78bfa'; } }}
+                    onMouseLeave={e => { if (!upActive) { e.currentTarget.style.borderColor = 'rgba(168,85,247,0.1)'; e.currentTarget.style.color = '#8b5cf6'; } }}
+                >
+                    {isVoting ? <CircleNotch className={`${chevronSize} animate-spin`} /> : <CaretUp className={chevronSize} />}
+                </button>
+                <span
+                    className="font-mono tabular-nums"
+                    style={{
+                        fontSize: size === 'sm' ? '10px' : '12px',
+                        color: isVoting ? 'transparent' : scoreColor,
+                        fontWeight: 700,
+                        minWidth: '20px',
+                        textAlign: 'center',
+                    }}
+                >
+                    {p.score > 0 ? `+${p.score}` : p.score}
+                </span>
+                <button
+                    onClick={() => handleVote(p.id, -1)}
+                    disabled={!memberId || isVoting}
+                    className={`${btnSize} flex items-center justify-center transition-all`}
+                    style={{
+                        borderRadius: '2px',
+                        border: `1px solid ${downActive ? 'rgba(248,113,113,0.4)' : 'rgba(168,85,247,0.1)'}`,
+                        background: downActive ? 'rgba(248,113,113,0.1)' : 'transparent',
+                        color: downActive ? '#f87171' : '#8b5cf6',
+                        opacity: isVoting ? 0.5 : 1,
+                        cursor: !memberId || isVoting ? 'not-allowed' : 'pointer',
+                    }}
+                    onMouseEnter={e => { if (!downActive && memberId && !isVoting) { e.currentTarget.style.borderColor = 'rgba(248,113,113,0.25)'; e.currentTarget.style.color = '#f87171'; } }}
+                    onMouseLeave={e => { if (!downActive) { e.currentTarget.style.borderColor = 'rgba(168,85,247,0.1)'; e.currentTarget.style.color = '#8b5cf6'; } }}
+                >
+                    {isVoting ? <CircleNotch className={`${chevronSize} animate-spin`} /> : <CaretDown className={chevronSize} />}
+                </button>
+            </div>
+        );
+    };
+
+    // ── Vote controls — neo-brutalist variant ────────────────────────────────
     const renderVoteControls = (p: LocationProposal & { score: number }, size: 'lg' | 'sm') => {
+        if (isRemote) return renderVoteControlsRemote(p, size);
+
         const isVoting = votingIds.has(p.id);
         const upActive = myVotes[p.id] === 1;
         const downActive = myVotes[p.id] === -1;
@@ -242,12 +301,266 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
         );
     };
 
+    // ── CYBERPUNK REMOTE RENDER ──────────────────────────────────────────────
+    if (isRemote) {
+        return (
+            <div className="flex flex-col gap-4">
+                {/* Header */}
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        <h3 className="font-mono text-[9px] uppercase tracking-[0.2em]" style={{ color: '#8b5cf6' }}>
+                            GAME_PROPOSALS ({proposals.length})
+                        </h3>
+                        {isAdmin && (
+                            <button
+                                onClick={() => setIsOverrideModalOpen(true)}
+                                className="font-mono text-[9px] uppercase tracking-[0.12em] flex items-center gap-1.5 px-2 py-1 transition-colors"
+                                style={{ border: '1px solid rgba(232,121,249,0.2)', borderRadius: '2px', color: '#e879f9' }}
+                                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(232,121,249,0.5)'; e.currentTarget.style.background = 'rgba(232,121,249,0.06)'; }}
+                                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(232,121,249,0.2)'; e.currentTarget.style.background = 'transparent'; }}
+                            >
+                                <WarningOctagon className="w-3 h-3" />
+                                FORCE_CHOICE
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                {/* Empty state */}
+                {proposals.length === 0 && (
+                    <div className="flex items-start gap-2.5 px-3 py-2.5" style={{ border: '1px solid rgba(168,85,247,0.1)', borderRadius: '3px', background: 'rgba(168,85,247,0.03)' }}>
+                        <span className="font-mono text-sm leading-none mt-0.5 shrink-0" style={{ color: '#8b5cf6' }}>{'>'}</span>
+                        <p className="font-mono text-[11px] leading-relaxed" style={{ color: '#8b5cf6' }}>
+                            {'// propose un jeu — le groupe votera pour le meilleur choix'}
+                        </p>
+                    </div>
+                )}
+
+                <div className="flex flex-col gap-4">
+                    <AnimatePresence mode="popLayout" initial={false}>
+                        {/* Featured card */}
+                        {featured && (
+                            <motion.div
+                                key={featured.id}
+                                layout
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                transition={{ layout: { type: "spring", stiffness: 300, damping: 25 }, opacity: { duration: 0.2 } }}
+                                className="overflow-hidden relative"
+                                style={{ border: '1px solid rgba(168,85,247,0.3)', borderRadius: '4px', background: 'rgba(8,0,20,0.7)' }}
+                            >
+                                <ProposalParticles score={featured.score} />
+
+                                {/* Featured badge */}
+                                <div className="px-3 pt-3 pb-0 flex items-center relative z-10">
+                                    <div className="flex items-center gap-1.5 font-mono" style={{ fontSize: '9px', letterSpacing: '0.15em', color: '#e879f9' }}>
+                                        <Star className="w-3 h-3" weight="fill" />
+                                        FEATURED
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3 p-3">
+                                    <div className="flex-1 flex gap-3 items-start relative z-10 min-w-0">
+                                        {featured.image && (
+                                            <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 overflow-hidden" style={{ border: '1px solid rgba(168,85,247,0.2)', borderRadius: '3px' }}>
+                                                <img src={featured.image} alt={featured.name} className="w-full h-full object-cover" style={{ filter: 'saturate(0.8)' }} referrerPolicy="no-referrer" />
+                                            </div>
+                                        )}
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-mono text-sm line-clamp-1" style={{ color: '#c4b5fd' }}>{featured.name}</p>
+                                            <p className="font-mono mt-0.5" style={{ fontSize: '10px', color: '#8b5cf6' }}>
+                                                {'// by '}<span style={{ color: '#a78bfa' }}>{members.find(m => m.id === featured.member_id)?.name || '???'}</span>
+                                            </p>
+                                            {featured.description && (
+                                                <p className="font-mono mt-1 line-clamp-2" style={{ fontSize: '11px', color: '#8b5cf6', letterSpacing: '0.03em' }}>
+                                                    [{featured.description}]
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="relative z-10">{renderVoteControls(featured, 'lg')}</div>
+                                </div>
+
+                                {featured.member_id === memberId && (
+                                    <div className="px-3 pb-3 relative z-10">
+                                        <button
+                                            onClick={() => handleDelete(featured.id)}
+                                            disabled={!!deletingId}
+                                            className="w-full flex items-center justify-center gap-2 py-2 font-mono text-[10px] uppercase tracking-[0.15em] transition-all"
+                                            style={{ border: '1px solid rgba(239,68,68,0.2)', borderRadius: '2px', color: 'rgba(239,68,68,0.6)' }}
+                                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.06)'; e.currentTarget.style.color = 'rgb(239,68,68)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)'; }}
+                                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(239,68,68,0.6)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.2)'; }}
+                                        >
+                                            {deletingId === featured.id ? <CircleNotch className="w-3.5 h-3.5 animate-spin" /> : <Trash className="w-3.5 h-3.5" />}
+                                            DELETE_PROPOSAL
+                                        </button>
+                                    </div>
+                                )}
+                            </motion.div>
+                        )}
+
+                        {/* Propose button */}
+                        {!hasProposed && memberId && (
+                            <motion.div layout key="propose-btn" className="flex justify-center -mt-1 mb-2">
+                                <button
+                                    onClick={() => setShowAddModal(true)}
+                                    className="w-full flex items-center justify-center gap-2 py-3 font-mono text-[11px] uppercase tracking-[0.15em] transition-all"
+                                    style={{ border: '1px solid rgba(168,85,247,0.2)', borderRadius: '3px', color: '#a78bfa' }}
+                                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(168,85,247,0.5)'; e.currentTarget.style.color = '#c4b5fd'; e.currentTarget.style.background = 'rgba(168,85,247,0.06)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(168,85,247,0.2)'; e.currentTarget.style.color = '#a78bfa'; e.currentTarget.style.background = 'transparent'; }}
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    PROPOSE_A_GAME
+                                </button>
+                            </motion.div>
+                        )}
+
+                        {/* Rest cards */}
+                        {rest.map((p) => (
+                            <motion.div
+                                key={p.id}
+                                layout
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.98 }}
+                                transition={{ layout: { type: "spring", stiffness: 300, damping: 25 }, opacity: { duration: 0.2 } }}
+                                className="flex items-center gap-3 relative overflow-hidden"
+                                style={{ border: '1px solid rgba(168,85,247,0.12)', borderRadius: '3px', background: 'rgba(168,85,247,0.02)', padding: '10px 12px' }}
+                            >
+                                <ProposalParticles score={p.score} />
+                                <div className="flex items-center gap-3 flex-1 min-w-0 relative z-10">
+                                    {p.image && (
+                                        <div className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 overflow-hidden" style={{ border: '1px solid rgba(168,85,247,0.15)', borderRadius: '2px' }}>
+                                            <img src={p.image} alt={p.name} className="w-full h-full object-cover" style={{ filter: 'saturate(0.8)' }} referrerPolicy="no-referrer" />
+                                        </div>
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-mono text-xs sm:text-sm truncate" style={{ color: '#c4b5fd' }}>{p.name}</p>
+                                        <p className="font-mono truncate" style={{ fontSize: '9px', color: '#8b5cf6' }}>
+                                            {'// '}<span style={{ color: '#a78bfa' }}>{members.find(m => m.id === p.member_id)?.name || '???'}</span>
+                                        </p>
+                                        {p.description && (
+                                            <p className="font-mono line-clamp-1 mt-0.5" style={{ fontSize: '9px', color: '#8b5cf6', letterSpacing: '0.03em' }}>
+                                                [{p.description}]
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-2 shrink-0 relative z-10">
+                                    {p.member_id === memberId && (
+                                        <button
+                                            onClick={() => handleDelete(p.id)}
+                                            disabled={!!deletingId}
+                                            className="p-1.5 transition-all"
+                                            style={{ color: 'rgba(239,68,68,0.4)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '2px' }}
+                                            onMouseEnter={e => { e.currentTarget.style.color = 'rgb(239,68,68)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)'; }}
+                                            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(239,68,68,0.4)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.15)'; }}
+                                        >
+                                            {deletingId === p.id ? <CircleNotch className="w-3.5 h-3.5 animate-spin" /> : <Trash className="w-3.5 h-3.5" />}
+                                        </button>
+                                    )}
+                                    {renderVoteControls(p, 'sm')}
+                                </div>
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
+                </div>
+
+                {/* Add modal */}
+                {showAddModal && memberId && (
+                    <AddGameProposalModal
+                        isOpen={showAddModal}
+                        onClose={() => setShowAddModal(false)}
+                        onSubmit={async (data) => {
+                            if (!memberId) return;
+                            const res = await addLocationProposalAction(slug, memberId, { ...data, link: data.link ?? undefined, description: data.description ?? undefined });
+                            if (res.success && res.proposal) onProposalsChange([...proposals, res.proposal]);
+                            setShowAddModal(false);
+                        }}
+                    />
+                )}
+
+                {/* Override modal — cyberpunk */}
+                <Dialog open={isOverrideModalOpen} onOpenChange={setIsOverrideModalOpen}>
+                    <DialogContent
+                        className="flex flex-col p-0 overflow-hidden"
+                        style={{ maxWidth: '420px', width: 'calc(100% - 2rem)', background: 'rgba(8,0,20,0.99)', border: '1px solid rgba(168,85,247,0.25)', borderRadius: '4px', boxShadow: '0 0 40px rgba(168,85,247,0.12)' }}
+                    >
+                        <div className="w-full h-[2px] shrink-0" style={{ background: 'linear-gradient(90deg, #a855f7, #d946ef, #6366f1)' }} />
+                        <div className="p-5">
+                            <DialogHeader className="mb-4">
+                                <DialogTitle className="font-mono text-[0.8rem] uppercase tracking-[0.2em] flex items-center gap-2" style={{ color: '#c4b5fd' }}>
+                                    <WarningOctagon className="w-3.5 h-3.5" style={{ color: '#e879f9' }} />
+                                    {'> FORCE_GAME_CHOICE'}
+                                </DialogTitle>
+                            </DialogHeader>
+                            <div className="flex flex-col gap-1.5 max-h-[60vh] overflow-y-auto pr-1">
+                                {proposals.map((p) => (
+                                    <button
+                                        key={p.id}
+                                        onClick={() => handleConfirmLocation(p)}
+                                        disabled={!!confirmingLocationId}
+                                        className="flex items-center justify-between px-3 py-2.5 font-mono text-left transition-colors"
+                                        style={{
+                                            border: `1px solid ${group.location?.name === p.name ? 'rgba(168,85,247,0.4)' : 'rgba(168,85,247,0.12)'}`,
+                                            borderRadius: '3px',
+                                            background: group.location?.name === p.name ? 'rgba(168,85,247,0.1)' : 'transparent',
+                                            color: group.location?.name === p.name ? '#c4b5fd' : '#a78bfa',
+                                        }}
+                                        onMouseEnter={e => { if (group.location?.name !== p.name) { e.currentTarget.style.background = 'rgba(168,85,247,0.06)'; e.currentTarget.style.borderColor = 'rgba(168,85,247,0.3)'; } }}
+                                        onMouseLeave={e => { if (group.location?.name !== p.name) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(168,85,247,0.12)'; } }}
+                                    >
+                                        <span className="text-sm truncate pr-3">{p.name}</span>
+                                        <div className="flex items-center gap-2 shrink-0">
+                                            <span className="font-mono text-[10px]" style={{ color: p.score > 0 ? '#4ade80' : p.score < 0 ? '#f87171' : '#8b5cf6' }}>
+                                                {p.score > 0 ? '+' : ''}{p.score} pts
+                                            </span>
+                                            {confirmingLocationId === p.id
+                                                ? <CircleNotch className="w-3.5 h-3.5 animate-spin" style={{ color: '#8b5cf6' }} />
+                                                : group.location?.name === p.name
+                                                ? <Check className="w-3.5 h-3.5" style={{ color: '#c4b5fd' }} />
+                                                : null
+                                            }
+                                        </div>
+                                    </button>
+                                ))}
+                                {group.location && (
+                                    <button
+                                        onClick={async () => {
+                                            if (!memberId || !isAdmin) return;
+                                            setConfirmingLocationId('clear');
+                                            const result = await updateLocationAction(slug, memberId, group.id, null);
+                                            if (result.success) onGroupChange?.();
+                                            setConfirmingLocationId(null);
+                                            setIsOverrideModalOpen(false);
+                                        }}
+                                        disabled={!!confirmingLocationId}
+                                        className="mt-2 px-3 py-2.5 font-mono text-[11px] uppercase tracking-[0.12em] transition-colors flex items-center justify-between"
+                                        style={{ border: '1px solid rgba(239,68,68,0.2)', borderRadius: '3px', color: 'rgba(239,68,68,0.65)' }}
+                                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.06)'; e.currentTarget.style.color = 'rgb(239,68,68)'; }}
+                                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(239,68,68,0.65)'; }}
+                                    >
+                                        <span>CLEAR_FORCED_GAME</span>
+                                        {confirmingLocationId === 'clear' && <CircleNotch className="w-3.5 h-3.5 animate-spin" />}
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            </div>
+        );
+    }
+
+    // ── NEO-BRUTALIST IN-PERSON RENDER ───────────────────────────────────────
     return (
         <div className="flex flex-col gap-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                     <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 whitespace-nowrap">
-                        {isRemote ? 'Jeux proposés' : 'Propositions'} ({proposals.length})
+                        Propositions ({proposals.length})
                     </h3>
                     {isAdmin && (
                         <button
@@ -263,12 +576,9 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
 
             {proposals.length === 0 && (
                 <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/5">
-                    <span className="text-base leading-none mt-0.5">{isRemote ? '🎮' : '📍'}</span>
+                    <span className="text-base leading-none mt-0.5">📍</span>
                     <p className="text-[11px] text-white/35 font-medium leading-relaxed">
-                        {isRemote
-                            ? 'Propose un jeu — le groupe votera pour le meilleur choix.'
-                            : 'Propose un lieu — le groupe votera pour le meilleur endroit.'
-                        }
+                        Propose un lieu — le groupe votera pour le meilleur endroit.
                     </p>
                 </div>
             )}
@@ -331,9 +641,7 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                                 className="btn-massive w-full rounded-2xl py-3.5 sm:py-4 flex items-center justify-center gap-3 transition-all group"
                             >
                                 <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                                <span className="text-sm font-black uppercase tracking-widest">
-                                    {isRemote ? 'Proposer un jeu' : 'Proposer un lieu'}
-                                </span>
+                                <span className="text-sm font-black uppercase tracking-widest">Proposer un lieu</span>
                             </button>
                         </motion.div>
                     )}
@@ -376,32 +684,19 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
             </div>
 
             {showAddModal && memberId && (
-                isRemote ? (
-                    <AddGameProposalModal
-                        isOpen={showAddModal}
-                        onClose={() => setShowAddModal(false)}
-                        onSubmit={async (data) => {
-                            if (!memberId) return;
-                            const res = await addLocationProposalAction(slug, memberId, { ...data, link: data.link ?? undefined, description: data.description ?? undefined });
-                            if (res.success && res.proposal) onProposalsChange([...proposals, res.proposal]);
-                            setShowAddModal(false);
-                        }}
-                    />
-                ) : (
-                    <AddLocationProposalModal
-                        isOpen={showAddModal}
-                        onClose={() => setShowAddModal(false)}
-                        city={group.city}
-                        baseLat={group.base_lat}
-                        baseLng={group.base_lng}
-                        onSubmit={async (data) => {
-                            if (!memberId) return;
-                            const res = await addLocationProposalAction(slug, memberId, data);
-                            if (res.success && res.proposal) onProposalsChange([...proposals, res.proposal]);
-                            setShowAddModal(false);
-                        }}
-                    />
-                )
+                <AddLocationProposalModal
+                    isOpen={showAddModal}
+                    onClose={() => setShowAddModal(false)}
+                    city={group.city}
+                    baseLat={group.base_lat}
+                    baseLng={group.base_lng}
+                    onSubmit={async (data) => {
+                        if (!memberId) return;
+                        const res = await addLocationProposalAction(slug, memberId, data);
+                        if (res.success && res.proposal) onProposalsChange([...proposals, res.proposal]);
+                        setShowAddModal(false);
+                    }}
+                />
             )}
 
             <Dialog open={isOverrideModalOpen} onOpenChange={setIsOverrideModalOpen}>

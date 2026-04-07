@@ -592,6 +592,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                     onReclaim={handleReclaim}
                     groupName={group.name}
                     existingGuests={guestMembers}
+                    isRemote={group.type === 'remote'}
                 />
             )}
 
@@ -646,6 +647,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                         groupName={group.name}
                         url={typeof window !== 'undefined' ? window.location.href : ''}
                         variant="icon"
+                        isRemote={group.type === 'remote'}
                     />
                 </div>
 
@@ -688,6 +690,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                         loading={loadingMembers}
                         onRefresh={fetchMembers}
                         currentMemberId={memberId}
+                        isRemote={group.type === 'remote'}
                     />
 
                     <GroupSettingsModal
@@ -698,6 +701,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                         memberId={memberId}
                         isAdmin={isAdmin}
                         onLeaveGroup={handleLeaveGroup}
+                        isRemote={group.type === 'remote'}
                     />
                 </>
             )}

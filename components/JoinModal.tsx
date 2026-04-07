@@ -23,9 +23,10 @@ interface JoinModalProps {
     onReclaim?: (memberId: string, name: string) => void;
     groupName?: string;
     existingGuests?: Member[];
+    isRemote?: boolean;
 }
 
-export default function JoinModal({ onJoin, onReclaim, groupName, existingGuests = [] }: JoinModalProps) {
+export default function JoinModal({ onJoin, onReclaim, groupName, existingGuests = [], isRemote }: JoinModalProps) {
     const [name, setName] = useState('');
     const { profile, user } = useAuth();
     const [isAutoJoining, setIsAutoJoining] = useState(false);
@@ -34,32 +35,22 @@ export default function JoinModal({ onJoin, onReclaim, groupName, existingGuests
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        if (profile?.display_name && !isAutoJoining && !user) { // Only auto-fill if not logged in (handled by parent otherwise)
-            // Actually, parent handles auto-login for matched users. 
-            // If we are here, it means we are either a guest or a new user.
-            // Let's just pre-fill if available but NOT auto-submit to give choice?
-            // The original logic auto-submitted. Let's keep it for now if it's a known profile.
-        }
         if (profile?.display_name && !isAutoJoining) {
             setName(profile.display_name);
-            // Auto-join if we have a name from the profile
             const autoJoin = async () => {
-                setIsAutoJoining(true); // Keep this for the specific "joining as..." screen
+                setIsAutoJoining(true);
                 try {
                     await onJoin(profile.display_name!);
                 } catch (error) {
                     console.error("Auto-join failed", error);
-                    setIsAutoJoining(false); // Fallback to manual if failed
+                    setIsAutoJoining(false);
                 }
             };
             autoJoin();
         }
-    }, [profile, onJoin, isAutoJoining]); // Be careful with deps here
+    }, [profile, onJoin, isAutoJoining]);
 
-
-    if (isAutoJoining) {
-        return null;
-    }
+    if (isAutoJoining) return null;
 
     const handleSubmitCreate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -78,12 +69,206 @@ export default function JoinModal({ onJoin, onReclaim, groupName, existingGuests
     const handleReclaim = () => {
         if (selectedGuestId && onReclaim) {
             const guest = existingGuests.find(g => g.id === selectedGuestId);
-            if (guest) {
-                onReclaim(guest.id, guest.name);
-            }
+            if (guest) onReclaim(guest.id, guest.name);
         }
     };
 
+    // ── REMOTE / CYBERPUNK VARIANT ──
+    if (isRemote) {
+        return (
+            <Dialog open={true}>
+                <DialogContent
+                    className="p-0 overflow-hidden"
+                    style={{
+                        background: 'rgba(8,0,20,0.99)',
+                        border: '1px solid rgba(168,85,247,0.35)',
+                        borderRadius: '4px',
+                        boxShadow: '0 0 60px rgba(168,85,247,0.2), 0 0 120px rgba(168,85,247,0.06)',
+                        maxWidth: '420px',
+                        width: 'calc(100% - 2rem)',
+                    }}
+                >
+                    {/* Top neon bar */}
+                    <div className="w-full h-[2px]" style={{ background: 'linear-gradient(90deg, #a855f7, #d946ef, #6366f1)' }} />
+
+                    {view === 'create' ? (
+                        <div className="p-6 flex flex-col gap-5">
+                            <DialogHeader>
+                                <DialogTitle className="font-mono text-[0.85rem] uppercase tracking-[0.2em]" style={{ color: '#c4b5fd' }}>
+                                    {'> JOIN_SESSION'}
+                                </DialogTitle>
+                                <DialogDescription className="font-mono text-[11px]" style={{ color: '#8b5cf6' }}>
+                                    {`// connexion au groupe "${groupName}"`}
+                                </DialogDescription>
+                            </DialogHeader>
+
+                            <form onSubmit={handleSubmitCreate} className="flex flex-col gap-4">
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="font-mono text-[10px] uppercase tracking-[0.2em]" style={{ color: '#a78bfa' }}>
+                                        PLAYER_NAME
+                                    </label>
+                                    <div className="relative">
+                                        <div
+                                            className="flex items-center gap-2 px-3 py-2.5"
+                                            style={{
+                                                background: 'rgba(168,85,247,0.04)',
+                                                border: '1px solid rgba(168,85,247,0.25)',
+                                                borderRadius: '3px',
+                                            }}
+                                        >
+                                            <User className="w-4 h-4 shrink-0" style={{ color: '#8b5cf6' }} />
+                                            <input
+                                                type="text"
+                                                value={name}
+                                                onChange={(e) => setName(e.target.value)}
+                                                placeholder="ENTER_NAME..."
+                                                autoFocus
+                                                maxLength={20}
+                                                required
+                                                disabled={isLoading}
+                                                className="flex-1 bg-transparent font-mono text-sm outline-none placeholder:opacity-40"
+                                                style={{ color: '#c4b5fd', caretColor: '#a855f7' }}
+                                            />
+                                            {user && !name && (
+                                                <span className="font-mono text-[9px] uppercase tracking-wider animate-pulse shrink-0" style={{ color: '#a855f7' }}>
+                                                    PROFILE_DETECTED
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col gap-2">
+                                    <button
+                                        type="submit"
+                                        disabled={!name.trim() || isLoading}
+                                        className="w-full h-12 font-mono text-[12px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2"
+                                        style={{
+                                            background: name.trim() && !isLoading ? 'rgba(168,85,247,0.15)' : 'rgba(168,85,247,0.05)',
+                                            border: `1px solid ${name.trim() && !isLoading ? 'rgba(168,85,247,0.5)' : 'rgba(168,85,247,0.15)'}`,
+                                            borderRadius: '3px',
+                                            color: name.trim() && !isLoading ? '#c4b5fd' : '#8b5cf6',
+                                            boxShadow: name.trim() && !isLoading ? '0 0 16px rgba(168,85,247,0.12)' : 'none',
+                                            cursor: !name.trim() || isLoading ? 'not-allowed' : 'pointer',
+                                        }}
+                                    >
+                                        {isLoading
+                                            ? <><CircleNotch className="w-4 h-4 animate-spin" /> CONNECTING...</>
+                                            : <>{'[ CONNECT_TO_SESSION ]'}</>
+                                        }
+                                    </button>
+
+                                    {existingGuests.length > 0 && (
+                                        <button
+                                            type="button"
+                                            className="w-full text-center font-mono text-[10px] uppercase tracking-[0.15em] py-2 transition-colors"
+                                            style={{ color: '#8b5cf6' }}
+                                            onClick={() => setView('reclaim')}
+                                            disabled={isLoading}
+                                            onMouseEnter={e => (e.currentTarget.style.color = '#a78bfa')}
+                                            onMouseLeave={e => (e.currentTarget.style.color = '#8b5cf6')}
+                                        >
+                                            {'// déjà dans ce groupe →'}
+                                        </button>
+                                    )}
+                                </div>
+                            </form>
+                        </div>
+                    ) : (
+                        <div className="p-6 flex flex-col gap-5">
+                            <DialogHeader>
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        className="w-8 h-8 flex items-center justify-center transition-colors"
+                                        style={{ border: '1px solid rgba(168,85,247,0.2)', borderRadius: '2px', color: '#8b5cf6', background: 'transparent' }}
+                                        onClick={() => setView('create')}
+                                        onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(168,85,247,0.4)')}
+                                        onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(168,85,247,0.2)')}
+                                    >
+                                        <ArrowLeft className="w-3.5 h-3.5" />
+                                    </button>
+                                    <DialogTitle className="font-mono text-[0.85rem] uppercase tracking-[0.2em]" style={{ color: '#c4b5fd' }}>
+                                        {'> SELECT_PROFILE'}
+                                    </DialogTitle>
+                                </div>
+                                <DialogDescription className="font-mono text-[11px] mt-1" style={{ color: '#8b5cf6' }}>
+                                    {'// sélectionne ton profil existant'}
+                                </DialogDescription>
+                            </DialogHeader>
+
+                            <div className="flex flex-col gap-4">
+                                <div
+                                    className="h-[200px] overflow-y-auto p-1.5 space-y-1"
+                                    style={{
+                                        border: '1px solid rgba(168,85,247,0.15)',
+                                        borderRadius: '3px',
+                                        background: 'rgba(168,85,247,0.02)',
+                                    }}
+                                >
+                                    <RadioGroup value={selectedGuestId || ''} onValueChange={setSelectedGuestId} className="gap-1">
+                                        {existingGuests.map((guest) => (
+                                            <div key={guest.id} className="relative">
+                                                <RadioGroupItem value={guest.id} id={guest.id} className="sr-only" />
+                                                <Label
+                                                    htmlFor={guest.id}
+                                                    className="flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-all"
+                                                    style={{
+                                                        borderRadius: '2px',
+                                                        border: `1px solid ${selectedGuestId === guest.id ? 'rgba(168,85,247,0.4)' : 'transparent'}`,
+                                                        background: selectedGuestId === guest.id ? 'rgba(168,85,247,0.08)' : 'transparent',
+                                                    }}
+                                                >
+                                                    <div
+                                                        className="w-8 h-8 flex items-center justify-center font-mono text-[11px] font-bold shrink-0"
+                                                        style={{
+                                                            borderRadius: '2px',
+                                                            border: `1px solid ${selectedGuestId === guest.id ? 'rgba(168,85,247,0.5)' : 'rgba(168,85,247,0.15)'}`,
+                                                            background: selectedGuestId === guest.id ? 'rgba(168,85,247,0.12)' : 'rgba(168,85,247,0.04)',
+                                                            color: selectedGuestId === guest.id ? '#c4b5fd' : '#8b5cf6',
+                                                        }}
+                                                    >
+                                                        {guest.name.slice(0, 2).toUpperCase()}
+                                                    </div>
+                                                    <span
+                                                        className="font-mono text-sm flex-1"
+                                                        style={{ color: selectedGuestId === guest.id ? '#c4b5fd' : '#a78bfa' }}
+                                                    >
+                                                        {guest.name}
+                                                    </span>
+                                                    {selectedGuestId === guest.id && (
+                                                        <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: '#a855f7', boxShadow: '0 0 6px #a855f7' }} />
+                                                    )}
+                                                </Label>
+                                            </div>
+                                        ))}
+                                    </RadioGroup>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    disabled={!selectedGuestId}
+                                    onClick={handleReclaim}
+                                    className="w-full h-11 font-mono text-[11px] uppercase tracking-[0.2em] transition-all"
+                                    style={{
+                                        background: selectedGuestId ? 'rgba(168,85,247,0.15)' : 'rgba(168,85,247,0.04)',
+                                        border: `1px solid ${selectedGuestId ? 'rgba(168,85,247,0.5)' : 'rgba(168,85,247,0.1)'}`,
+                                        borderRadius: '3px',
+                                        color: selectedGuestId ? '#c4b5fd' : '#8b5cf6',
+                                        boxShadow: selectedGuestId ? '0 0 12px rgba(168,85,247,0.1)' : 'none',
+                                        cursor: !selectedGuestId ? 'not-allowed' : 'pointer',
+                                    }}
+                                >
+                                    {'[ CONFIRM_IDENTITY ]'}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
+        );
+    }
+
+    // ── IN-PERSON / NEO-BRUTALIST VARIANT ──
     return (
         <Dialog open={true}>
             <DialogContent className="sm:max-w-[425px] glass-panel border-white/10 text-white rounded-3xl p-0 overflow-hidden">
@@ -177,27 +362,22 @@ export default function JoinModal({ onJoin, onReclaim, groupName, existingGuests
 
                         <div className="space-y-6">
                             <ScrollArea className="h-[240px] rounded-2xl border border-white/10 bg-black/20 p-2">
-                                <RadioGroup value={selectedGuestId || ""} onValueChange={setSelectedGuestId} className="gap-1">
+                                <RadioGroup value={selectedGuestId || ''} onValueChange={setSelectedGuestId} className="gap-1">
                                     {existingGuests.map((guest) => (
                                         <div key={guest.id} className="relative group">
-                                            <RadioGroupItem
-                                                value={guest.id}
-                                                id={guest.id}
-                                                className="sr-only"
-                                            />
+                                            <RadioGroupItem value={guest.id} id={guest.id} className="sr-only" />
                                             <Label
                                                 htmlFor={guest.id}
                                                 className={`flex items-center gap-4 p-4 rounded-xl cursor-pointer transition-all border border-transparent ${selectedGuestId === guest.id
-                                                    ? "bg-[var(--v2-primary)]/10 border-[var(--v2-primary)]/30 text-white"
-                                                    : "hover:bg-white/5 text-slate-400 hover:text-slate-200"
+                                                    ? 'bg-[var(--v2-primary)]/10 border-[var(--v2-primary)]/30 text-white'
+                                                    : 'hover:bg-white/5 text-slate-400 hover:text-slate-200'
                                                     }`}
                                             >
                                                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ring-1 transition-all ${selectedGuestId === guest.id
-                                                    ? "bg-[var(--v2-primary)]/20 ring-[var(--v2-primary)]/50"
-                                                    : "bg-white/5 ring-white/10"
+                                                    ? 'bg-[var(--v2-primary)]/20 ring-[var(--v2-primary)]/50'
+                                                    : 'bg-white/5 ring-white/10'
                                                     }`}>
-                                                    <User className={`w-5 h-5 ${selectedGuestId === guest.id ? "text-white" : "text-slate-500"
-                                                        }`} />
+                                                    <User className={`w-5 h-5 ${selectedGuestId === guest.id ? 'text-white' : 'text-slate-500'}`} />
                                                 </div>
                                                 <span className="font-bold text-base flex-1">{guest.name}</span>
                                                 {selectedGuestId === guest.id && (
@@ -221,6 +401,6 @@ export default function JoinModal({ onJoin, onReclaim, groupName, existingGuests
                     </div>
                 )}
             </DialogContent>
-        </Dialog >
+        </Dialog>
     );
 }

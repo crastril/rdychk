@@ -24,9 +24,10 @@ interface GroupSettingsModalProps {
     memberId: string | null;
     isAdmin: boolean;
     onLeaveGroup?: () => void;
+    isRemote?: boolean;
 }
 
-export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, memberId, isAdmin, onLeaveGroup }: GroupSettingsModalProps) {
+export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, memberId, isAdmin, onLeaveGroup, isRemote }: GroupSettingsModalProps) {
     const [groupType, setGroupType] = useState<'remote' | 'in_person'>('remote');
     const [location, setLocation] = useState('');
     const [locationSearch, setLocationSearch] = useState('');
@@ -59,7 +60,6 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
             setCalendarEnabled(data.calendar_voting_enabled ?? false);
             setLocationEnabled(data.location_voting_enabled ?? false);
             setConfirmedDate(data.confirmed_date ?? null);
-            // Derive initial phase: day-of if confirmed today/past, or if both voting off
             const today = new Date().toISOString().slice(0, 10);
             const isDayOf =
                 (data.confirmed_date && data.confirmed_date <= today) ||
@@ -89,8 +89,6 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                 return;
             }
 
-            // If saving in Jour J phase with no confirmed_date, anchor to today
-            // so getGroupMode() keeps returning 'day-of' even when a vote is re-enabled
             const dateToSave = phase === 'day-of' && !confirmedDate
                 ? new Date().toISOString().slice(0, 10)
                 : confirmedDate;
@@ -107,7 +105,6 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                 .eq('id', groupId);
 
             if (typeError) throw typeError;
-
             onOpenChange(false);
         } catch (error) {
             console.error(error);
@@ -128,13 +125,306 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
         setPhase('day-of');
         setCalendarEnabled(false);
         setLocationEnabled(false);
-        // Anchor confirmed_date to today so Jour J layout stays stable
-        // even if voting is re-enabled afterwards
         if (!confirmedDate) {
             setConfirmedDate(new Date().toISOString().slice(0, 10));
         }
     };
 
+    // ── CYBERPUNK TOGGLE ─────────────────────────────────────────────────────
+    const CyberToggle = ({ enabled, onChange, disabled }: { enabled: boolean; onChange: () => void; disabled: boolean }) => (
+        <div
+            onClick={() => !disabled && onChange()}
+            className="relative transition-colors shrink-0"
+            style={{
+                width: '36px',
+                height: '20px',
+                borderRadius: '2px',
+                border: `1px solid ${enabled ? 'rgba(168,85,247,0.5)' : 'rgba(168,85,247,0.15)'}`,
+                background: enabled ? 'rgba(168,85,247,0.2)' : 'rgba(168,85,247,0.04)',
+                cursor: disabled ? 'not-allowed' : 'pointer',
+            }}
+        >
+            <motion.div
+                animate={{ x: enabled ? 18 : 2 }}
+                className="absolute top-1"
+                style={{
+                    width: '12px',
+                    height: '12px',
+                    borderRadius: '1px',
+                    background: enabled ? '#a855f7' : '#8b5cf6',
+                    boxShadow: enabled ? '0 0 6px rgba(168,85,247,0.6)' : 'none',
+                }}
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+            />
+        </div>
+    );
+
+    // ── REMOTE / CYBERPUNK VARIANT ───────────────────────────────────────────
+    if (isRemote) {
+        return (
+            <Dialog open={isOpen} onOpenChange={onOpenChange}>
+                <DialogContent
+                    className="flex flex-col p-0 overflow-hidden"
+                    style={{
+                        maxWidth: '460px',
+                        width: 'calc(100% - 2rem)',
+                        maxHeight: '90vh',
+                        overflowY: 'auto',
+                        background: 'rgba(8,0,20,0.99)',
+                        border: '1px solid rgba(168,85,247,0.3)',
+                        borderRadius: '4px',
+                        boxShadow: '0 0 40px rgba(168,85,247,0.15)',
+                    }}
+                >
+                    {/* Top neon bar */}
+                    <div className="w-full h-[2px] shrink-0" style={{ background: 'linear-gradient(90deg, #a855f7, #d946ef, #6366f1)' }} />
+
+                    <div className="p-5 flex flex-col gap-6">
+                        <DialogHeader>
+                            <DialogTitle className="font-mono text-[0.85rem] uppercase tracking-[0.2em]" style={{ color: '#c4b5fd' }}>
+                                {'> GROUP_SETTINGS'}
+                            </DialogTitle>
+                        </DialogHeader>
+
+                        {loading ? (
+                            <div className="flex justify-center py-10">
+                                <CircleNotch className="w-6 h-6 animate-spin" style={{ color: '#a855f7' }} />
+                            </div>
+                        ) : (
+                            <>
+                                {/* ── GROUP TYPE ── */}
+                                <div className="flex flex-col gap-3">
+                                    <p className="font-mono text-[9px] uppercase tracking-[0.2em]" style={{ color: '#8b5cf6' }}>
+                                        // GROUP_TYPE
+                                    </p>
+                                    <GroupTypeSelector
+                                        value={groupType}
+                                        onValueChange={(val) => setGroupType(val)}
+                                        idPrefix="settings-remote-"
+                                        disabled={!isAdmin}
+                                        isRemote={true}
+                                    />
+                                </div>
+
+                                {/* ── CITY (in_person only) ── */}
+                                {groupType === 'in_person' && (
+                                    <div className="flex flex-col gap-3">
+                                        <p className="font-mono text-[9px] uppercase tracking-[0.2em] flex items-center gap-1.5" style={{ color: '#8b5cf6' }}>
+                                            <MapPin className="w-3 h-3" />
+                                            // BASE_CITY
+                                        </p>
+                                        <div className="relative">
+                                            <input
+                                                value={locationSearch}
+                                                onChange={(e) => {
+                                                    setLocationSearch(e.target.value);
+                                                    handleSearchLocation(e.target.value);
+                                                }}
+                                                placeholder="SEARCH_CITY..."
+                                                disabled={!isAdmin}
+                                                className="w-full bg-transparent font-mono text-sm outline-none placeholder:font-mono px-3 py-2.5"
+                                                style={{
+                                                    border: '1px solid rgba(168,85,247,0.2)',
+                                                    borderRadius: '3px',
+                                                    color: '#c4b5fd',
+                                                    caretColor: '#a855f7',
+                                                }}
+                                                onFocus={e => (e.currentTarget.style.borderColor = 'rgba(168,85,247,0.5)')}
+                                                onBlur={e => (e.currentTarget.style.borderColor = 'rgba(168,85,247,0.2)')}
+                                            />
+                                            {locationResults.length > 0 && isAdmin && (
+                                                <div
+                                                    className="absolute top-full left-0 w-full mt-1 overflow-hidden z-50"
+                                                    style={{ border: '1px solid rgba(168,85,247,0.2)', borderRadius: '3px', background: 'rgba(8,0,20,0.99)' }}
+                                                >
+                                                    {locationResults.map((cityName) => (
+                                                        <button
+                                                            key={cityName}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setLocation(cityName);
+                                                                setLocationSearch(cityName);
+                                                                setLocationResults([]);
+                                                            }}
+                                                            className="w-full text-left px-3 py-2 font-mono text-sm transition-colors"
+                                                            style={{ borderBottom: '1px solid rgba(168,85,247,0.08)', color: '#a78bfa' }}
+                                                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(168,85,247,0.08)'; e.currentTarget.style.color = '#c4b5fd'; }}
+                                                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#a78bfa'; }}
+                                                        >
+                                                            {cityName}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                        {!isAdmin && (
+                                            <p className="font-mono text-[10px]" style={{ color: '#8b5cf6' }}>
+                                                {'// ADMIN_ONLY_SETTING'}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* ── SESSION PHASE ── */}
+                                <div className="flex flex-col gap-3">
+                                    <p className="font-mono text-[9px] uppercase tracking-[0.2em]" style={{ color: '#8b5cf6' }}>
+                                        // SESSION_PHASE
+                                    </p>
+                                    <div
+                                        className="grid grid-cols-2 gap-1.5 p-1"
+                                        style={{ border: '1px solid rgba(168,85,247,0.15)', borderRadius: '3px', background: 'rgba(168,85,247,0.02)' }}
+                                    >
+                                        <button
+                                            type="button"
+                                            disabled={!isAdmin}
+                                            onClick={setModePlanning}
+                                            className="flex flex-col items-center gap-1.5 py-3 px-2 font-mono transition-all"
+                                            style={{
+                                                borderRadius: '2px',
+                                                border: `1px solid ${phase === 'planning' ? 'rgba(168,85,247,0.4)' : 'transparent'}`,
+                                                background: phase === 'planning' ? 'rgba(168,85,247,0.12)' : 'transparent',
+                                                cursor: !isAdmin ? 'not-allowed' : 'pointer',
+                                                opacity: !isAdmin ? 0.5 : 1,
+                                            }}
+                                        >
+                                            <CalendarDots className="w-4 h-4" style={{ color: phase === 'planning' ? '#a855f7' : '#8b5cf6' }} weight="fill" />
+                                            <span className="text-[10px] uppercase tracking-[0.1em]" style={{ color: phase === 'planning' ? '#c4b5fd' : '#8b5cf6' }}>PLANNING</span>
+                                            <span className="text-[9px] text-center leading-tight" style={{ color: '#8b5cf6' }}>// vote en cours</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            disabled={!isAdmin}
+                                            onClick={setModeDayOf}
+                                            className="flex flex-col items-center gap-1.5 py-3 px-2 font-mono transition-all"
+                                            style={{
+                                                borderRadius: '2px',
+                                                border: `1px solid ${phase === 'day-of' ? 'rgba(74,222,128,0.4)' : 'transparent'}`,
+                                                background: phase === 'day-of' ? 'rgba(74,222,128,0.06)' : 'transparent',
+                                                cursor: !isAdmin ? 'not-allowed' : 'pointer',
+                                                opacity: !isAdmin ? 0.5 : 1,
+                                            }}
+                                        >
+                                            <CheckSquare className="w-4 h-4" style={{ color: phase === 'day-of' ? '#4ade80' : '#8b5cf6' }} weight="fill" />
+                                            <span className="text-[10px] uppercase tracking-[0.1em]" style={{ color: phase === 'day-of' ? '#4ade80' : '#8b5cf6' }}>SESSION_DAY</span>
+                                            <span className="text-[9px] text-center leading-tight" style={{ color: '#8b5cf6' }}>// décision finale</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* ── FEATURE TOGGLES ── */}
+                                <div className="flex flex-col gap-3">
+                                    <p className="font-mono text-[9px] uppercase tracking-[0.2em]" style={{ color: '#8b5cf6' }}>
+                                        // MODULES
+                                    </p>
+
+                                    {/* Calendar toggle */}
+                                    <div
+                                        onClick={() => isAdmin && setCalendarEnabled(!calendarEnabled)}
+                                        className="flex items-center justify-between px-3 py-2.5 transition-all"
+                                        style={{
+                                            border: `1px solid ${calendarEnabled ? 'rgba(168,85,247,0.3)' : 'rgba(168,85,247,0.1)'}`,
+                                            borderRadius: '3px',
+                                            background: calendarEnabled ? 'rgba(168,85,247,0.06)' : 'rgba(168,85,247,0.02)',
+                                            cursor: isAdmin ? 'pointer' : 'default',
+                                        }}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div
+                                                className="w-8 h-8 flex items-center justify-center shrink-0"
+                                                style={{ border: `1px solid ${calendarEnabled ? 'rgba(168,85,247,0.4)' : 'rgba(168,85,247,0.15)'}`, borderRadius: '2px', background: calendarEnabled ? 'rgba(168,85,247,0.1)' : 'transparent' }}
+                                            >
+                                                <CalendarDots className="w-4 h-4" style={{ color: calendarEnabled ? '#a855f7' : '#8b5cf6' }} weight="fill" />
+                                            </div>
+                                            <div>
+                                                <p className="font-mono text-sm" style={{ color: calendarEnabled ? '#c4b5fd' : '#a78bfa' }}>CALENDAR</p>
+                                                <p className="font-mono text-[10px]" style={{ color: '#8b5cf6' }}>// vote pour des dates</p>
+                                            </div>
+                                        </div>
+                                        <CyberToggle enabled={calendarEnabled} onChange={() => setCalendarEnabled(!calendarEnabled)} disabled={!isAdmin} />
+                                    </div>
+
+                                    {/* Game/Location toggle */}
+                                    <div
+                                        onClick={() => isAdmin && setLocationEnabled(!locationEnabled)}
+                                        className="flex items-center justify-between px-3 py-2.5 transition-all"
+                                        style={{
+                                            border: `1px solid ${locationEnabled ? 'rgba(168,85,247,0.3)' : 'rgba(168,85,247,0.1)'}`,
+                                            borderRadius: '3px',
+                                            background: locationEnabled ? 'rgba(168,85,247,0.06)' : 'rgba(168,85,247,0.02)',
+                                            cursor: isAdmin ? 'pointer' : 'default',
+                                        }}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div
+                                                className="w-8 h-8 flex items-center justify-center shrink-0"
+                                                style={{ border: `1px solid ${locationEnabled ? 'rgba(168,85,247,0.4)' : 'rgba(168,85,247,0.15)'}`, borderRadius: '2px', background: locationEnabled ? 'rgba(168,85,247,0.1)' : 'transparent' }}
+                                            >
+                                                <GameController className="w-4 h-4" style={{ color: locationEnabled ? '#a855f7' : '#8b5cf6' }} />
+                                            </div>
+                                            <div>
+                                                <p className="font-mono text-sm" style={{ color: locationEnabled ? '#c4b5fd' : '#a78bfa' }}>GAME_PROPOSALS</p>
+                                                <p className="font-mono text-[10px]" style={{ color: '#8b5cf6' }}>// voter pour un jeu</p>
+                                            </div>
+                                        </div>
+                                        <CyberToggle enabled={locationEnabled} onChange={() => setLocationEnabled(!locationEnabled)} disabled={!isAdmin} />
+                                    </div>
+                                </div>
+
+                                {/* ── ACTIONS ── */}
+                                <div
+                                    className="flex flex-col gap-2.5 pt-4"
+                                    style={{ borderTop: '1px solid rgba(168,85,247,0.12)' }}
+                                >
+                                    {isAdmin && (
+                                        <button
+                                            onClick={handleSave}
+                                            disabled={saving}
+                                            className="w-full h-11 font-mono text-[11px] uppercase tracking-[0.15em] flex items-center justify-center gap-2 transition-all"
+                                            style={{
+                                                border: '1px solid rgba(168,85,247,0.4)',
+                                                borderRadius: '3px',
+                                                background: saving ? 'rgba(168,85,247,0.08)' : 'rgba(168,85,247,0.12)',
+                                                color: saving ? '#8b5cf6' : '#c4b5fd',
+                                                boxShadow: saving ? 'none' : '0 0 12px rgba(168,85,247,0.1)',
+                                                cursor: saving ? 'not-allowed' : 'pointer',
+                                            }}
+                                            onMouseEnter={e => { if (!saving) { e.currentTarget.style.background = 'rgba(168,85,247,0.2)'; e.currentTarget.style.borderColor = 'rgba(168,85,247,0.6)'; } }}
+                                            onMouseLeave={e => { if (!saving) { e.currentTarget.style.background = 'rgba(168,85,247,0.12)'; e.currentTarget.style.borderColor = 'rgba(168,85,247,0.4)'; } }}
+                                        >
+                                            {saving ? (
+                                                <><CircleNotch className="w-4 h-4 animate-spin" /> SAVING...</>
+                                            ) : (
+                                                '[ SAVE_SETTINGS ]'
+                                            )}
+                                        </button>
+                                    )}
+
+                                    {onLeaveGroup && (
+                                        <button
+                                            onClick={() => {
+                                                if (confirm("Voulez-vous vraiment quitter ce groupe ?")) {
+                                                    onLeaveGroup();
+                                                }
+                                            }}
+                                            className="w-full h-10 font-mono text-[11px] uppercase tracking-[0.15em] flex items-center justify-center gap-2 transition-all"
+                                            style={{ border: '1px solid rgba(239,68,68,0.2)', borderRadius: '3px', color: 'rgba(239,68,68,0.65)' }}
+                                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.06)'; e.currentTarget.style.color = 'rgb(239,68,68)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)'; }}
+                                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(239,68,68,0.65)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.2)'; }}
+                                        >
+                                            <SignOut className="w-4 h-4" />
+                                            LEAVE_GROUP
+                                        </button>
+                                    )}
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
+        );
+    }
+
+    // ── IN-PERSON / NEO-BRUTALIST VARIANT ────────────────────────────────────
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-md glass-panel border-white/10 text-white rounded-3xl p-0 overflow-hidden max-h-[90vh] overflow-y-auto">
