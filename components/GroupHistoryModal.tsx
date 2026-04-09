@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { CircleNotch, ArrowSquareOut, SignOut, ClockCounterClockwise, Warning } from '@phosphor-icons/react';
+import { CircleNotch, ArrowSquareOut, SignOut, ClockCounterClockwise } from '@phosphor-icons/react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/auth-provider';
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import {
     AlertDialog,
     AlertDialogAction,
