@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { WifiHigh, WifiSlash, ArrowsClockwise } from '@phosphor-icons/react';
+import { WifiSlash, ArrowsClockwise } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -10,7 +10,6 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { cn } from '@/lib/utils';
 
 // Threshold for auto-refresh in milliseconds (90 seconds — catches most mobile wake-ups)
 const REFRESH_THRESHOLD = 90 * 1000;
