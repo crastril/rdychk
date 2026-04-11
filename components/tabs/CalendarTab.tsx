@@ -57,6 +57,14 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
     const [isAllSlotsOpen, setIsAllSlotsOpen] = useState(false);
 
     const totalMembers = members.length;
+    const membersMap = useMemo(() => {
+        const acc: Record<string, Member> = {};
+        for (const m of members) {
+            acc[m.id] = m;
+        }
+        return acc;
+    }, [members]);
+
 
     // Local set for MY votes — updates instantly, not derived from parent prop.
     const [myVotes, setMyVotes] = useState<Set<string>>(
@@ -928,7 +936,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                 {/* Avatars membres dispo */}
                                 <div className="flex items-center gap-0.5 shrink-0">
                                     {dateMembers.slice(0, 4).map(mid => {
-                                        const m = members.find(x => x.id === mid);
+                                        const m = membersMap[mid];
                                         if (!m) return null;
                                         return (
                                             <div
@@ -1014,7 +1022,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                     </div>
                                     <div className="flex items-center gap-0.5 shrink-0">
                                         {dateMembers.slice(0, 4).map(mid => {
-                                            const m = members.find(x => x.id === mid);
+                                            const m = membersMap[mid];
                                             if (!m) return null;
                                             return (
                                                 <div key={mid} title={m.name} className={cn('w-5 h-5 rounded-full flex items-center justify-center text-[7px] font-black border shrink-0', mid === memberId ? 'bg-[var(--v2-primary)]/15 text-[var(--v2-primary)] border-[var(--v2-primary)]/40' : 'bg-white/8 text-white/50 border-white/10')}>
