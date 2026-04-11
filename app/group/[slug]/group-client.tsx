@@ -848,7 +848,6 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                     <ManageGroupModal
                         isOpen={isManageModalOpen}
                         onOpenChange={setIsManageModalOpen}
-                        groupId={group.id}
                         slug={slug}
                         members={members}
                         loading={loadingMembers}
