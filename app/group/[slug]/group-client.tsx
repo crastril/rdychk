@@ -12,7 +12,17 @@ import { ShareMenu } from '@/components/ShareMenu';
 import { NotificationManager } from '@/components/NotificationManager';
 import { ManageGroupModal } from '@/components/ManageGroupModal';
 import { Button } from '@/components/ui/button';
-import { Gear } from '@phosphor-icons/react';
+import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogFooter,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogAction,
+    AlertDialogCancel,
+} from '@/components/ui/alert-dialog';
+import { Gear, SignOut } from '@phosphor-icons/react';
 import { AuthButton } from '@/components/auth-button';
 import { GroupSettingsModal } from '@/components/GroupSettingsModal';
 import { ConnectionStatus } from '@/components/ConnectionStatus';
@@ -49,6 +59,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
     const router = useRouter();
     const [group, setGroup] = useState<Group | null>(initialGroup);
     const [memberId, setMemberId] = useState<string | null>(null);
+    const [isLeaveConfirmOpen, setIsLeaveConfirmOpen] = useState(false);
     const [memberName, setMemberName] = useState<string | null>(null);
     const [isReady, setIsReady] = useState(false);
     const [timerEndTime, setTimerEndTime] = useState<string | null>(null);
@@ -677,7 +688,160 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                         onGroupChange={fetchGroup}
                     />
                 )}
+
+                {/* Leave group — bottom of page */}
+                {memberId && (
+                    <div className="pt-4 pb-2 flex justify-center">
+                        <button
+                            type="button"
+                            onClick={() => setIsLeaveConfirmOpen(true)}
+                            className="flex items-center gap-2 px-4 py-3 transition-all duration-150 active:opacity-60"
+                            style={group.type === 'remote' ? {
+                                fontFamily: 'monospace',
+                                fontSize: '11px',
+                                letterSpacing: '0.12em',
+                                textTransform: 'uppercase',
+                                color: 'rgba(239,68,68,0.35)',
+                            } : {
+                                fontFamily: 'var(--font-barlow-condensed)',
+                                fontWeight: 700,
+                                fontSize: '13px',
+                                letterSpacing: '0.06em',
+                                textTransform: 'uppercase',
+                                color: 'rgba(255,255,255,0.2)',
+                            }}
+                            onMouseEnter={e => {
+                                e.currentTarget.style.color = group.type === 'remote'
+                                    ? 'rgba(239,68,68,0.65)'
+                                    : 'rgba(239,68,68,0.55)';
+                            }}
+                            onMouseLeave={e => {
+                                e.currentTarget.style.color = group.type === 'remote'
+                                    ? 'rgba(239,68,68,0.35)'
+                                    : 'rgba(255,255,255,0.2)';
+                            }}
+                        >
+                            <SignOut className="w-3.5 h-3.5" />
+                            {group.type === 'remote' ? '> LEAVE_GROUP' : 'Quitter le groupe'}
+                        </button>
+                    </div>
+                )}
             </div>
+
+            {/* Leave group confirmation */}
+            <AlertDialog open={isLeaveConfirmOpen} onOpenChange={setIsLeaveConfirmOpen}>
+                <AlertDialogContent
+                    className={cn(
+                        'border-0 p-0 overflow-hidden max-w-sm w-[calc(100%-2rem)]',
+                        group.type === 'remote'
+                            ? 'rounded-[4px]'
+                            : 'rounded-2xl'
+                    )}
+                    style={group.type === 'remote' ? {
+                        background: 'rgba(8,0,20,0.98)',
+                        border: '1px solid rgba(239,68,68,0.25)',
+                        boxShadow: '0 0 40px rgba(239,68,68,0.06)',
+                    } : {
+                        background: '#111',
+                        border: '3px solid #000',
+                        boxShadow: '5px 5px 0px #000',
+                    }}
+                >
+                    {/* Header stripe */}
+                    {group.type === 'remote' ? (
+                        <div className="px-5 pt-5 pb-4" style={{ borderBottom: '1px solid rgba(239,68,68,0.1)' }}>
+                            <AlertDialogTitle
+                                className="font-mono text-sm uppercase tracking-[0.14em]"
+                                style={{ color: 'rgba(239,68,68,0.9)' }}
+                            >
+                                {'// CONFIRM_LEAVE'}
+                            </AlertDialogTitle>
+                            <AlertDialogDescription
+                                className="mt-3 font-mono text-[11px] leading-relaxed"
+                                style={{ color: 'rgba(196,181,253,0.6)' }}
+                            >
+                                Tu vas quitter le groupe <span style={{ color: '#c4b5fd' }}>{group.name}</span>.
+                                <br /><br />
+                                Pour revenir, tu devras recevoir une nouvelle invitation.
+                            </AlertDialogDescription>
+                        </div>
+                    ) : (
+                        <div className="px-5 pt-5 pb-4" style={{ borderBottom: '2px solid #000' }}>
+                            <AlertDialogTitle
+                                className="font-black uppercase tracking-tight"
+                                style={{
+                                    fontFamily: 'var(--font-barlow-condensed)',
+                                    fontSize: '1.4rem',
+                                    color: '#ff2e2e',
+                                }}
+                            >
+                                Quitter le groupe ?
+                            </AlertDialogTitle>
+                            <AlertDialogDescription
+                                className="mt-2 text-sm leading-relaxed"
+                                style={{ color: 'rgba(255,255,255,0.5)' }}
+                            >
+                                Tu vas quitter <span className="font-bold text-white/70">{group.name}</span>.
+                                <br /><br />
+                                Pour revenir, tu devras recevoir une nouvelle invitation.
+                            </AlertDialogDescription>
+                        </div>
+                    )}
+
+                    {/* Footer actions */}
+                    <AlertDialogFooter
+                        className={cn(
+                            'flex-row gap-2 p-4',
+                            group.type === 'remote' ? 'flex-row-reverse' : 'flex-row-reverse'
+                        )}
+                    >
+                        <AlertDialogAction
+                            onClick={handleLeaveGroup}
+                            className={cn(
+                                'flex-1 font-black uppercase tracking-wide border-0 transition-all duration-150 active:opacity-70',
+                                group.type === 'remote'
+                                    ? 'rounded-[3px] font-mono text-[11px] tracking-[0.14em] py-3'
+                                    : 'rounded-xl text-sm py-3'
+                            )}
+                            style={group.type === 'remote' ? {
+                                background: 'rgba(239,68,68,0.12)',
+                                border: '1px solid rgba(239,68,68,0.3)',
+                                color: 'rgba(239,68,68,0.9)',
+                            } : {
+                                background: '#ff2e2e',
+                                border: '2.5px solid #000',
+                                boxShadow: '3px 3px 0px #000',
+                                color: '#fff',
+                                fontFamily: 'var(--font-barlow-condensed)',
+                                fontSize: '1rem',
+                            }}
+                        >
+                            {group.type === 'remote' ? 'CONFIRM_EXIT' : 'Quitter'}
+                        </AlertDialogAction>
+                        <AlertDialogCancel
+                            className={cn(
+                                'flex-1 border-0 font-black uppercase tracking-wide transition-all duration-150 active:opacity-70',
+                                group.type === 'remote'
+                                    ? 'rounded-[3px] font-mono text-[11px] tracking-[0.14em] py-3'
+                                    : 'rounded-xl text-sm py-3'
+                            )}
+                            style={group.type === 'remote' ? {
+                                background: 'rgba(168,85,247,0.06)',
+                                border: '1px solid rgba(168,85,247,0.15)',
+                                color: 'rgba(196,181,253,0.6)',
+                            } : {
+                                background: '#0c0c0c',
+                                border: '2.5px solid #fff2',
+                                color: 'rgba(255,255,255,0.45)',
+                                fontFamily: 'var(--font-barlow-condensed)',
+                                fontSize: '1rem',
+                            }}
+                        >
+                            {group.type === 'remote' ? 'ABORT' : 'Annuler'}
+                        </AlertDialogCancel>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             {memberId && (
                 <>
