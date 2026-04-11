@@ -62,10 +62,11 @@ async function seedDemoGroup(db: ReturnType<typeof getDb>, groupId: string) {
 
     const allMemberIds = [adminMember.id, ...(fakeMembers?.map(m => m.id) ?? [])];
     const dateVotes: { group_id: string; member_id: string; date: string }[] = [];
-    for (const date of dates) {
-        const voters = allMemberIds.filter((_, i) => (i + dates.indexOf(date)) % 2 === 0);
-        for (const memberId of voters) {
-            dateVotes.push({ group_id: groupId, member_id: memberId, date });
+    for (let dateIndex = 0; dateIndex < dates.length; dateIndex++) {
+        const date = dates[dateIndex];
+        const startIndex = dateIndex % 2 === 0 ? 0 : 1;
+        for (let i = startIndex; i < allMemberIds.length; i += 2) {
+            dateVotes.push({ group_id: groupId, member_id: allMemberIds[i], date });
         }
     }
     if (dateVotes.length > 0) {
