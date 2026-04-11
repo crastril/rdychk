@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { Check, Alarm, Hourglass, Warning } from '@phosphor-icons/react';
+import { Check, Alarm, Hourglass, Warning, Clock } from '@phosphor-icons/react';
 import { useState, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { toggleReadyAction } from '@/app/actions/member';
@@ -19,6 +19,9 @@ interface HeroBlockProps {
     localOptimisticReady: boolean | null;
     onOptimisticChange: (val: boolean | null) => void;
     isRemote?: boolean;
+    isActualDay?: boolean;
+    isPlanning?: boolean;
+    onOpenTimeModal?: () => void;
 }
 
 const ALL_READY_MSGS = [
@@ -50,6 +53,9 @@ export function HeroBlock({
     localOptimisticReady,
     onOptimisticChange,
     isRemote,
+    isActualDay = true,
+    isPlanning = false,
+    onOpenTimeModal,
 }: HeroBlockProps) {
     const [timeLeft, setTimeLeft] = useState<string | null>(null);
     const [isSoonReady, setIsSoonReady] = useState(false);
@@ -120,6 +126,10 @@ export function HeroBlock({
 
     const toggle = async () => {
         if (isPending) return;
+        if (!isActualDay) {
+            onOpenTimeModal?.();
+            return;
+        }
         const next = !displayReady;
         if (typeof window !== 'undefined' && navigator.vibrate) {
             navigator.vibrate(next ? 50 : [30, 50, 30]);
@@ -187,8 +197,8 @@ export function HeroBlock({
                     }}
                 />
 
-                {/* Progress header */}
-                <div
+                {/* Progress header — masqué en mode planification */}
+                {!isPlanning && <div
                     className="flex items-center gap-3 px-4 py-2.5 relative z-20"
                     style={{
                         background: headerBg,
@@ -225,7 +235,7 @@ export function HeroBlock({
                             {remaining === 1 ? `+${remaining}_WAIT` : 'PRÊTS'}
                         </span>
                     )}
-                </div>
+                </div>}
 
                 {/* Main button */}
                 <button
@@ -287,7 +297,7 @@ export function HeroBlock({
                             ) : (
                                 <>
                                     <span style={{ color: '#8b5cf6' }}>{'>'}</span>
-                                    <span>CONFIRM_READY_STATUS</span>
+                                    <span>{isActualDay ? 'CONFIRM_READY_STATUS' : 'SET_ETA'}</span>
                                     <span className="animate-cursor-blink" style={{ color: '#c4b5fd' }}>_</span>
                                 </>
                             )}
@@ -297,7 +307,7 @@ export function HeroBlock({
                                 className="font-mono text-[10px] normal-case tracking-normal"
                                 style={{ color: '#8b5cf6' }}
                             >
-                                {'// appuie quand tu es prêt à jouer'}
+                                {isActualDay ? '// appuie quand tu es prêt à jouer' : '// définis ton heure d\'arrivée estimée'}
                             </span>
                         )}
                     </span>
@@ -309,43 +319,45 @@ export function HeroBlock({
     // ── IN-PERSON / NEO-BRUTALIST VARIANT ──
     return (
         <div className="flex flex-col w-full relative rounded-2xl" style={{ boxShadow: '5px 5px 0px #000' }}>
-            {/* Progress header bar */}
-            <div
-                className="flex items-center gap-3 px-4 py-3 rounded-t-2xl border-x-[3px] border-t-[3px] border-black transition-colors duration-500"
-                style={{ background: allReady ? '#052010' : '#0f0f0f' }}
-            >
-                <span className={cn(
-                    'text-xs font-black uppercase tracking-[0.18em] shrink-0 tabular-nums transition-colors duration-300',
-                    allReady ? 'text-green-400' : socialPressureMsg ? 'text-amber-400' : 'text-white/65'
-                )}>
-                    {allReady
-                        ? allReadyMsg
-                        : socialPressureMsg
-                        ? socialPressureMsg
-                        : remaining === 1
-                        ? `encore 1 à attendre 👀`
-                        : `${readyCount} / ${totalCount}`}
-                </span>
-
-                <div className="flex-1 h-[5px] rounded-full bg-white/8 overflow-hidden">
-                    <div
-                        className="h-full rounded-full transition-all duration-500 ease-out"
-                        style={{
-                            width: `${progress}%`,
-                            background: allReady
-                                ? 'linear-gradient(90deg, #22c55e, #4ade80)'
-                                : 'var(--v2-primary)',
-                            boxShadow: allReady ? '0 0 10px #22c55e90' : '0 0 6px var(--v2-primary)',
-                        }}
-                    />
-                </div>
-
-                {!allReady && !socialPressureMsg && (
-                    <span className="text-xs font-black text-white/50 tracking-tight shrink-0 tabular-nums">
-                        PRÊTS
+            {/* Progress header bar — masqué en mode planification */}
+            {!isPlanning && (
+                <div
+                    className="flex items-center gap-3 px-4 py-3 rounded-t-2xl border-x-[3px] border-t-[3px] border-black transition-colors duration-500"
+                    style={{ background: allReady ? '#052010' : '#0f0f0f' }}
+                >
+                    <span className={cn(
+                        'text-xs font-black uppercase tracking-[0.18em] shrink-0 tabular-nums transition-colors duration-300',
+                        allReady ? 'text-green-400' : socialPressureMsg ? 'text-amber-400' : 'text-white/65'
+                    )}>
+                        {allReady
+                            ? allReadyMsg
+                            : socialPressureMsg
+                            ? socialPressureMsg
+                            : remaining === 1
+                            ? `encore 1 à attendre 👀`
+                            : `${readyCount} / ${totalCount}`}
                     </span>
-                )}
-            </div>
+
+                    <div className="flex-1 h-[5px] rounded-full bg-white/8 overflow-hidden">
+                        <div
+                            className="h-full rounded-full transition-all duration-500 ease-out"
+                            style={{
+                                width: `${progress}%`,
+                                background: allReady
+                                    ? 'linear-gradient(90deg, #22c55e, #4ade80)'
+                                    : 'var(--v2-primary)',
+                                boxShadow: allReady ? '0 0 10px #22c55e90' : '0 0 6px var(--v2-primary)',
+                            }}
+                        />
+                    </div>
+
+                    {!allReady && !socialPressureMsg && (
+                        <span className="text-xs font-black text-white/50 tracking-tight shrink-0 tabular-nums">
+                            PRÊTS
+                        </span>
+                    )}
+                </div>
+            )}
 
             {/* Main ready button */}
             <button
@@ -355,7 +367,7 @@ export function HeroBlock({
                 aria-pressed={displayReady}
                 className={cn(
                     'relative w-full flex items-center justify-center',
-                    'rounded-b-2xl border-x-[3px] border-b-[3px] border-black',
+                    isPlanning ? 'rounded-2xl border-[3px] border-black' : 'rounded-b-2xl border-x-[3px] border-b-[3px] border-black',
                     'font-black text-[15px] uppercase tracking-[0.22em]',
                     'transition-all duration-100 select-none overflow-hidden',
                     'active:translate-y-[2px]',
@@ -386,13 +398,15 @@ export function HeroBlock({
                             <><Hourglass className="w-5 h-5 text-[var(--v2-primary)]" /> PRÊT DANS <span className="tabular-nums">{timeLeft}</span></>
                         ) : formattedProposedTime ? (
                             <><Alarm className="w-5 h-5" /> ARRIVÉE PRÉVUE · {formattedProposedTime}</>
-                        ) : (
+                        ) : isActualDay ? (
                             <><Check className="w-5 h-5 text-[var(--v2-primary)]" weight="bold" /> INDIQUER QUE JE SUIS PRÊT</>
+                        ) : (
+                            <><Clock className="w-5 h-5 text-[var(--v2-primary)]" weight="bold" /> CHOISIR UNE HEURE</>
                         )}
                     </span>
                     {isDefaultNotReady && (
                         <span className="text-[11px] font-medium normal-case tracking-normal text-white/30">
-                            Appuie quand tu es prêt à quitter la maison
+                            {isActualDay ? 'Appuie quand tu es prêt à quitter la maison' : 'Indique quand tu prévois d\'arriver'}
                         </span>
                     )}
                 </span>

@@ -646,7 +646,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                     <ShareMenu
                         groupName={group.name}
                         url={typeof window !== 'undefined' ? window.location.href : ''}
-                        variant="icon"
+                        variant="button"
                         isRemote={group.type === 'remote'}
                     />
                 </div>

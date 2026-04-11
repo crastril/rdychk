@@ -192,8 +192,8 @@ export default function Home() {
   // Form State
   const [groupName, setGroupName] = useState('');
   const [step, setStep] = useState<'name' | 'options' | 'city'>('name');
-  const [knowsWhen, setKnowsWhen] = useState(false);
-  const [knowsWhere, setKnowsWhere] = useState(false);
+  const [wantDateVote, setWantDateVote] = useState(true);
+  const [wantLocationVote, setWantLocationVote] = useState(true);
   const [baseLocation, setBaseLocation] = useState<{ name: string; lat: number; lng: number } | null>(null);
   const [locationSearch, setLocationSearch] = useState('');
   const [locationResults, setLocationResults] = useState<any[]>([]);
@@ -360,8 +360,8 @@ export default function Home() {
           slug: uniqueSlug,
           created_by: user?.id,
           type: mode,
-          calendar_voting_enabled: !knowsWhen,
-          location_voting_enabled: !knowsWhere,
+          calendar_voting_enabled: wantDateVote,
+          location_voting_enabled: wantLocationVote,
           city: baseLocation?.name ?? null,
           location: null,
           base_lat: null,
@@ -545,33 +545,57 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className={cn("w-full max-w-md relative group perspective-1000 mb-12", mode === 'remote' && 'pointer-events-none')}>
-                <div className="bg-white/5 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl relative overflow-hidden ring-1 ring-white/10">
-                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/notebook.png')] opacity-10 mix-blend-overlay"></div>
-                  <form onSubmit={handleCreateGroup} className="flex flex-col gap-6 relative z-10 text-left md:text-center">
-                    {/* Step indicator — pill for active, dot for inactive */}
-                    <div className="flex items-center justify-center gap-1.5">
-                      {(['name', 'options', 'city'] as const).map((s) => (
-                        <div
-                          key={s}
-                          className={cn(
-                            "rounded-full transition-all duration-300",
-                            step === s
-                              ? "w-5 h-1.5 bg-white/70"
-                              : "w-1.5 h-1.5 bg-white/20"
-                          )}
-                        />
+              {/* ── NEO-BRUTALIST FORM CARD ── */}
+              <div className={cn("w-full max-w-md relative mb-12", mode === 'remote' && 'pointer-events-none')}>
+                {/* Hard shadow layer */}
+                <div className="absolute inset-0 translate-x-[7px] translate-y-[7px] rounded-2xl bg-black -z-10" />
+                <div
+                  className="rounded-2xl overflow-hidden"
+                  style={{ background: '#111', border: '3px solid #000' }}
+                >
+                  {/* Red accent top bar */}
+                  <div className="h-[3px] w-full" style={{ background: 'var(--v2-primary)' }} />
+
+                  <form onSubmit={handleCreateGroup} className="flex flex-col gap-5 p-6 text-left">
+                    {/* Step indicator — bold dashes */}
+                    <div className="flex items-center gap-1.5">
+                      {(['name', 'options', 'city'] as const).map((s, i) => (
+                        <div key={s} className="flex items-center gap-1.5">
+                          <div
+                            className="transition-all duration-300"
+                            style={{
+                              height: '3px',
+                              width: step === s ? '28px' : '10px',
+                              borderRadius: '2px',
+                              background: step === s ? 'var(--v2-primary)' : 'rgba(255,255,255,0.15)',
+                            }}
+                          />
+                          {i < 2 && <div style={{ width: '4px', height: '3px', background: 'rgba(255,255,255,0.08)', borderRadius: '1px' }} />}
+                        </div>
                       ))}
                     </div>
 
                     {step === 'name' ? (
-                      <div className="animate-in fade-in slide-in-from-right duration-500">
-                        <label className="block text-xs font-bold text-red-200 mb-2 uppercase tracking-wide">Nomme ton groupe</label>
+                      <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-right duration-300">
+                        <label
+                          className="text-sm font-black uppercase tracking-[0.2em]"
+                          style={{ fontFamily: 'var(--font-barlow-condensed)', color: 'var(--v2-primary)' }}
+                        >
+                          Nomme ton groupe
+                        </label>
                         <input
                           value={mode === 'in_person' ? groupName : ''}
                           onChange={(e) => setGroupName(e.target.value)}
                           disabled={loading || mode === 'remote'}
-                          className="w-full h-14 rounded-2xl bg-black/20 border-2 border-white/10 focus:border-red-400 focus:bg-black/40 px-5 text-lg font-medium text-white placeholder-white/30 focus:outline-none transition-all disabled:opacity-50 text-left md:text-center"
+                          className="w-full h-14 rounded-xl px-4 text-lg font-black text-white placeholder-white/20 focus:outline-none transition-all disabled:opacity-50"
+                          style={{
+                            background: '#000',
+                            border: '2.5px solid rgba(255,255,255,0.12)',
+                            fontFamily: 'var(--font-barlow-condensed)',
+                            letterSpacing: '0.02em',
+                          }}
+                          onFocus={e => (e.currentTarget.style.borderColor = 'var(--v2-primary)')}
+                          onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)')}
                           placeholder="Barbecue, Cinéma..."
                           type="text"
                           required
@@ -580,58 +604,57 @@ export default function Home() {
                       </div>
 
                     ) : step === 'options' ? (
-                      <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-right duration-500">
-                        <p className="text-xs font-bold text-white/40 uppercase tracking-widest text-center">Vous savez déjà…</p>
-                        <div className="space-y-2">
-                          {/* On sait quand */}
-                          <label className="flex items-center gap-3 p-3.5 rounded-xl border border-white/8 bg-white/3 cursor-pointer hover:bg-white/6 transition-colors select-none">
-                            <div
-                              className={cn('w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all', knowsWhen ? 'bg-red-500 border-red-500' : 'border-white/20 bg-transparent')}
-                              onClick={() => setKnowsWhen(v => !v)}
+                      <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-right duration-300">
+                        <div className="flex flex-col gap-1">
+                          <p
+                            className="font-black uppercase"
+                            style={{ fontFamily: 'var(--font-barlow-condensed)', fontSize: '1.15rem', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.9)' }}
+                          >
+                            Qu'est-ce qu'on doit décider ?
+                          </p>
+                          <p className="text-sm text-white/40 font-medium leading-snug">
+                            Coche ce pour quoi le groupe doit voter — tu pourras changer ça plus tard.
+                          </p>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          {[
+                            { key: 'date', label: 'La date', sub: 'Chaque membre vote pour ses dispos', icon: '📅', checked: wantDateVote, toggle: () => setWantDateVote(v => !v) },
+                            { key: 'lieu', label: 'Le lieu', sub: 'Chaque membre propose et vote pour l\'endroit', icon: '📍', checked: wantLocationVote, toggle: () => setWantLocationVote(v => !v) },
+                          ].map(({ key, label, sub, icon, checked, toggle }) => (
+                            <button
+                              key={key}
+                              type="button"
+                              onClick={toggle}
+                              className="flex items-center gap-3 p-4 rounded-xl text-left transition-all duration-150 active:translate-y-[1px] active:translate-x-[1px] select-none"
+                              style={{
+                                background: checked ? 'rgba(255,46,46,0.06)' : '#0a0a0a',
+                                border: checked ? '2.5px solid var(--v2-primary)' : '2.5px solid rgba(255,255,255,0.08)',
+                                boxShadow: checked ? '3px 3px 0 rgba(255,46,46,0.3)' : '3px 3px 0 #000',
+                              }}
                             >
-                              {knowsWhen && <span className="text-white text-[11px] font-black">✓</span>}
-                            </div>
-                            <div className="flex-1 min-w-0" onClick={() => setKnowsWhen(v => !v)}>
-                              <p className="text-sm font-bold text-white/80">On sait quand</p>
-                              <p className="text-[11px] text-white/35">Pas besoin de voter pour la date</p>
-                            </div>
-                            <span className="text-xl shrink-0">📅</span>
-                          </label>
-
-                          {/* On sait où */}
-                          <label className="flex items-center gap-3 p-3.5 rounded-xl border border-white/8 bg-white/3 cursor-pointer hover:bg-white/6 transition-colors select-none">
-                            <div
-                              className={cn('w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all', knowsWhere ? 'bg-red-500 border-red-500' : 'border-white/20 bg-transparent')}
-                              onClick={() => setKnowsWhere(v => !v)}
-                            >
-                              {knowsWhere && <span className="text-white text-[11px] font-black">✓</span>}
-                            </div>
-                            <div className="flex-1 min-w-0" onClick={() => setKnowsWhere(v => !v)}>
-                              <p className="text-sm font-bold text-white/80">On sait où</p>
-                              <p className="text-[11px] text-white/35">Pas besoin de voter pour le lieu</p>
-                            </div>
-                            <span className="text-xl shrink-0">📍</span>
-                          </label>
-
-                          {/* Aucun des deux */}
-                          <label className="flex items-center gap-3 p-3.5 rounded-xl border border-white/8 bg-white/3 cursor-pointer hover:bg-white/6 transition-colors select-none">
-                            <div
-                              className={cn('w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all', (!knowsWhen && !knowsWhere) ? 'bg-red-500 border-red-500' : 'border-white/20 bg-transparent')}
-                              onClick={() => { setKnowsWhen(false); setKnowsWhere(false); }}
-                            >
-                              {(!knowsWhen && !knowsWhere) && <span className="text-white text-[11px] font-black">✓</span>}
-                            </div>
-                            <div className="flex-1 min-w-0" onClick={() => { setKnowsWhen(false); setKnowsWhere(false); }}>
-                              <p className="text-sm font-bold text-white/80">Aucun des deux</p>
-                              <p className="text-[11px] text-white/35">On va voter pour la date et le lieu</p>
-                            </div>
-                            <span className="text-xl shrink-0">🗳️</span>
-                          </label>
+                              <div
+                                className="w-6 h-6 rounded flex items-center justify-center shrink-0 transition-all duration-150"
+                                style={{
+                                  background: checked ? 'var(--v2-primary)' : 'transparent',
+                                  border: checked ? '2px solid var(--v2-primary)' : '2px solid rgba(255,255,255,0.2)',
+                                  minWidth: '24px',
+                                }}
+                              >
+                                {checked && <span className="text-white text-sm font-black leading-none">✓</span>}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-black text-white" style={{ fontFamily: 'var(--font-barlow-condensed)', fontSize: '1.1rem', letterSpacing: '0.06em' }}>{label}</p>
+                                <p className="text-sm text-white/45 font-medium mt-0.5 leading-snug">{sub}</p>
+                              </div>
+                              <span className="text-2xl shrink-0">{icon}</span>
+                            </button>
+                          ))}
                         </div>
                         <button
                           type="button"
                           onClick={() => setStep('name')}
-                          className="text-xs text-white/30 hover:text-white/60 uppercase tracking-widest font-bold transition-colors text-center"
+                          className="text-sm font-black text-white/25 hover:text-white/55 uppercase tracking-[0.15em] transition-colors text-left"
+                          style={{ fontFamily: 'var(--font-barlow-condensed)' }}
                         >
                           ← Retour
                         </button>
@@ -639,30 +662,46 @@ export default function Home() {
 
                     ) : (
                       /* Step 3 — City */
-                      <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-right duration-500">
-                        <div className="flex flex-col items-center gap-1">
-                          <MapPin className="w-6 h-6 text-red-400" weight="fill" />
-                          <p className="text-xs font-bold text-white/40 uppercase tracking-widest">Où ça se passe ?</p>
+                      <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-right duration-300">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4 shrink-0" style={{ color: 'var(--v2-primary)' }} weight="fill" />
+                          <p
+                            className="text-sm font-black uppercase tracking-[0.2em]"
+                            style={{ fontFamily: 'var(--font-barlow-condensed)', color: 'var(--v2-primary)' }}
+                          >
+                            Où ça se passe ?
+                          </p>
                         </div>
-                        <div className="relative group/search">
+                        <div className="relative">
                           <input
                             value={locationSearch}
                             onChange={(e) => {
                               setLocationSearch(e.target.value);
                               handleSearchLocation(e.target.value);
                             }}
-                            className="w-full h-14 rounded-2xl bg-black/20 border-2 border-white/10 focus:border-red-400 focus:bg-black/40 px-5 text-lg font-medium text-white placeholder-white/30 focus:outline-none transition-all"
+                            className="w-full h-14 rounded-xl px-4 text-lg font-black text-white placeholder-white/20 focus:outline-none transition-all"
+                            style={{
+                              background: '#000',
+                              border: '2.5px solid rgba(255,255,255,0.12)',
+                              fontFamily: 'var(--font-barlow-condensed)',
+                              letterSpacing: '0.02em',
+                            }}
+                            onFocus={e => (e.currentTarget.style.borderColor = 'var(--v2-primary)')}
+                            onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)')}
                             placeholder="Paris, Bordeaux..."
                             type="text"
                             autoFocus
                           />
                           {isSearchingLocation && (
-                            <CircleNotch className="absolute right-4 top-4 w-5 h-5 text-red-400 animate-spin" />
+                            <CircleNotch className="absolute right-4 top-4 w-5 h-5 animate-spin" style={{ color: 'var(--v2-primary)' }} />
                           )}
                         </div>
 
                         {locationResults.length > 0 && (
-                          <div className="w-full bg-black/90 border border-white/10 rounded-2xl overflow-hidden shadow-2xl max-h-44 overflow-y-auto">
+                          <div
+                            className="w-full rounded-xl overflow-hidden max-h-44 overflow-y-auto"
+                            style={{ background: '#0a0a0a', border: '2.5px solid #000', boxShadow: '3px 3px 0 #000' }}
+                          >
                             {locationResults.map((p) => (
                               <button
                                 key={p.name}
@@ -672,25 +711,37 @@ export default function Home() {
                                   setLocationSearch(p.name);
                                   setLocationResults([]);
                                 }}
-                                className="w-full px-4 py-3 text-left hover:bg-white/8 text-sm text-white transition-colors border-b border-white/5 last:border-none"
+                                className="w-full px-4 py-3 text-left text-sm text-white transition-colors"
+                                style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', fontFamily: 'var(--font-barlow-condensed)', fontWeight: 900, letterSpacing: '0.04em' }}
+                                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,46,46,0.08)')}
+                                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                               >
-                                <span className="font-bold">{p.name}</span>
+                                {p.name}
                               </button>
                             ))}
                           </div>
                         )}
 
                         {baseLocation && (
-                          <div className="flex items-center gap-2 text-red-400 text-xs font-bold bg-red-400/10 px-3 py-2 rounded-xl border border-red-400/20">
-                            <Check className="w-4 h-4 shrink-0" />
-                            {baseLocation.name}
+                          <div
+                            className="flex items-center gap-2 px-3 py-2 rounded-xl"
+                            style={{ background: 'rgba(255,46,46,0.08)', border: '2px solid rgba(255,46,46,0.3)' }}
+                          >
+                            <Check className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--v2-primary)' }} />
+                            <span
+                              className="text-sm font-black uppercase tracking-[0.1em]"
+                              style={{ fontFamily: 'var(--font-barlow-condensed)', color: 'var(--v2-primary)' }}
+                            >
+                              {baseLocation.name}
+                            </span>
                           </div>
                         )}
 
                         <button
                           type="button"
                           onClick={() => setStep('options')}
-                          className="text-xs text-white/30 hover:text-white/60 uppercase tracking-widest font-bold transition-colors text-center"
+                          className="text-sm font-black text-white/25 hover:text-white/55 uppercase tracking-[0.15em] transition-colors text-left"
+                          style={{ fontFamily: 'var(--font-barlow-condensed)' }}
                         >
                           ← Retour
                         </button>
@@ -700,39 +751,71 @@ export default function Home() {
                     <button
                       type="submit"
                       disabled={loading || mode === 'remote' || !groupName.trim() || (step === 'city' && !baseLocation)}
-                      className="sticker-btn w-full py-5 text-2xl font-black rounded-2xl flex items-center justify-center gap-3 group-hover:shadow-[0_0_30px_rgba(255,46,46,0.6)] disabled:opacity-50 text-white border-4 border-white shadow-[6px_6px_0px_rgba(0,0,0,0.5)] -rotate-2 hover:rotate-0 hover:scale-[1.05] hover:-translate-y-1 hover:shadow-[8px_10px_0px_rgba(0,0,0,0.4)] transition-all bg-[#ff2e2e] hover:bg-[#ff4444]"
+                      className="w-full py-4 rounded-2xl flex items-center justify-center gap-3 transition-all duration-100 active:translate-y-[2px] active:translate-x-[2px] disabled:opacity-40 disabled:pointer-events-none"
+                      style={{
+                        background: 'var(--v2-primary)',
+                        border: '3px solid #000',
+                        boxShadow: '5px 5px 0 #000',
+                        fontFamily: 'var(--font-barlow-condensed)',
+                        fontWeight: 900,
+                        fontSize: '1.35rem',
+                        letterSpacing: '0.12em',
+                        color: '#fff',
+                        textTransform: 'uppercase',
+                      }}
                     >
-                      {loading && mode === 'in_person' ? <CircleNotch className="w-8 h-8 animate-spin" /> : (
-                        <>
-                          {step === 'city' ? "C'EST PARTI !" : 'SUIVANT'}
-                          <Confetti className="w-8 h-8" />
-                        </>
-                      )}
+                      {loading && mode === 'in_person'
+                        ? <CircleNotch className="w-6 h-6 animate-spin" />
+                        : <>
+                            {step === 'city' ? "C'EST PARTI !" : 'SUIVANT'}
+                            <Confetti className="w-6 h-6" />
+                          </>
+                      }
                     </button>
                   </form>
                 </div>
-                <div className="absolute -z-10 top-5 -right-5 w-full h-full bg-black/20 rounded-3xl rotate-3"></div>
               </div>
 
               {/* In-Person History */}
               {user && mode === 'in_person' && (
                 <div className="w-full max-w-md pb-8">
-                  <h3 className="text-white/40 text-xs font-bold uppercase tracking-widest mb-4 text-left md:text-center">Mes derniers groupes</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-left">
+                  <p
+                    className="text-sm font-black uppercase tracking-[0.2em] mb-3 text-left"
+                    style={{ fontFamily: 'var(--font-barlow-condensed)', color: 'rgba(255,255,255,0.25)' }}
+                  >
+                    Mes derniers groupes
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
                     {recentGroups.length > 0 ? recentGroups.map(group => (
                       <Link key={group.slug} href={`/group/${group.slug}`}>
-                        <div className="bg-white/5 border border-white/10 p-4 rounded-xl flex items-center gap-3 hover:bg-white/10 hover:scale-[1.02] transition-all cursor-pointer group">
-                          <div className="w-10 h-10 rounded-full bg-red-500/20 ring-1 ring-red-500/50 flex items-center justify-center text-red-500 font-bold text-lg shadow-lg">
-                            <MapPin className="w-5 h-5" />
+                        <div
+                          className="flex items-center gap-3 p-3.5 rounded-xl transition-all duration-100 cursor-pointer active:translate-y-[1px] active:translate-x-[1px]"
+                          style={{ background: '#111', border: '2.5px solid #000', boxShadow: '3px 3px 0 #000' }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#181818'; }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#111'; }}
+                        >
+                          <div
+                            className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                            style={{ background: 'rgba(255,46,46,0.12)', border: '2px solid #000' }}
+                          >
+                            <MapPin className="w-4 h-4" style={{ color: 'var(--v2-primary)' }} weight="fill" />
                           </div>
-                          <div className="flex flex-col">
-                            <span className="text-sm font-bold text-white group-hover:text-red-400 transition-colors max-w-[120px] truncate">{group.name}</span>
-                            <span className="text-[10px] text-white/50">{new Date(group.joined_at).toLocaleDateString()}</span>
+                          <div className="flex flex-col min-w-0">
+                            <span
+                              className="text-sm font-black text-white truncate"
+                              style={{ fontFamily: 'var(--font-barlow-condensed)', letterSpacing: '0.04em' }}
+                            >
+                              {group.name}
+                            </span>
+                            <span className="text-xs font-bold text-white/30 uppercase tracking-wider">
+                              {new Date(group.joined_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                            </span>
                           </div>
+                          <CaretRight className="w-3.5 h-3.5 ml-auto shrink-0 text-white/20" weight="bold" />
                         </div>
                       </Link>
                     )) : (
-                      <div className="text-white/50 text-sm">Aucun groupe récent.</div>
+                      <p className="text-sm text-white/25 font-bold">Aucun groupe récent.</p>
                     )}
                   </div>
                 </div>
@@ -889,31 +972,48 @@ export default function Home() {
                   ) : (
                     <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-right duration-500">
                       <p className="text-[10px] font-mono text-purple-400/60 uppercase tracking-[3px] text-right md:text-center">VOUS_SAVEZ_DÉJÀ &gt;</p>
+                      <div className="flex flex-col gap-1.5 mb-1">
+                        <p className="font-mono text-sm uppercase tracking-[0.15em]" style={{ color: '#c4b5fd' }}>
+                          {'> WHAT_TO_DECIDE ?'}
+                        </p>
+                        <p className="text-sm font-mono" style={{ color: '#8b5cf6' }}>
+                          {'// coche ce pour quoi le groupe doit voter'}
+                        </p>
+                      </div>
                       <div className="flex flex-col gap-2">
-                        <label className="flex items-center justify-between p-3.5 rounded-lg bg-black/60 border border-purple-500/30 cursor-pointer hover:bg-purple-500/10 transition-all">
-                          <div>
-                            <p className="text-xs font-mono text-purple-300 uppercase tracking-widest">On_sait_quand</p>
-                            <p className="text-[10px] text-purple-500/50 font-mono">Pas de vote pour la date</p>
-                          </div>
-                          <input
-                            type="checkbox"
-                            checked={knowsWhen}
-                            onChange={(e) => setKnowsWhen(e.target.checked)}
-                            className="w-5 h-5 rounded accent-purple-500 bg-black border-purple-500/50"
-                          />
-                        </label>
-                        <label className="flex items-center justify-between p-3.5 rounded-lg bg-black/60 border border-purple-500/30 cursor-pointer hover:bg-purple-500/10 transition-all">
-                          <div>
-                            <p className="text-xs font-mono text-purple-300 uppercase tracking-widest">On_sait_où</p>
-                            <p className="text-[10px] text-purple-500/50 font-mono">Pas de vote pour le lieu</p>
-                          </div>
-                          <input
-                            type="checkbox"
-                            checked={knowsWhere}
-                            onChange={(e) => setKnowsWhere(e.target.checked)}
-                            className="w-5 h-5 rounded accent-purple-500 bg-black border-purple-500/50"
-                          />
-                        </label>
+                        {[
+                          { key: 'date', label: 'DATE_SESSION', sub: '// vote pour trouver le bon créneau', checked: wantDateVote, toggle: () => setWantDateVote(v => !v) },
+                          { key: 'game', label: 'SESSION_GAME', sub: '// vote pour choisir le jeu', checked: wantLocationVote, toggle: () => setWantLocationVote(v => !v) },
+                        ].map(({ key, label, sub, checked, toggle }) => (
+                          <button
+                            key={key}
+                            type="button"
+                            onClick={toggle}
+                            className="flex items-center gap-3 p-4 text-left transition-all duration-150 active:opacity-70 select-none"
+                            style={{
+                              borderRadius: '4px',
+                              background: checked ? 'rgba(168,85,247,0.07)' : 'rgba(8,0,20,0.8)',
+                              border: checked ? '1px solid rgba(168,85,247,0.5)' : '1px solid rgba(168,85,247,0.15)',
+                              boxShadow: checked ? '0 0 12px rgba(168,85,247,0.1)' : 'none',
+                            }}
+                          >
+                            <div
+                              className="w-5 h-5 flex items-center justify-center shrink-0 transition-all duration-150"
+                              style={{
+                                borderRadius: '2px',
+                                background: checked ? 'rgba(168,85,247,0.3)' : 'transparent',
+                                border: checked ? '1px solid rgba(168,85,247,0.7)' : '1px solid rgba(168,85,247,0.25)',
+                                minWidth: '20px',
+                              }}
+                            >
+                              {checked && <span className="font-mono text-xs leading-none" style={{ color: '#c4b5fd' }}>✓</span>}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-mono text-sm uppercase tracking-[0.12em]" style={{ color: checked ? '#c4b5fd' : '#a78bfa' }}>{label}</p>
+                              <p className="font-mono text-sm mt-0.5" style={{ color: '#8b5cf6' }}>{sub}</p>
+                            </div>
+                          </button>
+                        ))}
                       </div>
                       <button
                         type="button"

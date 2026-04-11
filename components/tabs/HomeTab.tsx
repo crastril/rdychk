@@ -9,14 +9,12 @@ import { LocationTab } from '@/components/tabs/LocationTab';
 import { TimeProposalModal } from '@/components/TimeProposalModal';
 import { updateMemberAction } from '@/app/actions/member';
 import { updateLocationAction } from '@/app/actions/group';
-import { getGroupMode } from '@/lib/group-mode';
-import { CalendarDots, MapTrifold, GameController, CaretDown, UserPlus, SlidersHorizontal } from '@phosphor-icons/react';
+import { CalendarDots, MapTrifold, GameController, CaretDown } from '@phosphor-icons/react';
 import { VenueCard } from '@/components/VenueCard';
 import { GameCard } from '@/components/GameCard';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AddLocationProposalModal } from '@/components/AddLocationProposalModal';
-import { ShareMenu } from '@/components/ShareMenu';
 import { InviteBlock } from '@/components/InviteBlock';
 
 interface HomeTabProps {
@@ -69,6 +67,7 @@ export function HomeTab({
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [isLocationOpen, setIsLocationOpen] = useState(false);
     const [showLocationModal, setShowLocationModal] = useState(false);
+    const [etaModalOpen, setEtaModalOpen] = useState(false);
 
     const optionsRef = useRef<HTMLDivElement>(null);
     const calendarRef = useRef<HTMLDivElement>(null);
@@ -101,28 +100,12 @@ export function HomeTab({
     const calendarEnabled = group.calendar_voting_enabled;
     const locationEnabled = group.location_voting_enabled;
 
-    // Mode dérivé de confirmed_date + flags de vote
-    const mode = getGroupMode(group.confirmed_date, calendarEnabled, locationEnabled);
+    const today = new Date().toISOString().slice(0, 10);
+    const isActualDay = !!group.confirmed_date && group.confirmed_date === today;
+    const isPlanning = calendarEnabled || locationEnabled;
 
-    // Member-level day-of override: non-admin who voted can "join" day-of view
-    const storageKey = memberId ? `rdychk:dayof:${slug}:${memberId}` : null;
-    const [memberJoinedDayOf, setMemberJoinedDayOf] = useState(() => {
-        if (typeof window === 'undefined' || !storageKey) return false;
-        return localStorage.getItem(storageKey) === '1';
-    });
-
-    const isDayOf = mode === 'day-of' || memberJoinedDayOf;
-
-    const handleJoinDayOf = () => {
-        setMemberJoinedDayOf(true);
-        if (storageKey) localStorage.setItem(storageKey, '1');
-    };
-
-    // Reset accordion states when mode changes
-    useEffect(() => {
-        setIsCalendarOpen(false);
-        setIsLocationOpen(false);
-    }, [mode]);
+    // En mode planification, les membres qui ont voté
+    const votedMemberIds = isPlanning ? new Set(votes.map(v => v.member_id)) : undefined;
 
     // Formatted dates
     const confirmedDate = group.confirmed_date
@@ -193,15 +176,12 @@ export function HomeTab({
     const hasVotedLocation = Object.keys(myLocationVotes).length > 0;
     const needsLocationAction = locationEnabled && filteredProposals.length > 0 && !hasProposedLocation && !hasVotedLocation && !!memberId;
 
-    // Members who voted on any date (for planning mode)
-    const votedMemberIds = new Set(votes.map(v => v.member_id));
-
     const showInviteNudge = members.length < 3 && !!memberId;
 
     // ── SHARED: STATUS STRIP ──
     const statusStrip = (displayDate || displayLocation || (isAdmin && !locationEnabled)) ? (
         <div className="flex items-center gap-2 flex-wrap px-0.5">
-            {displayDate && (
+            {displayDate && !isActualDay && (
                 <button
                     type="button"
                     onClick={addToCalendar}
@@ -213,6 +193,13 @@ export function HomeTab({
                         <span className="text-[11px] font-black text-green-400 ml-0.5 shrink-0">✓</span>
                     )}
                 </button>
+            )}
+            {displayDate && isActualDay && (
+                <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full">
+                    <CalendarDots className="w-3 h-3 text-green-400 shrink-0" weight="fill" />
+                    <span className="text-xs font-black text-green-400 capitalize truncate">{displayDate}</span>
+                    <span className="text-[11px] font-black text-green-400 ml-0.5 shrink-0">✓</span>
+                </div>
             )}
             {displayLocation && (
                 isRemote || !locationMapsUrl ? (
@@ -276,7 +263,7 @@ export function HomeTab({
                     key="calendar-card"
                     className="min-w-0"
                     style={{
-                        width: isDayOf && calendarEnabled && locationEnabled && !isCalendarOpen && !isLocationOpen ? 'calc(50% - 6px)' : '100%',
+                        width: calendarEnabled && locationEnabled && !isCalendarOpen && !isLocationOpen ? 'calc(50% - 6px)' : '100%',
                     }}
                     transition={{ layout: { duration: 0.35, ease: [0.4, 0, 0.2, 1] } }}
                 >
@@ -392,7 +379,7 @@ export function HomeTab({
                     key="location-card"
                     className="min-w-0"
                     style={{
-                        width: isDayOf && calendarEnabled && locationEnabled && !isCalendarOpen && !isLocationOpen ? 'calc(50% - 6px)' : '100%',
+                        width: calendarEnabled && locationEnabled && !isCalendarOpen && !isLocationOpen ? 'calc(50% - 6px)' : '100%',
                     }}
                     transition={{ layout: { duration: 0.35, ease: [0.4, 0, 0.2, 1] } }}
                 >
@@ -512,55 +499,71 @@ export function HomeTab({
 
     return (
         <div className="flex flex-col gap-4">
-            <AnimatePresence mode="wait" initial={false}>
-                {isDayOf ? (
-                    <motion.div
-                        key="day-of"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="flex flex-col gap-4"
-                    >
-                        {/* DAY-OF: VenueCard (or StatusStrip fallback) → HeroBlock → Départ → Members → Invite */}
-                        {displayLocation ? (
-                            isRemote ? (
-                                <GameCard
-                                    name={displayLocation}
-                                    image={locationImage}
-                                    link={group.location?.link ?? null}
-                                    genres={group.location?.description ?? null}
-                                    date={confirmedDate ?? formattedPopularDate}
-                                />
-                            ) : (
-                                <VenueCard
-                                    name={displayLocation}
-                                    image={locationImage}
-                                    date={confirmedDate ?? formattedPopularDate}
-                                    mapsUrl={locationMapsUrl}
-                                    showCalendar={false}
-                                />
-                            )
-                        ) : statusStrip}
+            {/* Venue/Game card or status strip */}
+            {displayLocation ? (
+                isRemote ? (
+                    <GameCard
+                        name={displayLocation}
+                        image={locationImage}
+                        link={group.location?.link ?? null}
+                        genres={group.location?.description ?? null}
+                        date={confirmedDate ?? formattedPopularDate}
+                    />
+                ) : (
+                    <VenueCard
+                        name={displayLocation}
+                        image={locationImage}
+                        date={confirmedDate ?? formattedPopularDate}
+                        mapsUrl={locationMapsUrl}
+                        onAddToCalendar={confirmedDate && !isActualDay ? addToCalendar : undefined}
+                        showCalendar={!!confirmedDate && !isActualDay}
+                    />
+                )
+            ) : statusStrip}
 
-                        {memberId && (
-                            <HeroBlock
-                                slug={slug}
-                                memberId={memberId}
-                                isReady={isReady}
-                                timerEndTime={timerEndTime}
-                                proposedTime={currentMember?.proposed_time ?? null}
-                                readyCount={readyCount}
-                                totalCount={members.length}
-                                members={members}
-                                localOptimisticReady={localOptimisticReady}
-                                onOptimisticChange={onSetLocalOptimisticReady}
-                                isRemote={isRemote}
-                            />
-                        )}
+                {/* ── PLANNING : votes d'abord, membres ensuite ── */}
+            {isPlanning && (
+                <>
+                    {actionCards}
+                    <MembersCompact
+                        members={members}
+                        currentMemberId={memberId}
+                        loading={loadingMembers}
+                        onOpenManage={onOpenManage}
+                        isAdmin={isAdmin}
+                        mode="planning"
+                        votedMemberIds={votedMemberIds}
+                        isRemote={isRemote}
+                    />
+                </>
+            )}
 
+            {/* ── JOUR J / PRÉ-JOUR : hero + ETA + membres ── */}
+            {!isPlanning && (
+                <>
+                    {memberId && (
+                        <HeroBlock
+                            slug={slug}
+                            memberId={memberId}
+                            isReady={isReady}
+                            timerEndTime={timerEndTime}
+                            proposedTime={currentMember?.proposed_time ?? null}
+                            readyCount={readyCount}
+                            totalCount={members.length}
+                            members={members}
+                            localOptimisticReady={localOptimisticReady}
+                            onOptimisticChange={onSetLocalOptimisticReady}
+                            isRemote={isRemote}
+                            isActualDay={isActualDay}
+                            isPlanning={false}
+                            onOpenTimeModal={() => setEtaModalOpen(true)}
+                        />
+                    )}
+
+                    {/* ETA inline — jour J uniquement, avant d'être prêt */}
+                    {memberId && isActualDay && (
                         <AnimatePresence initial={false}>
-                            {memberId && !effectiveReady && (
+                            {!effectiveReady && (
                                 <motion.div
                                     key="depart-block"
                                     initial={{ opacity: 0, height: 0 }}
@@ -582,112 +585,42 @@ export function HomeTab({
                                 </motion.div>
                             )}
                         </AnimatePresence>
+                    )}
 
-                        <MembersCompact
-                            members={members}
-                            currentMemberId={memberId}
-                            loading={loadingMembers}
-                            onOpenManage={onOpenManage}
-                            isAdmin={isAdmin}
-                            mode="day-of"
+                    {/* ETA modal contrôlé — pré-jour J */}
+                    {memberId && !isActualDay && (
+                        <TimeProposalModal
+                            currentProposedTime={currentMember?.proposed_time ?? null}
+                            onUpdate={async (updates) => {
+                                if (!memberId) return;
+                                await updateMemberAction(slug, memberId, updates);
+                            }}
                             isRemote={isRemote}
+                            open={etaModalOpen}
+                            onOpenChange={setEtaModalOpen}
                         />
+                    )}
 
-                        {/* Voting cards visible in day-of if re-enabled (last-minute change) */}
-                        {actionCards}
+                    <MembersCompact
+                        members={members}
+                        currentMemberId={memberId}
+                        loading={loadingMembers}
+                        onOpenManage={onOpenManage}
+                        isAdmin={isAdmin}
+                        mode="day-of"
+                        isRemote={isRemote}
+                    />
+                </>
+            )}
 
-                        {showInviteNudge && (
-                            <InviteBlock
-                                groupName={group.name}
-                                url={typeof window !== 'undefined' ? window.location.href : ''}
-                                memberCount={members.length}
-                                isRemote={isRemote}
-                            />
-                        )}
-                    </motion.div>
-                ) : (
-                    <motion.div
-                        key="planning"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="flex flex-col gap-4"
-                    >
-                        {/* PLANNING: VenueCard (if location) → StatusStrip → ActionCards → Members → Invite */}
-                        {displayLocation && (
-                            isRemote ? (
-                                <GameCard
-                                    name={displayLocation}
-                                    image={locationImage}
-                                    link={group.location?.link ?? null}
-                                    genres={group.location?.description ?? null}
-                                    date={confirmedDate ?? formattedPopularDate}
-                                />
-                            ) : (
-                                <VenueCard
-                                    name={displayLocation}
-                                    image={locationImage}
-                                    date={confirmedDate ?? formattedPopularDate}
-                                    mapsUrl={locationMapsUrl}
-                                    onAddToCalendar={addToCalendar}
-                                    showCalendar={true}
-                                />
-                            )
-                        )}
-
-                        {!displayLocation && statusStrip ? statusStrip : !displayLocation && (memberId && calendarEnabled && (
-                            <div className="flex items-center gap-2 px-0.5">
-                                <div className="flex items-center gap-2">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--v2-primary)] animate-pulse shrink-0" />
-                                    {isRemote ? (
-                                        <span className="font-mono text-[11px] uppercase tracking-[0.15em]" style={{ color: '#a78bfa' }}>
-                                            {'// SESSION_DATE: NOT_SET ↓'}
-                                        </span>
-                                    ) : (
-                                        <span className="text-xs font-black text-white/40">
-                                            Commence par voter une date ↓
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-
-                        {actionCards}
-
-                        <MembersCompact
-                            members={members}
-                            currentMemberId={memberId}
-                            loading={loadingMembers}
-                            onOpenManage={onOpenManage}
-                            isAdmin={isAdmin}
-                            mode="planning"
-                            votedMemberIds={votedMemberIds}
-                            isRemote={isRemote}
-                        />
-
-                        {!isAdmin && memberId && votedMemberIds.has(memberId) && (
-                            <button
-                                type="button"
-                                onClick={handleJoinDayOf}
-                                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl border-2 border-green-500/30 bg-green-500/8 hover:bg-green-500/15 hover:border-green-500/50 transition-all duration-200 active:scale-[0.98]"
-                            >
-                                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse shrink-0" />
-                                <span className="text-sm font-black text-green-400">Rejoindre le groupe</span>
-                            </button>
-                        )}
-
-                        {showInviteNudge && (
-                            <InviteBlock
-                                groupName={group.name}
-                                url={typeof window !== 'undefined' ? window.location.href : ''}
-                                memberCount={members.length}
-                                isRemote={isRemote}
-                            />
-                        )}
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            {showInviteNudge && (
+                <InviteBlock
+                    groupName={group.name}
+                    url={typeof window !== 'undefined' ? window.location.href : ''}
+                    memberCount={members.length}
+                    isRemote={isRemote}
+                />
+            )}
 
             {/* Add location modal (admin, non-voting mode) */}
             {showLocationModal && (

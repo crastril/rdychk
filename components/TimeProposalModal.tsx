@@ -20,12 +20,20 @@ interface TimeProposalModalProps {
     currentProposedTime: string | null;
     onUpdate: (updates: { proposed_time?: string | null; is_ready?: boolean; timer_end_time?: string | null }) => Promise<void>;
     isRemote?: boolean;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
 }
 
-export function TimeProposalModal({ currentProposedTime, onUpdate, isRemote }: TimeProposalModalProps) {
+export function TimeProposalModal({ currentProposedTime, onUpdate, isRemote, open: externalOpen, onOpenChange: externalOnOpenChange }: TimeProposalModalProps) {
     const [time, setTime] = useState(currentProposedTime || '');
-    const [open, setOpen] = useState(false);
+    const [internalOpen, setInternalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
+
+    const isControlled = externalOpen !== undefined;
+    const open = isControlled ? externalOpen : internalOpen;
+    const setOpen = isControlled
+        ? (v: boolean) => externalOnOpenChange?.(v)
+        : setInternalOpen;
 
     const handleSave = async () => {
         setLoading(true);
@@ -59,47 +67,50 @@ export function TimeProposalModal({ currentProposedTime, onUpdate, isRemote }: T
     if (isRemote) {
         return (
             <Dialog open={open} onOpenChange={setOpen}>
-                <div className="w-full relative">
-                    <DialogTrigger asChild>
-                        <button
-                            className={cn('w-full text-left transition-all duration-150 active:opacity-70', currentProposedTime ? 'pr-10' : '')}
-                            style={{
-                                borderRadius: '4px',
-                                border: currentProposedTime ? '1px solid rgba(56,189,248,0.3)' : '1px solid rgba(168,85,247,0.2)',
-                                background: 'rgba(8,0,20,0.95)',
-                                boxShadow: currentProposedTime ? '0 0 12px rgba(56,189,248,0.06)' : '0 0 12px rgba(168,85,247,0.05)',
-                            }}
-                        >
-                            <div className="flex items-center gap-3 px-4 py-3">
-                                <span className="font-mono text-[10px] uppercase tracking-[0.2em] shrink-0" style={{ color: '#a78bfa' }}>
-                                    {'// SET_ETA'}
-                                </span>
-                                <span
-                                    className="ml-auto font-mono tabular-nums leading-none shrink-0 text-[1.5rem] font-bold"
-                                    style={{
-                                        letterSpacing: '-0.01em',
-                                        color: displayTime ? '#38bdf8' : '#8b5cf6',
-                                    }}
-                                >
-                                    {displayTime ? displayTime.replace('H', ':') : '--:--'}
-                                </span>
-                            </div>
-                        </button>
-                    </DialogTrigger>
+                {!isControlled && (
+                    <div
+                        className="w-full flex overflow-hidden"
+                        style={{
+                            borderRadius: '4px',
+                            border: currentProposedTime ? '1px solid rgba(56,189,248,0.3)' : '1px solid rgba(168,85,247,0.2)',
+                            background: 'rgba(8,0,20,0.95)',
+                            boxShadow: currentProposedTime ? '0 0 12px rgba(56,189,248,0.06)' : '0 0 12px rgba(168,85,247,0.05)',
+                        }}
+                    >
+                        <DialogTrigger asChild>
+                            <button className="flex-1 text-left transition-all duration-150 active:opacity-70 min-w-0">
+                                <div className="flex items-center gap-3 px-4 py-3">
+                                    <span className="font-mono text-[10px] uppercase tracking-[0.2em] shrink-0" style={{ color: '#a78bfa' }}>
+                                        {'// SET_ETA'}
+                                    </span>
+                                    <span
+                                        className="ml-auto font-mono tabular-nums leading-none shrink-0 text-[1.5rem] font-bold"
+                                        style={{
+                                            letterSpacing: '-0.01em',
+                                            color: displayTime ? '#38bdf8' : '#8b5cf6',
+                                        }}
+                                    >
+                                        {displayTime ? displayTime.replace('H', ':') : '--:--'}
+                                    </span>
+                                </div>
+                            </button>
+                        </DialogTrigger>
 
-                    {currentProposedTime && (
-                        <button
-                            className="absolute top-1/2 -translate-y-1/2 right-3 w-5 h-5 flex items-center justify-center transition-all z-20"
-                            style={{ border: '1px solid rgba(168,85,247,0.2)', borderRadius: '2px', background: 'rgba(8,0,20,0.9)' }}
-                            onClick={handleClear}
-                            disabled={loading}
-                            onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(239,68,68,0.5)')}
-                            onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(168,85,247,0.2)')}
-                        >
-                            <X className="w-2.5 h-2.5" style={{ color: '#8b5cf6' }} />
-                        </button>
-                    )}
-                </div>
+                        {currentProposedTime && (
+                            <button
+                                onClick={handleClear}
+                                disabled={loading}
+                                className="shrink-0 flex items-center justify-center px-4 transition-all duration-150 active:opacity-70"
+                                style={{ borderLeft: '1px solid rgba(168,85,247,0.2)' }}
+                                aria-label="Supprimer l'ETA"
+                                onMouseEnter={e => (e.currentTarget.style.borderLeftColor = 'rgba(239,68,68,0.4)')}
+                                onMouseLeave={e => (e.currentTarget.style.borderLeftColor = 'rgba(168,85,247,0.2)')}
+                            >
+                                <X className="w-3.5 h-3.5" style={{ color: '#8b5cf6' }} />
+                            </button>
+                        )}
+                    </div>
+                )}
 
                 <DialogContent
                     className="w-[calc(100%-2rem)] max-w-md mx-auto text-white p-0 overflow-hidden"
@@ -179,59 +190,55 @@ export function TimeProposalModal({ currentProposedTime, onUpdate, isRemote }: T
     // ── IN-PERSON / NEO-BRUTALIST VARIANT ──
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <div className="w-full relative">
-                <DialogTrigger asChild>
-                    <button
-                        className={cn(
-                            'w-full text-left transition-all duration-150 active:translate-y-[2px] active:translate-x-[2px]',
-                            'rounded-2xl border-[3px] border-black overflow-hidden',
-                            currentProposedTime ? 'pr-10' : '',
-                        )}
-                        style={{
-                            background: '#0c0c0c',
-                            boxShadow: '5px 5px 0px #000',
-                        }}
-                    >
-                        <div className="flex items-center gap-3 px-4 py-3">
-                            {/* Label */}
-                            <span
-                                className="text-[12px] font-black uppercase tracking-[0.22em] shrink-0"
-                                style={{
-                                    fontFamily: 'var(--font-barlow-condensed)',
-                                    color: currentProposedTime ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.25)',
-                                }}
-                            >
-                                Je pense arriver à…
-                            </span>
+            {!isControlled && (
+                <div
+                    className="w-full flex rounded-2xl border-[3px] border-black overflow-hidden"
+                    style={{ background: '#0c0c0c', boxShadow: '5px 5px 0px #000' }}
+                >
+                    <DialogTrigger asChild>
+                        <button
+                            className="flex-1 text-left transition-all duration-150 active:translate-y-[1px] min-w-0"
+                        >
+                            <div className="flex items-center gap-3 px-4 py-4">
+                                <span
+                                    className="text-sm font-black uppercase tracking-[0.18em] shrink-0"
+                                    style={{
+                                        fontFamily: 'var(--font-barlow-condensed)',
+                                        color: currentProposedTime ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.25)',
+                                    }}
+                                >
+                                    Je pense arriver à…
+                                </span>
+                                <span
+                                    className="ml-auto tabular-nums leading-none shrink-0"
+                                    style={{
+                                        fontFamily: 'var(--font-barlow-condensed)',
+                                        fontWeight: 900,
+                                        fontSize: '1.75rem',
+                                        letterSpacing: '-0.01em',
+                                        color: displayTime ? '#7dd3fc' : 'rgba(255,255,255,0.12)',
+                                    }}
+                                >
+                                    {displayTime || '--H--'}
+                                </span>
+                            </div>
+                        </button>
+                    </DialogTrigger>
 
-                            {/* Time display */}
-                            <span
-                                className="ml-auto tabular-nums leading-none shrink-0"
-                                style={{
-                                    fontFamily: 'var(--font-barlow-condensed)',
-                                    fontWeight: 900,
-                                    fontSize: '1.75rem',
-                                    letterSpacing: '-0.01em',
-                                    color: displayTime ? '#7dd3fc' : 'rgba(255,255,255,0.12)',
-                                }}
-                            >
-                                {displayTime || '--H--'}
-                            </span>
-                        </div>
-                    </button>
-                </DialogTrigger>
-
-                {/* Clear button — outside trigger to avoid nested interactive */}
-                {currentProposedTime && (
-                    <button
-                        className="absolute top-1/2 -translate-y-1/2 right-3 w-6 h-6 rounded-full bg-black border-2 border-white/10 flex items-center justify-center hover:border-red-500/50 hover:bg-red-500/15 transition-all z-20"
-                        onClick={handleClear}
-                        disabled={loading}
-                    >
-                        <X className="w-2.5 h-2.5 text-white/35" />
-                    </button>
-                )}
-            </div>
+                    {/* Clear tab — pleine hauteur, zone tactile large */}
+                    {currentProposedTime && (
+                        <button
+                            onClick={handleClear}
+                            disabled={loading}
+                            className="shrink-0 flex items-center justify-center px-4 transition-all duration-150 active:bg-red-500/20 hover:bg-red-500/10"
+                            style={{ borderLeft: '3px solid #000' }}
+                            aria-label="Supprimer l'heure d'arrivée"
+                        >
+                            <X className="w-4 h-4 text-white/35" />
+                        </button>
+                    )}
+                </div>
+            )}
 
             <DialogContent
                 className="w-[calc(100%-2rem)] max-w-md mx-auto text-white p-0 overflow-hidden rounded-2xl border border-white/10 bg-[#0f0f0f]"

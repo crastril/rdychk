@@ -56,7 +56,7 @@ export function MembersCompact({
     const total = members.length;
 
     const activeCount = isPlanning
-        ? (votedMemberIds ? members.filter(m => votedMemberIds.has(m.id)).length : 0)
+        ? members.filter(m => (votedMemberIds?.has(m.id) ?? false) || !!m.proposed_time).length
         : members.filter(m => m.is_ready).length;
 
     const ratio = total > 0 ? activeCount / total : 0;
@@ -108,7 +108,7 @@ export function MembersCompact({
                     <div className="flex items-center gap-1 shrink-0">
                         {members.slice(0, MAX_VISIBLE).map(m => {
                             const isActive = isPlanning
-                                ? (votedMemberIds?.has(m.id) ?? false)
+                                ? ((votedMemberIds?.has(m.id) ?? false) || !!m.proposed_time)
                                 : m.is_ready;
                             return (
                                 <div
@@ -252,15 +252,29 @@ export function MembersCompact({
                                         </span>
 
                                         {isPlanning ? (
-                                            hasVoted ? (
-                                                <span className="font-mono text-[10px] uppercase tracking-[0.14em] shrink-0" style={{ color: '#4ade80' }}>
-                                                    ✓ VOTED
-                                                </span>
-                                            ) : (
-                                                <span className="font-mono text-[10px] uppercase tracking-[0.14em] shrink-0" style={{ color: '#8b5cf6' }}>
-                                                    IDLE
-                                                </span>
-                                            )
+                                            (() => {
+                                                const eta = m.proposed_time ? m.proposed_time.slice(0, 5) : null;
+                                                if (hasVoted && eta) return (
+                                                    <span className="font-mono text-[10px] shrink-0 tabular-nums" style={{ color: '#4ade80' }}>
+                                                        ✓ · ETA:{eta}
+                                                    </span>
+                                                );
+                                                if (hasVoted) return (
+                                                    <span className="font-mono text-[10px] uppercase tracking-[0.14em] shrink-0" style={{ color: '#4ade80' }}>
+                                                        ✓ VOTED
+                                                    </span>
+                                                );
+                                                if (eta) return (
+                                                    <span className="font-mono text-[10px] shrink-0 tabular-nums" style={{ color: '#38bdf8' }}>
+                                                        ETA:{eta}
+                                                    </span>
+                                                );
+                                                return (
+                                                    <span className="font-mono text-[10px] uppercase tracking-[0.14em] shrink-0" style={{ color: '#8b5cf6' }}>
+                                                        IDLE
+                                                    </span>
+                                                );
+                                            })()
                                         ) : (
                                             (() => {
                                                 if (m.is_ready) {
@@ -292,7 +306,7 @@ export function MembersCompact({
                                 <button
                                     type="button"
                                     onClick={(e) => { e.stopPropagation(); onOpenManage(); }}
-                                    className="mt-2 w-full text-center font-mono text-[10px] uppercase tracking-[0.18em] py-2 transition-colors"
+                                    className="mt-2 w-full text-center font-mono text-[10px] uppercase tracking-[0.18em] py-3.5 transition-colors"
                                     style={{
                                         borderTop: '1px solid rgba(168,85,247,0.1)',
                                         color: '#a78bfa',
@@ -430,7 +444,7 @@ export function MembersCompact({
                                     <div className={cn(
                                         'w-8 h-8 rounded-full border flex items-center justify-center text-[11px] font-black shrink-0 overflow-hidden transition-colors duration-300',
                                         isPlanning
-                                            ? (hasVoted ? 'border-green-500/40 bg-green-500/10 text-green-400' : 'border-white/15 bg-white/5 text-white/45')
+                                            ? ((hasVoted || !!m.proposed_time) ? 'border-green-500/40 bg-green-500/10 text-green-400' : 'border-white/15 bg-white/5 text-white/45')
                                             : (m.is_ready ? 'border-green-500/40 bg-green-500/10 text-green-400' : 'border-white/15 bg-white/5 text-white/45')
                                     )}>
                                         {m.avatar_url
@@ -441,7 +455,7 @@ export function MembersCompact({
 
                                     <span className={cn(
                                         'flex-1 text-sm font-bold truncate flex items-center gap-1.5 min-w-0',
-                                        (isPlanning ? hasVoted : m.is_ready) ? 'text-white' : 'text-white/55'
+                                        (isPlanning ? (hasVoted || !!m.proposed_time) : m.is_ready) ? 'text-white' : 'text-white/55'
                                     )}>
                                         <span className="truncate">{m.name}</span>
                                         {isCurrentUser && (
@@ -453,11 +467,21 @@ export function MembersCompact({
                                     </span>
 
                                     {isPlanning ? (
-                                        hasVoted ? (
-                                            <span className="text-[11px] font-black uppercase tracking-[0.14em] shrink-0 text-green-400/90">✓ A voté</span>
-                                        ) : (
-                                            <span className="text-[11px] font-black uppercase tracking-[0.14em] shrink-0 text-white/30">En attente</span>
-                                        )
+                                        (() => {
+                                            const eta = m.proposed_time ? m.proposed_time.slice(0, 5) : null;
+                                            if (hasVoted && eta) return (
+                                                <span className="text-[11px] font-black shrink-0 text-green-400/90 tabular-nums">✓ · {eta}</span>
+                                            );
+                                            if (hasVoted) return (
+                                                <span className="text-[11px] font-black uppercase tracking-[0.14em] shrink-0 text-green-400/90">✓ A voté</span>
+                                            );
+                                            if (eta) return (
+                                                <span className="text-[11px] font-black shrink-0 text-sky-400/80 tabular-nums">→ {eta}</span>
+                                            );
+                                            return (
+                                                <span className="text-[11px] font-black uppercase tracking-[0.14em] shrink-0 text-white/30">En attente</span>
+                                            );
+                                        })()
                                     ) : (
                                         (() => {
                                             if (m.is_ready) return <span className="text-[11px] font-black uppercase tracking-[0.14em] shrink-0 text-green-400/90">✓ Prêt</span>;
@@ -473,7 +497,7 @@ export function MembersCompact({
                             <button
                                 type="button"
                                 onClick={(e) => { e.stopPropagation(); onOpenManage(); }}
-                                className="mt-2 w-full text-center text-[11px] font-black uppercase tracking-[0.18em] text-[var(--v2-primary)]/60 hover:text-[var(--v2-primary)] transition-colors py-2 border-t border-white/5"
+                                className="mt-2 w-full text-center text-[11px] font-black uppercase tracking-[0.18em] text-[var(--v2-primary)]/60 hover:text-[var(--v2-primary)] transition-colors py-3.5 border-t border-white/5"
                             >
                                 Gérer le groupe →
                             </button>
