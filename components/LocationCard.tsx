@@ -1,7 +1,6 @@
-import { useEffect, useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowFatUp, ArrowFatDown, Crosshair, ArrowLeft, Pencil, CaretDown, CaretUp, X, Lightning } from '@phosphor-icons/react';
+import { Crosshair, Pencil, CaretDown, CaretUp, X, Lightning } from '@phosphor-icons/react';
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import type { Group } from "@/types/database";
@@ -23,7 +22,6 @@ export function LocationCard({ group, slug, memberId, isAdmin, currentMemberName
     const [userVote, setUserVote] = useState<number>(0); // 0, 1, or -1
     const [loading, setLoading] = useState(false);
     const [editMode, setEditMode] = useState<'edit' | 'counter' | null>(initialEditMode || null);
-    const [isCollapsed, setIsCollapsed] = useState(false);
 
     const hasLocation = !!(group.location as { name?: string })?.name;
 
