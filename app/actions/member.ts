@@ -4,9 +4,13 @@ import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import crypto from 'crypto';
 
-// Secret key for HMAC (In production, use a secure env variable like process.env.SESSION_SECRET)
-// For this standalone app, we can use the Anon Key as a basic salt if no other is provided.
-const getSecretStr = () => process.env.SESSION_SECRET || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'default_secret';
+// Secret key for HMAC (Must use a secure env variable like process.env.SESSION_SECRET)
+const getSecretStr = () => {
+    if (!process.env.SESSION_SECRET) {
+        throw new Error('CRITICAL SECURITY ERROR: SESSION_SECRET environment variable is missing.');
+    }
+    return process.env.SESSION_SECRET;
+};
 
 /**
  * Generates an HMAC signature for a given Member ID to prevent tampering.
