@@ -525,6 +525,16 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
     const currentMember = members.find(m => m.id === memberId);
     const isAdmin = currentMember?.role === 'admin';
 
+    // Group phase detection
+    const todayStr = new Date().toISOString().split('T')[0];
+    const isActualDay = !!group.confirmed_date && group.confirmed_date === todayStr;
+    const isPlanning = !isActualDay && (group.calendar_voting_enabled || group.location_voting_enabled);
+    const isConfirmedFuture = !!group.confirmed_date && !isActualDay && !isPlanning;
+
+    const confirmedDateLabel = group.confirmed_date
+        ? new Date(group.confirmed_date + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
+        : null;
+
     // Derived data for tabs
     const topLocationProposal = proposals.length > 0
         ? [...proposals].sort((a, b) => b.score - a.score)[0]
@@ -640,7 +650,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
 
             <div className="w-full max-w-xl mx-auto flex flex-col gap-4 relative z-10 p-4 mt-2 pb-12">
                 {/* Group header — compact */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-start gap-3">
                     <div className="flex-1 min-w-0">
                         <h1
                             className="text-white leading-none truncate uppercase"
@@ -653,6 +663,90 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                         >
                             {group.name}
                         </h1>
+
+                        {/* Phase status badge */}
+                        <div className="mt-1.5">
+                            {group.type === 'remote' ? (
+                                // ── CYBERPUNK VARIANT ──
+                                isActualDay ? (
+                                    <span
+                                        className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em]"
+                                        style={{ color: '#4ade80' }}
+                                    >
+                                        <span
+                                            className="w-1.5 h-1.5 rounded-full animate-pulse"
+                                            style={{ background: '#4ade80', boxShadow: '0 0 6px #4ade80' }}
+                                        />
+                                        {'>> SESSION_LIVE'}
+                                    </span>
+                                ) : isPlanning ? (
+                                    <span
+                                        className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em]"
+                                        style={{ color: '#a78bfa' }}
+                                    >
+                                        <span
+                                            className="w-1.5 h-1.5 rounded-full animate-pulse"
+                                            style={{ background: '#a855f7', boxShadow: '0 0 6px #a855f7' }}
+                                        />
+                                        {'// PLANNING_PHASE'}
+                                    </span>
+                                ) : isConfirmedFuture ? (
+                                    <span
+                                        className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em]"
+                                        style={{ color: 'rgba(56,189,248,0.7)' }}
+                                    >
+                                        <span className="w-1.5 h-1.5 rounded-sm" style={{ background: 'rgba(56,189,248,0.5)' }} />
+                                        {`SCHEDULED: ${confirmedDateLabel}`}
+                                    </span>
+                                ) : null
+                            ) : (
+                                // ── NEO-BRUTALIST VARIANT ──
+                                isActualDay ? (
+                                    <span
+                                        className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border-[2px] border-black font-black uppercase"
+                                        style={{
+                                            fontFamily: 'var(--font-barlow-condensed)',
+                                            fontSize: '13px',
+                                            letterSpacing: '0.06em',
+                                            background: '#ff2e2e',
+                                            color: '#fff',
+                                            boxShadow: '2px 2px 0px #000',
+                                        }}
+                                    >
+                                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                                        C'EST AUJOURD'HUI
+                                    </span>
+                                ) : isPlanning ? (
+                                    <span
+                                        className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border-[2px] border-black font-black uppercase"
+                                        style={{
+                                            fontFamily: 'var(--font-barlow-condensed)',
+                                            fontSize: '13px',
+                                            letterSpacing: '0.06em',
+                                            background: '#fbbf24',
+                                            color: '#000',
+                                            boxShadow: '2px 2px 0px #000',
+                                        }}
+                                    >
+                                        <span className="w-1.5 h-1.5 rounded-full bg-black/40 animate-pulse" />
+                                        En planification
+                                    </span>
+                                ) : isConfirmedFuture ? (
+                                    <span
+                                        className="inline-flex items-center gap-1.5 font-bold uppercase"
+                                        style={{
+                                            fontFamily: 'var(--font-barlow-condensed)',
+                                            fontSize: '13px',
+                                            letterSpacing: '0.04em',
+                                            color: 'rgba(255,255,255,0.35)',
+                                        }}
+                                    >
+                                        <span className="w-1 h-1 rounded-full bg-white/25" />
+                                        {confirmedDateLabel}
+                                    </span>
+                                ) : null
+                            )}
+                        </div>
                     </div>
                     <ShareMenu
                         groupName={group.name}
