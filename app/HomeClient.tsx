@@ -554,45 +554,67 @@ export default function HomeClient() {
                         )}
                         style={{ bottom: `${bottomPos}px` }}
                       >
-                        {/* Sender name + avatar */}
-                        <div className="flex items-center gap-1.5 mb-[3px] ml-1">
+                        {/* iOS group chat layout: avatar left + name/bubble right */}
+                        <div className="flex items-end gap-2">
+                          {/* Avatar */}
                           <div
-                            className="w-[16px] h-[16px] rounded-full flex items-center justify-center shrink-0 font-black"
+                            className="w-[26px] h-[26px] rounded-full flex items-center justify-center shrink-0 font-black"
                             style={{
                               background: sender.color + '22',
                               color: sender.color,
-                              border: `1px solid ${sender.color}50`,
-                              fontSize: '8px',
+                              border: `1.5px solid ${sender.color}55`,
+                              fontSize: '10px',
+                              flexShrink: 0,
                             }}
                           >
                             {sender.name[0]}
                           </div>
-                          <span
-                            className="font-semibold"
-                            style={{ color: sender.color + 'bb', fontSize: '10px', letterSpacing: '0.02em' }}
-                          >
-                            {sender.name}
-                          </span>
-                        </div>
-                        {/* Message bubble */}
-                        <div className="imessage-dark-bubble font-medium text-xl md:text-2xl w-max max-w-[260px]">
-                          {msg.text}
+                          {/* Sender name + grey received bubble */}
+                          <div className="flex flex-col gap-[2px]">
+                            <span
+                              className="font-semibold ml-[2px]"
+                              style={{ color: sender.color, fontSize: '10px', letterSpacing: '0.02em' }}
+                            >
+                              {sender.name}
+                            </span>
+                            <div className="imessage-received-bubble font-medium text-xl md:text-2xl max-w-[210px]">
+                              {msg.text}
+                            </div>
+                          </div>
                         </div>
                       </div>
                     );
                   })}
 
-                  {/* Typing Indicator */}
-                  <div
-                    className={cn(
-                      "absolute left-2 md:left-0 bottom-4 typing-box transition-all duration-300 w-max origin-bottom",
-                      isTyping ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-90 translate-y-2 pointer-events-none"
-                    )}
-                  >
-                    <div className="typing-dot-bounce"></div>
-                    <div className="typing-dot-bounce" style={{ animationDelay: '0.2s' }}></div>
-                    <div className="typing-dot-bounce" style={{ animationDelay: '0.4s' }}></div>
-                  </div>
+                  {/* Typing Indicator — shows next sender's avatar + dots */}
+                  {(() => {
+                    const nextSender = PERSON_SENDERS[PERSON_MESSAGES[(messageIndex + 1) % PERSON_MESSAGES.length].senderIdx];
+                    return (
+                      <div
+                        className={cn(
+                          "absolute left-0 bottom-4 flex items-end gap-2 transition-all duration-300 w-max origin-bottom",
+                          isTyping ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-90 translate-y-2 pointer-events-none"
+                        )}
+                      >
+                        <div
+                          className="w-[26px] h-[26px] rounded-full flex items-center justify-center shrink-0 font-black"
+                          style={{
+                            background: nextSender.color + '22',
+                            color: nextSender.color,
+                            border: `1.5px solid ${nextSender.color}55`,
+                            fontSize: '10px',
+                          }}
+                        >
+                          {nextSender.name[0]}
+                        </div>
+                        <div className="typing-box">
+                          <div className="typing-dot-bounce"></div>
+                          <div className="typing-dot-bounce" style={{ animationDelay: '0.2s' }}></div>
+                          <div className="typing-dot-bounce" style={{ animationDelay: '0.4s' }}></div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
 
