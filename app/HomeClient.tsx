@@ -699,7 +699,8 @@ export default function HomeClient() {
                           value={confirmedDate}
                           onChange={(e) => setConfirmedDate(e.target.value)}
                           min={new Date().toISOString().split('T')[0]}
-                          autoFocus
+                          autoFocus={mode === 'in_person'}
+                          disabled={mode !== 'in_person'}
                           className="w-full h-14 rounded-xl px-4 text-lg font-black text-white focus:outline-none transition-all"
                           style={{
                             background: '#000',
@@ -1050,7 +1051,8 @@ export default function HomeClient() {
                         value={confirmedDate}
                         onChange={(e) => setConfirmedDate(e.target.value)}
                         min={new Date().toISOString().split('T')[0]}
-                        autoFocus
+                        autoFocus={mode === 'remote'}
+                        disabled={mode !== 'remote'}
                         className="w-full py-4 px-4 font-mono text-base focus:outline-none transition-all"
                         style={{
                           background: 'rgba(8,0,20,0.8)',
