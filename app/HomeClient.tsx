@@ -12,34 +12,46 @@ import { cn } from '@/lib/utils';
 import { createSlug } from '@/lib/slug';
 import { FRENCH_CITIES } from '@/lib/cities';
 
+const PERSON_SENDERS = [
+  { name: 'Lucas', color: '#ffb347' },
+  { name: 'Marie', color: '#87ceeb' },
+  { name: 'Tom',   color: '#90ee90' },
+];
+
 const PERSON_MESSAGES = [
-  "Go ?",
-  "On y va à quelle heure ?",
-  "T'es déjà parti ?",
-  "On se retrouve à quelle heure ?",
-  "On avait pas dit 19h ?",
-  "T'es où ?",
-  "T'as vu mon message ?",
-  "Je peux partir ?",
-  "T'as lu les messages ?",
-  "T'es loin ?",
-  "T'arrives à quelle heure ?",
-  "T'es en route ?",
+  { text: "On y va à quelle heure ?", senderIdx: 0 },
+  { text: "T'es où ?",                senderIdx: 1 },
+  { text: "Go ?",                     senderIdx: 2 },
+  { text: "On avait pas dit 19h ?",   senderIdx: 0 },
+  { text: "T'arrives quand ?",        senderIdx: 1 },
+  { text: "T'es en route ?",          senderIdx: 2 },
+  { text: "T'as vu mon message ?",    senderIdx: 0 },
+  { text: "Je peux partir ?",         senderIdx: 1 },
+  { text: "T'as lu les messages ?",   senderIdx: 2 },
+  { text: "T'es loin ?",              senderIdx: 0 },
+  { text: "On se retrouve où ?",      senderIdx: 1 },
+  { text: "T'es déjà parti ?",        senderIdx: 2 },
+];
+
+const ONLINE_SENDERS = [
+  { name: 'xX_Dragon_Xx',   color: '#a78bfa' },
+  { name: 'speedrun_marie', color: '#34d399' },
+  { name: 'TomGG',          color: '#fbbf24' },
 ];
 
 const ONLINE_MESSAGES = [
-  "T'ES PRÊT ?",
-  "SUR LE VOCAL ?",
-  "MAJ FINIE ?",
-  "T'AS FINI TA GAME ?",
-  "T'ES OÙ ?",
-  "T'AS LU LES MESSAGES ?",
-  "T'ES EN ROUTE ?",
-  "T'ARRIVES À QUELLE HEURE ?",
-  "T'ES LOIN ?",
-  "T'ES ENCORE EN TRAIN DE JOUER ?",
-  "T'ES SÉRIEUX ?",
-  "T'AS RELANCÉ UNE PARTIE ?",
+  { text: "T'ES PRÊT ?",                     senderIdx: 0 },
+  { text: "SUR LE VOCAL ?",                  senderIdx: 1 },
+  { text: "MAJ FINIE ?",                     senderIdx: 2 },
+  { text: "T'AS FINI TA GAME ?",             senderIdx: 0 },
+  { text: "T'ES OÙ ?",                       senderIdx: 1 },
+  { text: "T'AS LU LES MESSAGES ?",          senderIdx: 2 },
+  { text: "T'ES EN ROUTE ?",                 senderIdx: 0 },
+  { text: "T'ARRIVES QUAND ?",               senderIdx: 1 },
+  { text: "T'ES LOIN ?",                     senderIdx: 2 },
+  { text: "T'AS RELANCÉ UNE PARTIE ?",       senderIdx: 0 },
+  { text: "T'ES SÉRIEUX ?",                  senderIdx: 1 },
+  { text: "T'ES ENCORE EN TRAIN DE JOUER ?", senderIdx: 2 },
 ];
 
 // WebGL fragment shader — same topographic formula, runs entirely on GPU
@@ -222,7 +234,7 @@ export default function HomeClient() {
       const idx = messageIndexRef.current;
       const msg = PERSON_MESSAGES[idx % PERSON_MESSAGES.length];
       // Scale: shortest msg (~4 chars) → 1000ms, longest (~35 chars) → 2000ms
-      const delay = 1000 + Math.round((msg.length / 35) * 1000);
+      const delay = 1000 + Math.round((msg.text.length / 35) * 1000);
 
       timeoutId = setTimeout(() => {
         if (!isMounted) return;
@@ -509,18 +521,21 @@ export default function HomeClient() {
                     const k = messageIndex - offset;
                     if (k < 0) return null;
 
+                    const msg = PERSON_MESSAGES[k % PERSON_MESSAGES.length];
+                    const sender = PERSON_SENDERS[msg.senderIdx];
+
                     let messageShift = 0;
                     for (let i = 0; i < offset; i++) {
                       const msgIndex = messageIndex - i;
                       if (msgIndex >= 0) {
-                        const msg = PERSON_MESSAGES[msgIndex % PERSON_MESSAGES.length];
-                        const len = msg.length;
+                        const prevMsg = PERSON_MESSAGES[msgIndex % PERSON_MESSAGES.length];
+                        const len = prevMsg.text.length;
                         if (len > 32) {
-                          messageShift += 150;
+                          messageShift += 165;
                         } else if (len > 20) {
-                          messageShift += 115;
+                          messageShift += 130;
                         } else {
-                          messageShift += 75;
+                          messageShift += 92;
                         }
                       }
                     }
@@ -533,13 +548,36 @@ export default function HomeClient() {
                       <div
                         key={`person-msg-${k}`}
                         className={cn(
-                          "absolute left-2 md:left-0 transition-all duration-500 imessage-dark-bubble font-medium text-xl md:text-2xl w-max max-w-[260px]",
+                          "absolute left-0 transition-all duration-500",
                           offset === 0 && !isTyping ? "animate-message-pop-in" : "",
                           isFadingOut ? "opacity-0 scale-95 pointer-events-none -translate-y-4" : "opacity-100 scale-100 translate-y-0"
                         )}
                         style={{ bottom: `${bottomPos}px` }}
                       >
-                        {PERSON_MESSAGES[k % PERSON_MESSAGES.length]}
+                        {/* Sender name + avatar */}
+                        <div className="flex items-center gap-1.5 mb-[3px] ml-1">
+                          <div
+                            className="w-[16px] h-[16px] rounded-full flex items-center justify-center shrink-0 font-black"
+                            style={{
+                              background: sender.color + '22',
+                              color: sender.color,
+                              border: `1px solid ${sender.color}50`,
+                              fontSize: '8px',
+                            }}
+                          >
+                            {sender.name[0]}
+                          </div>
+                          <span
+                            className="font-semibold"
+                            style={{ color: sender.color + 'bb', fontSize: '10px', letterSpacing: '0.02em' }}
+                          >
+                            {sender.name}
+                          </span>
+                        </div>
+                        {/* Message bubble */}
+                        <div className="imessage-dark-bubble font-medium text-xl md:text-2xl w-max max-w-[260px]">
+                          {msg.text}
+                        </div>
                       </div>
                     );
                   })}
@@ -963,12 +1001,15 @@ export default function HomeClient() {
                     const k = messageIndex - offset;
                     if (k < 0) return null;
 
+                    const onlineMsg = ONLINE_MESSAGES[k % ONLINE_MESSAGES.length];
+                    const onlineSender = ONLINE_SENDERS[onlineMsg.senderIdx];
+
                     let messageShift = 0;
                     for (let i = 0; i < offset; i++) {
                       const msgIndex = messageIndex - i;
                       if (msgIndex >= 0) {
-                        const msg = ONLINE_MESSAGES[msgIndex % ONLINE_MESSAGES.length];
-                        const len = msg.length;
+                        const prevMsg = ONLINE_MESSAGES[msgIndex % ONLINE_MESSAGES.length];
+                        const len = prevMsg.text.length;
                         if (len > 32) {
                           messageShift += 155;
                         } else if (len > 20) {
@@ -993,15 +1034,33 @@ export default function HomeClient() {
                         )}
                         style={{ bottom: `${bottomPos}px` }}
                       >
-                        <div className="w-10 h-10 rounded-full bg-purple-900/50 flex-shrink-0 flex items-center justify-center border border-purple-500/30 text-right md:text-left shadow-[0_0_15px_rgba(168,85,247,0.2)] bg-black/50 backdrop-blur-md">
-                          <Terminal className="w-5 h-5 text-purple-400 drop-shadow-[0_0_5px_rgba(168,85,247,0.8)]" />
+                        {/* Avatar with sender initial */}
+                        <div
+                          className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center font-black text-base border"
+                          style={{
+                            background: onlineSender.color + '18',
+                            borderColor: onlineSender.color + '50',
+                            color: onlineSender.color,
+                            boxShadow: `0 0 12px ${onlineSender.color}25`,
+                          }}
+                        >
+                          {onlineSender.name[0]}
                         </div>
                         <div className="flex flex-col items-end md:items-start bg-black/40 md:bg-transparent p-2 md:p-0 rounded-lg md:rounded-none backdrop-blur-sm md:backdrop-blur-none border border-white/5 md:border-transparent">
                           <div className="flex items-baseline flex-row-reverse md:flex-row gap-2">
-                            <span className="text-purple-400 font-bold text-sm hover:underline cursor-pointer">rdychk_bot</span>
-                            <span className="text-purple-500/50 text-xs text-right md:text-left">Aujourd'hui à {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            <span className="font-bold text-sm hover:underline cursor-pointer" style={{ color: onlineSender.color }}>
+                              {onlineSender.name}
+                            </span>
+                            <span className="text-purple-500/50 text-xs text-right md:text-left">
+                              Aujourd'hui à {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
                           </div>
-                          <span className="text-gray-200 mt-1 font-mono text-lg lg:text-xl drop-shadow-[0_0_8px_rgba(168,85,247,0.3)] text-right md:text-left">{ONLINE_MESSAGES[k % ONLINE_MESSAGES.length]}</span>
+                          <span
+                            className="mt-1 font-mono text-lg lg:text-xl text-right md:text-left"
+                            style={{ color: '#e2e8f0', textShadow: `0 0 8px ${onlineSender.color}40` }}
+                          >
+                            {onlineMsg.text}
+                          </span>
                         </div>
                       </div>
                     );
@@ -1014,7 +1073,9 @@ export default function HomeClient() {
                       isTyping ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
                     )}
                   >
-                    <p className="font-bold text-xs text-purple-400/70 animate-pulse tracking-wider text-right md:text-left">rdychk_bot est en train d'écrire...</p>
+                    <p className="font-bold text-xs animate-pulse tracking-wider text-right md:text-left" style={{ color: ONLINE_SENDERS[ONLINE_MESSAGES[(messageIndex + 1) % ONLINE_MESSAGES.length].senderIdx].color + 'aa' }}>
+                      {ONLINE_SENDERS[ONLINE_MESSAGES[(messageIndex + 1) % ONLINE_MESSAGES.length].senderIdx].name} est en train d'écrire...
+                    </p>
                   </div>
                 </div>
               </div>
