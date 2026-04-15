@@ -35,10 +35,11 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | Chaos organisé",
-    default: "rdychk | Chaos organisé",
+    template: "%s | rdychk",
+    default: "rdychk — Organisez vos sorties sans le chaos",
   },
-  description: "Check if everyone is ready",
+  description:
+    "Créez un groupe, invitez vos amis, votez pour la date et le lieu. Fini les 50 messages pour savoir qui est prêt.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -49,11 +50,19 @@ export const metadata: Metadata = {
     telephone: false,
   },
   openGraph: {
-    title: "rdychk | Chaos organisé",
-    description: "Check if everyone is ready.",
+    title: "rdychk — Organisez vos sorties sans le chaos",
+    description:
+      "Créez un groupe, invitez vos amis, votez pour la date et le lieu. Fini les 50 messages pour savoir qui est prêt.",
     siteName: "rdychk",
     type: "website",
-  }
+    locale: "fr_FR",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "rdychk — Organisez vos sorties sans le chaos",
+    description:
+      "Créez un groupe, invitez vos amis, votez pour la date et le lieu. Fini les 50 messages pour savoir qui est prêt.",
+  },
 };
 
 export default function RootLayout({
