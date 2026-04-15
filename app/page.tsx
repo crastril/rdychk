@@ -191,9 +191,10 @@ export default function Home() {
 
   // Form State
   const [groupName, setGroupName] = useState('');
-  const [step, setStep] = useState<'name' | 'options' | 'city'>('name');
+  const [step, setStep] = useState<'name' | 'options' | 'date' | 'city'>('name');
   const [wantDateVote, setWantDateVote] = useState(true);
   const [wantLocationVote, setWantLocationVote] = useState(true);
+  const [confirmedDate, setConfirmedDate] = useState('');
   const [baseLocation, setBaseLocation] = useState<{ name: string; lat: number; lng: number } | null>(null);
   const [locationSearch, setLocationSearch] = useState('');
   const [locationResults, setLocationResults] = useState<any[]>([]);
@@ -217,6 +218,7 @@ export default function Home() {
     setBaseLocation(null);
     setLocationSearch('');
     setLocationResults([]);
+    setConfirmedDate('');
   }, [mode]);
 
   // Cycle messages with a delay proportional to message length (1s–2s)
@@ -338,8 +340,23 @@ export default function Home() {
     }
 
     if (step === 'options') {
-      setStep('city');
-      return;
+      if (!wantDateVote) {
+        setStep('date');
+        return;
+      }
+      if (mode === 'in_person') {
+        setStep('city');
+        return;
+      }
+      // remote + wantDateVote → fall through to create
+    }
+
+    if (step === 'date') {
+      if (mode === 'in_person') {
+        setStep('city');
+        return;
+      }
+      // remote + date step → fall through to create
     }
 
     if (mode === 'in_person' && !baseLocation) {
@@ -362,6 +379,7 @@ export default function Home() {
           type: mode,
           calendar_voting_enabled: wantDateVote,
           location_voting_enabled: wantLocationVote,
+          confirmed_date: confirmedDate || null,
           city: baseLocation?.name ?? null,
           location: null,
           base_lat: null,
@@ -558,22 +576,29 @@ export default function Home() {
 
                   <form onSubmit={handleCreateGroup} className="flex flex-col gap-5 p-6 text-left">
                     {/* Step indicator — bold dashes */}
-                    <div className="flex items-center gap-1.5">
-                      {(['name', 'options', 'city'] as const).map((s, i) => (
-                        <div key={s} className="flex items-center gap-1.5">
-                          <div
-                            className="transition-all duration-300"
-                            style={{
-                              height: '3px',
-                              width: step === s ? '28px' : '10px',
-                              borderRadius: '2px',
-                              background: step === s ? 'var(--v2-primary)' : 'rgba(255,255,255,0.15)',
-                            }}
-                          />
-                          {i < 2 && <div style={{ width: '4px', height: '3px', background: 'rgba(255,255,255,0.08)', borderRadius: '1px' }} />}
+                    {(() => {
+                      const steps = wantDateVote
+                        ? ['name', 'options', 'city']
+                        : ['name', 'options', 'date', 'city'];
+                      return (
+                        <div className="flex items-center gap-1.5">
+                          {steps.map((s, i) => (
+                            <div key={s} className="flex items-center gap-1.5">
+                              <div
+                                className="transition-all duration-300"
+                                style={{
+                                  height: '3px',
+                                  width: step === s ? '28px' : '10px',
+                                  borderRadius: '2px',
+                                  background: step === s ? 'var(--v2-primary)' : 'rgba(255,255,255,0.15)',
+                                }}
+                              />
+                              {i < steps.length - 1 && <div style={{ width: '4px', height: '3px', background: 'rgba(255,255,255,0.08)', borderRadius: '1px' }} />}
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
+                      );
+                    })()}
 
                     {step === 'name' ? (
                       <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-right duration-300">
@@ -660,8 +685,49 @@ export default function Home() {
                         </button>
                       </div>
 
+                    ) : step === 'date' ? (
+                      /* Step date — Date picker */
+                      <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-right duration-300">
+                        <div className="flex flex-col gap-1">
+                          <p
+                            className="font-black uppercase"
+                            style={{ fontFamily: 'var(--font-barlow-condensed)', fontSize: '1.15rem', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.9)' }}
+                          >
+                            C'est prévu pour quand ?
+                          </p>
+                          <p className="text-sm text-white/40 font-medium leading-snug">
+                            La date sera confirmée pour tout le groupe.
+                          </p>
+                        </div>
+                        <input
+                          type="date"
+                          value={confirmedDate}
+                          onChange={(e) => setConfirmedDate(e.target.value)}
+                          min={new Date().toISOString().split('T')[0]}
+                          autoFocus
+                          className="w-full h-14 rounded-xl px-4 text-lg font-black text-white focus:outline-none transition-all"
+                          style={{
+                            background: '#000',
+                            border: '2.5px solid rgba(255,255,255,0.12)',
+                            fontFamily: 'var(--font-barlow-condensed)',
+                            letterSpacing: '0.02em',
+                            colorScheme: 'dark',
+                          }}
+                          onFocus={e => (e.currentTarget.style.borderColor = 'var(--v2-primary)')}
+                          onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)')}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setStep('options')}
+                          className="text-sm font-black text-white/25 hover:text-white/55 uppercase tracking-[0.15em] transition-colors text-left"
+                          style={{ fontFamily: 'var(--font-barlow-condensed)' }}
+                        >
+                          ← Retour
+                        </button>
+                      </div>
+
                     ) : (
-                      /* Step 3 — City */
+                      /* Step city — City */
                       <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-right duration-300">
                         <div className="flex items-center gap-2">
                           <MapPin className="w-4 h-4 shrink-0" style={{ color: 'var(--v2-primary)' }} weight="fill" />
@@ -739,7 +805,7 @@ export default function Home() {
 
                         <button
                           type="button"
-                          onClick={() => setStep('options')}
+                          onClick={() => setStep(wantDateVote ? 'options' : 'date')}
                           className="text-sm font-black text-white/25 hover:text-white/55 uppercase tracking-[0.15em] transition-colors text-left"
                           style={{ fontFamily: 'var(--font-barlow-condensed)' }}
                         >
@@ -767,8 +833,8 @@ export default function Home() {
                       {loading && mode === 'in_person'
                         ? <CircleNotch className="w-6 h-6 animate-spin" />
                         : <>
-                            {step === 'city' ? "C'EST PARTI !" : 'SUIVANT'}
-                            <Confetti className="w-6 h-6" />
+                            {step === 'city' ? "C'EST PARTI !" : 'SUIVANT →'}
+                            {step === 'city' && <Confetti className="w-6 h-6" />}
                           </>
                       }
                     </button>
@@ -969,6 +1035,42 @@ export default function Home() {
                         autoFocus
                       />
                     </div>
+                  ) : step === 'date' ? (
+                    <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-right duration-500">
+                      <div>
+                        <p className="font-mono text-sm uppercase tracking-[0.15em] mb-1" style={{ color: '#c4b5fd' }}>
+                          {'> SESSION_DATE ?'}
+                        </p>
+                        <p className="font-mono text-sm" style={{ color: '#8b5cf6' }}>
+                          {'// la date sera confirmée pour tout le groupe'}
+                        </p>
+                      </div>
+                      <input
+                        type="date"
+                        value={confirmedDate}
+                        onChange={(e) => setConfirmedDate(e.target.value)}
+                        min={new Date().toISOString().split('T')[0]}
+                        autoFocus
+                        className="w-full py-4 px-4 font-mono text-base focus:outline-none transition-all"
+                        style={{
+                          background: 'rgba(8,0,20,0.8)',
+                          border: '1px solid rgba(168,85,247,0.4)',
+                          borderRadius: '4px',
+                          color: '#c4b5fd',
+                          colorScheme: 'dark',
+                        }}
+                        onFocus={e => (e.currentTarget.style.borderColor = 'rgba(168,85,247,0.8)')}
+                        onBlur={e => (e.currentTarget.style.borderColor = 'rgba(168,85,247,0.4)')}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setStep('options')}
+                        className="text-[10px] font-mono text-purple-500/50 hover:text-purple-400 uppercase tracking-[3px] transition-colors text-right md:text-center"
+                      >
+                        &lt; RETOUR
+                      </button>
+                    </div>
+
                   ) : (
                     <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-right duration-500">
                       <p className="text-[10px] font-mono text-purple-400/60 uppercase tracking-[3px] text-right md:text-center">VOUS_SAVEZ_DÉJÀ &gt;</p>
@@ -1034,7 +1136,7 @@ export default function Home() {
                     >
                       <span className="relative z-10 flex items-center gap-3 text-lg font-bold tracking-[2px] uppercase drop-shadow-[0_0_8px_#d946ef]">
                         {loading && mode === 'remote' ? <CircleNotch className="animate-spin text-2xl" /> : <Terminal className="text-2xl animate-pulse" />}
-                        {step === 'name' ? 'SUIVANT_PROCESS' : 'INITIALISER_SESSION'}
+                        {(step === 'name' || (step === 'options' && !wantDateVote)) ? 'SUIVANT_PROCESS' : 'INITIALISER_SESSION'}
                       </span>
                       <span className="font-mono text-xs opacity-50">&lt;ENTER&gt;</span>
                       <div className="absolute inset-0 bg-purple-500/10 transform translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-300 skew-x-12"></div>
