@@ -383,23 +383,34 @@ export function MembersCompact({
                         const isActive = isPlanning
                             ? (votedMemberIds?.has(m.id) ?? false)
                             : m.is_ready;
+                        const isEnRoute = !isPlanning && !!m.en_route_at && !m.arrived_at;
                         return (
-                            <div
-                                key={m.id}
-                                title={m.name}
-                                className={cn(
-                                    'w-7 h-7 rounded-full border-2 flex items-center justify-center',
-                                    'text-[10px] font-black shrink-0 overflow-hidden transition-all duration-300',
-                                    isActive
-                                        ? 'border-green-500 bg-green-500/15 text-green-300'
-                                        : 'border-white/12 bg-white/6 text-white/45',
-                                    m.id === currentMemberId && 'ring-2 ring-[var(--v2-primary)]/60 ring-offset-1 ring-offset-[#0c0c0c]'
-                                )}
-                            >
-                                {m.avatar_url ? (
-                                    <img src={m.avatar_url} alt={m.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                                ) : (
-                                    getInitials(m.name)
+                            <div key={m.id} className="relative shrink-0">
+                                <div
+                                    title={m.name}
+                                    className={cn(
+                                        'w-7 h-7 rounded-full border-2 flex items-center justify-center',
+                                        'text-[10px] font-black overflow-hidden transition-all duration-300',
+                                        isEnRoute
+                                            ? 'border-[var(--v2-primary)] bg-[var(--v2-primary)]/15 text-[var(--v2-primary)]'
+                                            : isActive
+                                                ? 'border-green-500 bg-green-500/15 text-green-300'
+                                                : 'border-white/12 bg-white/6 text-white/45',
+                                        m.id === currentMemberId && 'ring-2 ring-[var(--v2-primary)]/60 ring-offset-1 ring-offset-[#0c0c0c]'
+                                    )}
+                                >
+                                    {m.avatar_url ? (
+                                        <img src={m.avatar_url} alt={m.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                    ) : (
+                                        getInitials(m.name)
+                                    )}
+                                </div>
+                                {/* Pulsing dot on avatar when en route */}
+                                {isEnRoute && (
+                                    <span className="absolute -bottom-0.5 -right-0.5 flex h-2.5 w-2.5">
+                                        <span className="absolute inline-flex h-full w-full rounded-full bg-[var(--v2-primary)] opacity-75 animate-ping" />
+                                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[var(--v2-primary)]" />
+                                    </span>
                                 )}
                             </div>
                         );
@@ -503,7 +514,8 @@ export function MembersCompact({
                                         })()
                                     ) : (
                                         (() => {
-                                            if (m.is_ready) return <span className="text-[11px] font-black uppercase tracking-[0.14em] shrink-0 text-green-400/90">✓ Prêt</span>;
+                                            // En route takes priority over "prêt" — someone who clicked
+                                            // "Je pars" is both is_ready=true AND has en_route_at set.
                                             const liveEta = enRouteEta(m, destination);
                                             if (liveEta) return (
                                                 <span className="flex items-center gap-1 text-[11px] font-black shrink-0 text-[var(--v2-primary)] tabular-nums">
@@ -515,6 +527,7 @@ export function MembersCompact({
                                                     {liveEta}
                                                 </span>
                                             );
+                                            if (m.is_ready) return <span className="text-[11px] font-black uppercase tracking-[0.14em] shrink-0 text-green-400/90">✓ Prêt</span>;
                                             if (m.proposed_time) return <span className="text-[11px] font-black shrink-0 tabular-nums text-sky-400/80">→ {m.proposed_time.slice(0, 5)}</span>;
                                             return <span className="text-[11px] font-black uppercase tracking-[0.14em] shrink-0 text-white/30">En attente</span>;
                                         })()
