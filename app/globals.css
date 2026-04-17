@@ -1023,29 +1023,18 @@
   91.5%           { text-shadow: 4px  3px 0 #ff2e2e, 5px  4px 0 rgba(0,0,0,0.22); }
 }
 
-/* ── Live map: leaflet overrides + marker animations ────────────── *
- * CartoDB dark tiles + custom brutalist markers.                    *
- * The scan-line sweep is the in-person equivalent of the glitch     *
- * on the remote side — a radar sweep over the map surface.         *
+/* ── Live map: leaflet overrides + scan-line ─────────────────────── *
+ * CartoDB Dark Matter tiles. Markers are native Leaflet CircleMarker  *
+ * (no custom DivIcon, no ring animations).                            *
+ * The scan-line is the in-person counterpart of the glitch effect     *
+ * on the remote side.                                                 *
  * ─────────────────────────────────────────────────────────────────*/
 
 /* Strip Leaflet's default attribution logo (attribution text stays) */
 .leaflet-control-attribution .leaflet-control-attribution-logo { display: none !important; }
 .leaflet-control-attribution { background: rgba(0,0,0,0.55) !important; color: rgba(255,255,255,0.35) !important; font-size: 9px !important; }
 
-/* Radar ping — destination pin concentric rings */
-@keyframes lm-radar {
-  0%   { transform: translate(-50%,-50%) scale(0.5); opacity: 0.7; }
-  100% { transform: translate(-50%,-50%) scale(3.5); opacity: 0; }
-}
-
-/* Member dot pulse */
-@keyframes lm-ping {
-  0%   { transform: translate(-50%,-50%) scale(1);   opacity: 0.75; }
-  100% { transform: translate(-50%,-50%) scale(2.8); opacity: 0; }
-}
-
-/* Scan-line sweep — like a sonar/radar over the map */
+/* Scan-line sweep — sonar/radar over the map */
 @keyframes lm-scanline {
   0%   { top: -6%; opacity: 0; }
   5%   { opacity: 1; }
@@ -1053,81 +1042,12 @@
   100% { top: 106%; opacity: 0; }
 }
 
-/* Destination pin wrapper */
-.lm-dest {
-  position: relative;
-  width: 44px;
-  height: 44px;
-}
-.lm-dest-ring {
-  position: absolute;
-  left: 50%; top: 50%;
-  width: 44px; height: 44px;
-  border-radius: 50%;
-  background: rgba(249,115,22,0.18);
-  animation: lm-radar 2.4s cubic-bezier(0,0,0.2,1) infinite;
-}
-.lm-dest-ring:nth-child(2) { animation-delay: 0.8s; }
-.lm-dest-ring:nth-child(3) { animation-delay: 1.6s; }
-.lm-dest-core {
-  position: absolute;
-  left: 50%; top: 50%;
-  transform: translate(-50%,-50%);
-  width: 20px; height: 20px;
-  background: #f97316;
-  border: 2.5px solid #000;
-  border-radius: 50% 50% 50% 0;
-  transform: translate(-50%,-50%) rotate(-45deg);
-  z-index: 2;
-}
-.lm-dest-inner {
-  position: absolute;
-  inset: 4px;
-  background: #1a0a00;
-  border-radius: 50%;
-  transform: rotate(45deg);
-}
-
-/* Member location dot */
-.lm-member {
-  position: relative;
-  width: 32px; height: 32px;
-}
-.lm-member-ring {
-  position: absolute;
-  left: 50%; top: 50%;
-  width: 32px; height: 32px;
-  border-radius: 50%;
-  background: var(--mc, #f97316);
-  opacity: 0.3;
-  animation: lm-ping 1.8s cubic-bezier(0,0,0.2,1) infinite;
-}
-.lm-member-dot {
-  position: absolute;
-  left: 50%; top: 50%;
-  transform: translate(-50%,-50%);
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  background: var(--mc, #f97316);
-  border: 2.5px solid #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 900;
-  color: #000;
-  font-family: var(--font-barlow-condensed, sans-serif);
-  letter-spacing: 0.05em;
-  z-index: 2;
-}
-
-/* Scan line overlay (applied to the map container via CSS) */
 .lm-scanline-wrap {
   position: absolute;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
-  z-index: 400; /* above tiles, below controls */
+  z-index: 400;
   border-radius: inherit;
 }
 .lm-scanline {

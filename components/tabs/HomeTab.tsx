@@ -116,8 +116,12 @@ export function HomeTab({
     const effectiveReady = localOptimisticReady !== null ? localOptimisticReady : isReady;
 
     // True as soon as at least one member has clicked "Je pars" and not yet arrived.
-    // When true: show live map, hide HeroBlock + VenueCard Google Maps link.
+    // When true: show live map + hide VenueCard Google Maps link.
     const anyoneEnRoute = members.some(m => !!m.en_route_at && !m.arrived_at);
+
+    // HeroBlock is hidden only for the current user while THEY are sharing their
+    // location. As soon as they stop (or never started), the button comes back.
+    const iAmEnRoute = !!currentMember?.en_route_at && !currentMember?.arrived_at;
 
     const isRemote = group.type === 'remote';
     const calendarEnabled = group.calendar_voting_enabled;
@@ -537,8 +541,7 @@ export function HomeTab({
         </div>
     );
 
-    // When the live map is showing (any member departed), hide the Google Maps
-    // link on the venue card and the HeroBlock "Je suis prêt" button.
+    // Map visible as soon as anyone is en route (in-person, jour J, coords known).
     const showLiveMap = !isRemote && isActualDay && _locHasCoords && anyoneEnRoute;
 
     return (
@@ -598,8 +601,8 @@ export function HomeTab({
                         />
                     )}
 
-                    {/* HeroBlock hidden while live map is showing */}
-                    {memberId && !showLiveMap && (
+                    {/* HeroBlock hidden only for the current user while they are sharing */}
+                    {memberId && !iAmEnRoute && (
                         <HeroBlock
                             slug={slug}
                             memberId={memberId}

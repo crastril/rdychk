@@ -3,75 +3,39 @@
 /**
  * LiveMap — inline Leaflet map for the jour-J in-person experience.
  *
- * Shows:
- *  - A radar-ping destination pin for the venue.
- *  - Pulsing dot markers for members who are en route and have a live position.
- *  - Green dot for members who have arrived.
+ * Markers:
+ *  - Venue: orange filled circle (larger), tooltip with name.
+ *  - En-route members: orange circle, tooltip with name.
+ *  - Arrived members: green circle, tooltip with name + ✓.
  *
- * Aesthetic: CartoDB Dark Matter tiles + orange radar sweep + scan-line
- * overlay (matches the in-person brutalist stamp vibe, counterpart of the
- * glitch effect on the remote side).
+ * No DivIcon, no ring animations — plain CircleMarker keeps the map
+ * readable even with many members active at once.
  *
- * SSR-safe: only imported via next/dynamic with ssr:false — never server-rendered.
+ * SSR-safe: only imported via next/dynamic with ssr:false.
  */
 
 import { useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { Member } from '@/types/database';
-
-// ── Icon factories ────────────────────────────────────────────────────────────
-
-function makeDestinationIcon(): L.DivIcon {
-    return L.divIcon({
-        html: `
-          <div class="lm-dest">
-            <span class="lm-dest-ring"></span>
-            <span class="lm-dest-ring"></span>
-            <span class="lm-dest-ring"></span>
-            <div class="lm-dest-core"><div class="lm-dest-inner"></div></div>
-          </div>`,
-        className: '',
-        iconSize: [44, 44],
-        iconAnchor: [22, 38],
-        popupAnchor: [0, -42],
-    });
-}
-
-function makeMemberIcon(member: Member, arrived: boolean): L.DivIcon {
-    const initial = (member.name || '?')[0].toUpperCase();
-    const color = arrived ? '#22c55e' : '#f97316';
-    return L.divIcon({
-        html: `
-          <div class="lm-member" style="--mc:${color}">
-            ${arrived ? '' : '<span class="lm-member-ring"></span>'}
-            <span class="lm-member-dot">${initial}</span>
-          </div>`,
-        className: '',
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
-        popupAnchor: [0, -18],
-    });
-}
 
 // ── Auto-fit bounds ───────────────────────────────────────────────────────────
 
 function FitBounds({ positions }: { positions: [number, number][] }) {
     const map = useMap();
-    const serialised = positions.map(p => `${p[0]},${p[1]}`).join('|');
+    const serialised = positions.map(p => `${p[0].toFixed(5)},${p[1].toFixed(5)}`).join('|');
     const prevRef = useRef('');
 
     useEffect(() => {
         if (serialised === prevRef.current) return;
         prevRef.current = serialised;
-
         if (positions.length === 0) return;
         if (positions.length === 1) {
             map.setView(positions[0], 14, { animate: true });
         } else {
             const bounds = L.latLngBounds(positions.map(p => L.latLng(p[0], p[1])));
-            map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15, animate: true });
+            map.fitBounds(bounds, { padding: [48, 48], maxZoom: 15, animate: true });
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [serialised]);
@@ -79,7 +43,7 @@ function FitBounds({ positions }: { positions: [number, number][] }) {
     return null;
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
+// ── Component ─────────────────────────────────────────────────────────────────
 
 export interface LiveMapProps {
     destination: { lat: number; lng: number; name?: string };
@@ -87,7 +51,6 @@ export interface LiveMapProps {
 }
 
 export function LiveMap({ destination, members }: LiveMapProps) {
-    // Only plot members who have live GPS coords (en route or arrived)
     const liveMembers = members.filter(
         m =>
             (m.en_route_at || m.arrived_at) &&
@@ -100,14 +63,14 @@ export function LiveMap({ destination, members }: LiveMapProps) {
         ...liveMembers.map(m => [m.current_lat as number, m.current_lng as number] as [number, number]),
     ];
 
-    const destIcon = makeDestinationIcon();
+    const enRouteCount = liveMembers.filter(m => !m.arrived_at).length;
 
     return (
         <div
             className="relative rounded-2xl overflow-hidden border-[3px] border-black"
             style={{ height: 220, boxShadow: '5px 5px 0 #000' }}
         >
-            {/* Radar scan-line — visual identity for in-person live tracking */}
+            {/* Scan-line radar sweep */}
             <div className="lm-scanline-wrap" aria-hidden="true">
                 <div className="lm-scanline" />
             </div>
@@ -127,41 +90,55 @@ export function LiveMap({ destination, members }: LiveMapProps) {
                     maxZoom={20}
                 />
 
-                {/* Venue pin with radar ping rings */}
-                <Marker position={[destination.lat, destination.lng]} icon={destIcon}>
+                {/* Venue pin — larger orange circle */}
+                <CircleMarker
+                    center={[destination.lat, destination.lng]}
+                    radius={9}
+                    pathOptions={{
+                        fillColor: '#f97316',
+                        fillOpacity: 1,
+                        color: '#000',
+                        weight: 2.5,
+                    }}
+                >
                     {destination.name && (
-                        <Popup>
-                            <span style={{ fontWeight: 700, fontSize: 12, color: '#111' }}>
-                                {destination.name}
-                            </span>
-                        </Popup>
+                        <Tooltip permanent={false} direction="top" offset={[0, -12]}>
+                            <span style={{ fontWeight: 700, fontSize: 12 }}>{destination.name}</span>
+                        </Tooltip>
                     )}
-                </Marker>
+                </CircleMarker>
 
-                {/* En-route / arrived member dots */}
-                {liveMembers.map(m => (
-                    <Marker
-                        key={m.id}
-                        position={[m.current_lat as number, m.current_lng as number]}
-                        icon={makeMemberIcon(m, !!m.arrived_at)}
-                    >
-                        {m.name && (
-                            <Popup>
-                                <span style={{ fontWeight: 700, fontSize: 12, color: '#111' }}>
-                                    {m.arrived_at ? '✓ ' : ''}{m.name}
-                                </span>
-                            </Popup>
-                        )}
-                    </Marker>
-                ))}
+                {/* Member dots */}
+                {liveMembers.map(m => {
+                    const arrived = !!m.arrived_at;
+                    return (
+                        <CircleMarker
+                            key={m.id}
+                            center={[m.current_lat as number, m.current_lng as number]}
+                            radius={6}
+                            pathOptions={{
+                                fillColor: arrived ? '#22c55e' : '#f97316',
+                                fillOpacity: 0.9,
+                                color: '#000',
+                                weight: 2,
+                            }}
+                        >
+                            {m.name && (
+                                <Tooltip direction="top" offset={[0, -9]}>
+                                    <span style={{ fontWeight: 700, fontSize: 12 }}>
+                                        {arrived ? '✓ ' : ''}{m.name}
+                                    </span>
+                                </Tooltip>
+                            )}
+                        </CircleMarker>
+                    );
+                })}
 
                 <FitBounds positions={allPositions} />
             </MapContainer>
 
             {/* "Live" badge */}
-            <div
-                className="absolute top-2.5 left-2.5 z-[500] flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/75 border border-white/10 backdrop-blur-sm pointer-events-none"
-            >
+            <div className="absolute top-2.5 left-2.5 z-[500] flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/75 border border-white/10 backdrop-blur-sm pointer-events-none">
                 <span className="relative flex h-1.5 w-1.5 shrink-0">
                     <span className="absolute inline-flex h-full w-full rounded-full bg-[var(--v2-primary)] opacity-75 animate-ping" />
                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--v2-primary)]" />
@@ -169,13 +146,11 @@ export function LiveMap({ destination, members }: LiveMapProps) {
                 <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white/60">Live</span>
             </div>
 
-            {/* Member count badge — top right */}
-            {liveMembers.length > 0 && (
-                <div
-                    className="absolute top-2.5 right-2.5 z-[500] flex items-center gap-1 px-2 py-1 rounded-full bg-black/75 border border-white/10 backdrop-blur-sm pointer-events-none"
-                >
+            {/* En-route count badge */}
+            {enRouteCount > 0 && (
+                <div className="absolute top-2.5 right-2.5 z-[500] px-2 py-1 rounded-full bg-black/75 border border-white/10 backdrop-blur-sm pointer-events-none">
                     <span className="text-[10px] font-black uppercase tracking-[0.12em] text-white/50">
-                        {liveMembers.length} en route
+                        {enRouteCount} en route
                     </span>
                 </div>
             )}
