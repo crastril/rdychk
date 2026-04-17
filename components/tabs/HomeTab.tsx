@@ -16,6 +16,8 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AddLocationProposalModal } from '@/components/AddLocationProposalModal';
 import { InviteBlock } from '@/components/InviteBlock';
+import { EnRouteBlock } from '@/components/EnRouteBlock';
+import { geocodeGroupLocationAction } from '@/app/actions/en-route';
 
 interface HomeTabProps {
     group: Group;
@@ -92,6 +94,18 @@ export function HomeTab({
     useEffect(() => {
         if (isLocationOpen) scrollIntoViewIfNeeded(locationRef, 330);
     }, [isLocationOpen]);
+
+    // Auto-geocode the confirmed location exactly once so the EnRouteBlock
+    // can compute ETAs. Idempotent server-side (no-op if lat/lng already set).
+    const loc = group.location;
+    const locKey = loc?.address || loc?.name || null;
+    const locHasCoords = typeof loc?.lat === 'number' && typeof loc?.lng === 'number';
+    useEffect(() => {
+        if (!memberId || !locKey || locHasCoords || group.type !== 'in_person') return;
+        geocodeGroupLocationAction(slug, memberId).then((res) => {
+            if (res.success && 'coords' in res) onGroupChange();
+        });
+    }, [memberId, locKey, locHasCoords, group.type, slug, onGroupChange]);
 
     const currentMember = members.find(m => m.id === memberId);
     const effectiveReady = localOptimisticReady !== null ? localOptimisticReady : isReady;
@@ -563,6 +577,25 @@ export function HomeTab({
                         />
                     )}
 
+                    {/* Live ETA — jour J, in-person only, lieu défini */}
+                    {memberId && isActualDay && !isRemote && group.location?.name && (
+                        <EnRouteBlock
+                            slug={slug}
+                            memberId={memberId}
+                            currentMember={currentMember ?? null}
+                            destination={
+                                typeof group.location.lat === 'number' &&
+                                typeof group.location.lng === 'number'
+                                    ? { lat: group.location.lat, lng: group.location.lng, name: group.location.name }
+                                    : null
+                            }
+                            destinationMissingCoords={
+                                typeof group.location.lat !== 'number' ||
+                                typeof group.location.lng !== 'number'
+                            }
+                        />
+                    )}
+
                     {/* ETA inline — jour J uniquement, avant d'être prêt */}
                     {memberId && isActualDay && (
                         <AnimatePresence initial={false}>
@@ -612,6 +645,13 @@ export function HomeTab({
                         isAdmin={isAdmin}
                         mode="day-of"
                         isRemote={isRemote}
+                        destination={
+                            !isRemote &&
+                            typeof group.location?.lat === 'number' &&
+                            typeof group.location?.lng === 'number'
+                                ? { lat: group.location.lat, lng: group.location.lng }
+                                : null
+                        }
                     />
                 </>
             )}

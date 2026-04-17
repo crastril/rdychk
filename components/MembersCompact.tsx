@@ -2,8 +2,9 @@
 
 import { cn } from '@/lib/utils';
 import type { Member } from '@/types/database';
-import { Crown, CaretDown } from '@phosphor-icons/react';
+import { Crown, CaretDown, NavigationArrow } from '@phosphor-icons/react';
 import { useState, useRef, useEffect } from 'react';
+import { computeEtaMinutes, formatEta, haversineMeters } from '@/lib/geo';
 
 interface MembersCompactProps {
     members: Member[];
@@ -14,6 +15,23 @@ interface MembersCompactProps {
     mode?: 'planning' | 'day-of';
     votedMemberIds?: Set<string>;
     isRemote?: boolean;
+    /** In-person only — destination coords for computing live ETAs. */
+    destination?: { lat: number; lng: number } | null;
+}
+
+/**
+ * Returns a live ETA string if the member is currently en route with a
+ * fresh GPS position, otherwise null. Used only on jour-J / in-person.
+ */
+function enRouteEta(m: Member, destination?: { lat: number; lng: number } | null): string | null {
+    if (!destination) return null;
+    if (!m.en_route_at || m.arrived_at) return null;
+    if (typeof m.current_lat !== 'number' || typeof m.current_lng !== 'number') return null;
+    const dist = haversineMeters(
+        { lat: m.current_lat, lng: m.current_lng },
+        destination,
+    );
+    return formatEta(computeEtaMinutes(dist));
 }
 
 const getInitials = (name: string) =>
@@ -35,6 +53,7 @@ export function MembersCompact({
     mode = 'day-of',
     votedMemberIds,
     isRemote,
+    destination,
 }: MembersCompactProps) {
     const [expanded, setExpanded] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -485,6 +504,17 @@ export function MembersCompact({
                                     ) : (
                                         (() => {
                                             if (m.is_ready) return <span className="text-[11px] font-black uppercase tracking-[0.14em] shrink-0 text-green-400/90">✓ Prêt</span>;
+                                            const liveEta = enRouteEta(m, destination);
+                                            if (liveEta) return (
+                                                <span className="flex items-center gap-1 text-[11px] font-black shrink-0 text-[var(--v2-primary)] tabular-nums">
+                                                    <NavigationArrow className="w-3 h-3" weight="fill" />
+                                                    <span className="relative flex h-1.5 w-1.5 shrink-0">
+                                                        <span className="absolute inline-flex h-full w-full rounded-full bg-[var(--v2-primary)] opacity-70 animate-ping" />
+                                                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--v2-primary)]" />
+                                                    </span>
+                                                    {liveEta}
+                                                </span>
+                                            );
                                             if (m.proposed_time) return <span className="text-[11px] font-black shrink-0 tabular-nums text-sky-400/80">→ {m.proposed_time.slice(0, 5)}</span>;
                                             return <span className="text-[11px] font-black uppercase tracking-[0.14em] shrink-0 text-white/30">En attente</span>;
                                         })()
