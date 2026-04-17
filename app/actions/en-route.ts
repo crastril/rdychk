@@ -165,7 +165,7 @@ export async function geocodeGroupLocationAction(
 
     const { data: group } = await supabase
         .from('groups')
-        .select('id, location')
+        .select('id, location, city')
         .eq('slug', slug)
         .single();
 
@@ -185,10 +185,17 @@ export async function geocodeGroupLocationAction(
 
     // If group.location is null but we have a fallback name (from a proposal),
     // geocode that and bootstrap group.location with minimal data.
-    const query = loc?.address || loc?.name || fallbackName;
-    if (!query) return { success: false, error: 'No location to geocode' };
+    const city = (group as { city?: string | null }).city;
+    const baseName = loc?.address || loc?.name || fallbackName;
+    if (!baseName) return { success: false, error: 'No location to geocode' };
 
-    const coords = await geocodeAddress(query);
+    // Append city to improve Nominatim hit rate for venue names like
+    // "ROCKWOOD - Good place & good taste" which fail without context.
+    const query = city ? `${baseName} ${city}` : baseName;
+
+    // Try with city first; fall back to bare name if that fails.
+    let coords = await geocodeAddress(query);
+    if (!coords && city) coords = await geocodeAddress(baseName);
     if (!coords) return { success: false, error: 'Geocoding failed' };
 
     const updated = loc
