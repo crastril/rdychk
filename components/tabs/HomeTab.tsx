@@ -18,6 +18,21 @@ import { AddLocationProposalModal } from '@/components/AddLocationProposalModal'
 import { InviteBlock } from '@/components/InviteBlock';
 import { EnRouteBlock } from '@/components/EnRouteBlock';
 import { geocodeGroupLocationAction } from '@/app/actions/en-route';
+import dynamic from 'next/dynamic';
+
+// Leaflet must never run on the server
+const LiveMap = dynamic(
+    () => import('@/components/LiveMap').then(m => m.LiveMap),
+    {
+        ssr: false,
+        loading: () => (
+            <div
+                className="rounded-2xl border-[3px] border-black bg-[#0a0a0a] animate-pulse"
+                style={{ height: 220, boxShadow: '5px 5px 0 #000' }}
+            />
+        ),
+    },
+);
 
 interface HomeTabProps {
     group: Group;
@@ -99,6 +114,10 @@ export function HomeTab({
 
     const currentMember = members.find(m => m.id === memberId);
     const effectiveReady = localOptimisticReady !== null ? localOptimisticReady : isReady;
+
+    // True as soon as at least one member has clicked "Je pars" and not yet arrived.
+    // When true: show live map, hide HeroBlock + VenueCard Google Maps link.
+    const anyoneEnRoute = members.some(m => !!m.en_route_at && !m.arrived_at);
 
     const isRemote = group.type === 'remote';
     const calendarEnabled = group.calendar_voting_enabled;
@@ -518,6 +537,10 @@ export function HomeTab({
         </div>
     );
 
+    // When the live map is showing (any member departed), hide the Google Maps
+    // link on the venue card and the HeroBlock "Je suis prêt" button.
+    const showLiveMap = !isRemote && isActualDay && _locHasCoords && anyoneEnRoute;
+
     return (
         <div className="flex flex-col gap-4">
             {/* Venue/Game card or status strip */}
@@ -535,7 +558,8 @@ export function HomeTab({
                         name={displayLocation}
                         image={locationImage}
                         date={confirmedDate ?? formattedPopularDate}
-                        mapsUrl={locationMapsUrl}
+                        // Hide Maps link once the live map is up — saves space
+                        mapsUrl={showLiveMap ? null : locationMapsUrl}
                         onAddToCalendar={confirmedDate && !isActualDay ? addToCalendar : undefined}
                         showCalendar={!!confirmedDate && !isActualDay}
                     />
@@ -562,7 +586,20 @@ export function HomeTab({
             {/* ── JOUR J / PRÉ-JOUR : hero + ETA + membres ── */}
             {!isPlanning && (
                 <>
-                    {memberId && (
+                    {/* Live map replaces HeroBlock once anyone departs */}
+                    {showLiveMap && (
+                        <LiveMap
+                            destination={{
+                                lat: group.location!.lat as number,
+                                lng: group.location!.lng as number,
+                                name: displayLocation,
+                            }}
+                            members={members}
+                        />
+                    )}
+
+                    {/* HeroBlock hidden while live map is showing */}
+                    {memberId && !showLiveMap && (
                         <HeroBlock
                             slug={slug}
                             memberId={memberId}
