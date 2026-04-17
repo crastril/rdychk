@@ -65,7 +65,7 @@ export function VenueCard({ name, image, date, mapsUrl, onAddToCalendar, showCal
 
             {/* ── ACTION LINKS ── */}
             <div className="flex flex-wrap gap-2">
-                {mapsUrl ? (
+                {mapsUrl && (
                     <a
                         href={mapsUrl}
                         target="_blank"
@@ -85,19 +85,6 @@ export function VenueCard({ name, image, date, mapsUrl, onAddToCalendar, showCal
                         </span>
                         <ArrowSquareOut className="w-3 h-3 text-white/30 group-hover:text-orange-400 shrink-0 transition-colors" />
                     </a>
-                ) : (
-                    <div
-                        className="flex items-center gap-2 px-3 py-2 rounded-xl border-[2.5px] border-black opacity-30 cursor-not-allowed"
-                        style={{ background: '#0c0c0c', boxShadow: '3px 3px 0px #333' }}
-                    >
-                        <MapTrifold className="w-3.5 h-3.5 text-white/30 shrink-0" weight="fill" />
-                        <span
-                            className="text-[12px] font-black uppercase tracking-[0.06em] text-white/30"
-                            style={{ fontFamily: 'var(--font-barlow-condensed)' }}
-                        >
-                            Afficher dans Google Maps
-                        </span>
-                    </div>
                 )}
 
                 {showCalendar && onAddToCalendar && (

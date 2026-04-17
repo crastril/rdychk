@@ -58,7 +58,7 @@ export const ARRIVAL_THRESHOLD_M = 100;
  * Max en-route session duration. After this, auto-stop kicks in
  * (safety for battery / privacy if the user forgets to toggle off).
  */
-export const MAX_EN_ROUTE_MS = 4 * 60 * 60 * 1000; // 4h
+export const MAX_EN_ROUTE_MS = 1 * 60 * 60 * 1000; // 1h
 
 /**
  * Formats a distance for UI display.

@@ -85,6 +85,7 @@ export function HomeTab({
     const [isLocationOpen, setIsLocationOpen] = useState(false);
     const [showLocationModal, setShowLocationModal] = useState(false);
     const [etaModalOpen, setEtaModalOpen] = useState(false);
+    const [mapCollapsed, setMapCollapsed] = useState(false);
 
     const optionsRef = useRef<HTMLDivElement>(null);
     const calendarRef = useRef<HTMLDivElement>(null);
@@ -589,16 +590,52 @@ export function HomeTab({
             {/* ── JOUR J / PRÉ-JOUR : hero + ETA + membres ── */}
             {!isPlanning && (
                 <>
-                    {/* Live map replaces HeroBlock once anyone departs */}
+                    {/* Live map — collapsible */}
                     {showLiveMap && (
-                        <LiveMap
-                            destination={{
-                                lat: group.location!.lat as number,
-                                lng: group.location!.lng as number,
-                                name: displayLocation,
-                            }}
-                            members={members}
-                        />
+                        <AnimatePresence initial={false}>
+                            {!mapCollapsed ? (
+                                <motion.div
+                                    key="map-open"
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+                                    style={{ overflow: 'hidden' }}
+                                >
+                                    <LiveMap
+                                        destination={{
+                                            lat: group.location!.lat as number,
+                                            lng: group.location!.lng as number,
+                                            name: displayLocation,
+                                        }}
+                                        members={members}
+                                        onClose={() => setMapCollapsed(true)}
+                                    />
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    key="map-collapsed"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    <button
+                                        onClick={() => setMapCollapsed(false)}
+                                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl border-[3px] border-black bg-[#111] hover:bg-[#161616] active:translate-y-[2px] transition-all"
+                                        style={{ boxShadow: '4px 4px 0 #000' }}
+                                    >
+                                        <span className="relative flex h-1.5 w-1.5 shrink-0">
+                                            <span className="absolute inline-flex h-full w-full rounded-full bg-[var(--v2-primary)] opacity-75 animate-ping" />
+                                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--v2-primary)]" />
+                                        </span>
+                                        <span className="text-[11px] font-black uppercase tracking-[0.16em] text-white/50">
+                                            Afficher la carte live
+                                        </span>
+                                    </button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     )}
 
                     {/* HeroBlock hidden only for the current user while they are sharing */}
