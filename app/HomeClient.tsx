@@ -497,11 +497,11 @@ export default function HomeClient() {
               </div>
 
               <div className="text-left md:text-center w-full order-2">
-                <h1 className="text-5xl lg:text-8xl font-black text-white tracking-tighter leading-none drop-shadow-2xl">
+                <h1 className="text-5xl lg:text-8xl font-black text-white tracking-tighter leading-none brutalist-stamp">
                   ARRÊTEZ DE
                 </h1>
                 <div className="relative inline-block w-full text-left md:text-center mt-1 mb-2">
-                  <h1 className="text-5xl lg:text-8xl font-black text-white tracking-tighter leading-none drop-shadow-2xl relative z-10">
+                  <h1 className="text-5xl lg:text-8xl font-black text-white tracking-tighter leading-none relative z-10 brutalist-stamp" style={{ animationDelay: '2.5s' }}>
                     DEMANDER
                   </h1>
                 </div>
