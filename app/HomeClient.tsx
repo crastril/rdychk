@@ -54,6 +54,21 @@ const ONLINE_MESSAGES = [
   { text: "T'ES ENCORE EN TRAIN DE JOUER ?", senderIdx: 2 },
 ];
 
+const MONTHS_FR = [
+  { num: '01', name: 'Janvier' },
+  { num: '02', name: 'Février' },
+  { num: '03', name: 'Mars' },
+  { num: '04', name: 'Avril' },
+  { num: '05', name: 'Mai' },
+  { num: '06', name: 'Juin' },
+  { num: '07', name: 'Juillet' },
+  { num: '08', name: 'Août' },
+  { num: '09', name: 'Septembre' },
+  { num: '10', name: 'Octobre' },
+  { num: '11', name: 'Novembre' },
+  { num: '12', name: 'Décembre' },
+];
+
 // WebGL fragment shader — same topographic formula, runs entirely on GPU
 const VERT_SRC = `
   attribute vec2 a_pos;
@@ -198,11 +213,26 @@ export default function HomeClient() {
   const [wantDateVote, setWantDateVote] = useState(true);
   const [wantLocationVote, setWantLocationVote] = useState(true);
   const [confirmedDate, setConfirmedDate] = useState('');
+  // Intermediate state for the day/month picker (year is derived automatically)
+  const [pickerDay, setPickerDay] = useState('');
+  const [pickerMonth, setPickerMonth] = useState('');
   const [baseLocation, setBaseLocation] = useState<{ name: string; lat: number; lng: number } | null>(null);
   const [locationSearch, setLocationSearch] = useState('');
   const [locationResults, setLocationResults] = useState<any[]>([]);
   const [isSearchingLocation, setIsSearchingLocation] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Build a full ISO date from day + month, rolling to next year if already past
+  const buildDateFromParts = (day: string, month: string): string => {
+    const d = parseInt(day);
+    const m = parseInt(month);
+    if (!d || !m || d < 1 || d > 31 || m < 1 || m > 12) return '';
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    let year = today.getFullYear();
+    const proposed = new Date(year, m - 1, d);
+    if (proposed < today) year += 1;
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  };
 
   const handleSearchLocation = (query: string) => {
     if (!query.trim()) {
@@ -222,6 +252,8 @@ export default function HomeClient() {
     setLocationSearch('');
     setLocationResults([]);
     setConfirmedDate('');
+    setPickerDay('');
+    setPickerMonth('');
   }, [mode]);
 
   // Cycle messages with a delay proportional to message length (1s–2s)
@@ -741,7 +773,7 @@ export default function HomeClient() {
                       </div>
 
                     ) : step === 'date' ? (
-                      /* Step date — Date picker */
+                      /* Step date — Jour + Mois (year auto-filled) */
                       <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-right duration-300">
                         <div className="flex flex-col gap-1">
                           <p
@@ -754,24 +786,86 @@ export default function HomeClient() {
                             La date sera confirmée pour tout le groupe.
                           </p>
                         </div>
-                        <input
-                          type="date"
-                          value={confirmedDate}
-                          onChange={(e) => setConfirmedDate(e.target.value)}
-                          min={new Date().toISOString().split('T')[0]}
-                          autoFocus={mode === 'in_person'}
-                          disabled={mode !== 'in_person'}
-                          className="w-full h-14 rounded-xl px-4 text-lg font-black text-white focus:outline-none transition-all"
-                          style={{
-                            background: '#000',
-                            border: '2.5px solid rgba(255,255,255,0.12)',
-                            fontFamily: 'var(--font-barlow-condensed)',
-                            letterSpacing: '0.02em',
-                            colorScheme: 'dark',
-                          }}
-                          onFocus={e => (e.currentTarget.style.borderColor = 'var(--v2-primary)')}
-                          onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)')}
-                        />
+                        <div className="flex gap-3">
+                          {/* Jour */}
+                          <div className="flex flex-col gap-1.5" style={{ width: '88px' }}>
+                            <label
+                              className="text-xs font-black uppercase tracking-[0.15em]"
+                              style={{ fontFamily: 'var(--font-barlow-condensed)', color: '#9c3030' }}
+                            >
+                              Jour
+                            </label>
+                            <input
+                              type="number"
+                              min={1}
+                              max={31}
+                              value={pickerDay}
+                              onChange={(e) => {
+                                const d = e.target.value;
+                                setPickerDay(d);
+                                setConfirmedDate(d && pickerMonth ? buildDateFromParts(d, pickerMonth) : '');
+                              }}
+                              disabled={mode !== 'in_person'}
+                              autoFocus={mode === 'in_person'}
+                              placeholder="15"
+                              className="w-full h-14 rounded-xl px-3 text-xl font-black text-white placeholder-white/20 focus:outline-none transition-all disabled:opacity-50"
+                              style={{
+                                background: '#000',
+                                border: '2.5px solid rgba(255,255,255,0.12)',
+                                fontFamily: 'var(--font-barlow-condensed)',
+                              }}
+                              onFocus={e => (e.currentTarget.style.borderColor = 'var(--v2-primary)')}
+                              onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)')}
+                            />
+                          </div>
+                          {/* Mois */}
+                          <div className="flex flex-col gap-1.5 flex-1">
+                            <label
+                              className="text-xs font-black uppercase tracking-[0.15em]"
+                              style={{ fontFamily: 'var(--font-barlow-condensed)', color: '#9c3030' }}
+                            >
+                              Mois
+                            </label>
+                            <select
+                              value={pickerMonth}
+                              onChange={(e) => {
+                                const m = e.target.value;
+                                setPickerMonth(m);
+                                setConfirmedDate(pickerDay && m ? buildDateFromParts(pickerDay, m) : '');
+                              }}
+                              disabled={mode !== 'in_person'}
+                              className="w-full h-14 rounded-xl px-3 text-lg font-black text-white focus:outline-none transition-all disabled:opacity-50"
+                              style={{
+                                background: '#000',
+                                border: '2.5px solid rgba(255,255,255,0.12)',
+                                fontFamily: 'var(--font-barlow-condensed)',
+                                colorScheme: 'dark',
+                              }}
+                              onFocus={e => (e.currentTarget.style.borderColor = 'var(--v2-primary)')}
+                              onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)')}
+                            >
+                              <option value="">Mois</option>
+                              {MONTHS_FR.map(m => (
+                                <option key={m.num} value={m.num}>{m.name}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                        {/* Confirmation */}
+                        {confirmedDate && (
+                          <div
+                            className="flex items-center gap-2 px-3 py-2 rounded-xl"
+                            style={{ background: 'rgba(255,46,46,0.08)', border: '2px solid rgba(255,46,46,0.3)' }}
+                          >
+                            <Check className="w-3.5 h-3.5 shrink-0" style={{ color: '#9c3030' }} />
+                            <span
+                              className="text-sm font-black uppercase tracking-[0.1em]"
+                              style={{ fontFamily: 'var(--font-barlow-condensed)', color: '#9c3030' }}
+                            >
+                              {new Date(confirmedDate + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                            </span>
+                          </div>
+                        )}
                         <button
                           type="button"
                           onClick={() => setStep('options')}
@@ -1120,6 +1214,7 @@ export default function HomeClient() {
                       />
                     </div>
                   ) : step === 'date' ? (
+                    /* Online date step — Jour + Mois (year auto-filled) */
                     <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-right duration-500">
                       <div>
                         <p className="font-mono text-sm uppercase tracking-[0.15em] mb-1" style={{ color: '#c4b5fd' }}>
@@ -1129,24 +1224,69 @@ export default function HomeClient() {
                           {'// la date sera confirmée pour tout le groupe'}
                         </p>
                       </div>
-                      <input
-                        type="date"
-                        value={confirmedDate}
-                        onChange={(e) => setConfirmedDate(e.target.value)}
-                        min={new Date().toISOString().split('T')[0]}
-                        autoFocus={mode === 'remote'}
-                        disabled={mode !== 'remote'}
-                        className="w-full py-4 px-4 font-mono text-base focus:outline-none transition-all"
-                        style={{
-                          background: 'rgba(8,0,20,0.8)',
-                          border: '1px solid rgba(168,85,247,0.4)',
-                          borderRadius: '4px',
-                          color: '#c4b5fd',
-                          colorScheme: 'dark',
-                        }}
-                        onFocus={e => (e.currentTarget.style.borderColor = 'rgba(168,85,247,0.8)')}
-                        onBlur={e => (e.currentTarget.style.borderColor = 'rgba(168,85,247,0.4)')}
-                      />
+                      <div className="flex gap-3">
+                        {/* Jour */}
+                        <div className="flex flex-col gap-2" style={{ width: '96px' }}>
+                          <label className="font-mono text-[10px] text-purple-400/70 tracking-widest uppercase">&gt; JOUR_</label>
+                          <input
+                            type="number"
+                            min={1}
+                            max={31}
+                            value={pickerDay}
+                            onChange={(e) => {
+                              const d = e.target.value;
+                              setPickerDay(d);
+                              setConfirmedDate(d && pickerMonth ? buildDateFromParts(d, pickerMonth) : '');
+                            }}
+                            disabled={mode !== 'remote'}
+                            autoFocus={mode === 'remote'}
+                            placeholder="15"
+                            className="w-full py-4 px-4 font-mono text-base focus:outline-none transition-all disabled:opacity-50"
+                            style={{
+                              background: 'rgba(8,0,20,0.8)',
+                              border: '1px solid rgba(168,85,247,0.4)',
+                              borderRadius: '4px',
+                              color: '#c4b5fd',
+                            }}
+                            onFocus={e => (e.currentTarget.style.borderColor = 'rgba(168,85,247,0.8)')}
+                            onBlur={e => (e.currentTarget.style.borderColor = 'rgba(168,85,247,0.4)')}
+                          />
+                        </div>
+                        {/* Mois */}
+                        <div className="flex flex-col gap-2 flex-1">
+                          <label className="font-mono text-[10px] text-purple-400/70 tracking-widest uppercase">&gt; MOIS_</label>
+                          <select
+                            value={pickerMonth}
+                            onChange={(e) => {
+                              const m = e.target.value;
+                              setPickerMonth(m);
+                              setConfirmedDate(pickerDay && m ? buildDateFromParts(pickerDay, m) : '');
+                            }}
+                            disabled={mode !== 'remote'}
+                            className="w-full py-4 px-4 font-mono text-base focus:outline-none transition-all disabled:opacity-50"
+                            style={{
+                              background: 'rgba(8,0,20,0.8)',
+                              border: '1px solid rgba(168,85,247,0.4)',
+                              borderRadius: '4px',
+                              color: '#c4b5fd',
+                              colorScheme: 'dark',
+                            }}
+                            onFocus={e => (e.currentTarget.style.borderColor = 'rgba(168,85,247,0.8)')}
+                            onBlur={e => (e.currentTarget.style.borderColor = 'rgba(168,85,247,0.4)')}
+                          >
+                            <option value="">// mois</option>
+                            {MONTHS_FR.map(m => (
+                              <option key={m.num} value={m.num}>{m.name.toUpperCase()}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                      {/* Confirmation */}
+                      {confirmedDate && (
+                        <p className="font-mono text-sm" style={{ color: '#8b5cf6' }}>
+                          {'// SESSION: '}{new Date(confirmedDate + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase()}
+                        </p>
+                      )}
                       <button
                         type="button"
                         onClick={() => setStep('options')}
