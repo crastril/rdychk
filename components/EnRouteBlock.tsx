@@ -163,21 +163,8 @@ export function EnRouteBlock({
     }
 
     // ── IDLE ──
-    if (destinationMissingCoords) {
-        return (
-            <div
-                className="rounded-2xl border-[3px] border-black bg-[#0c0c0c] px-4 py-3 flex items-center gap-3"
-                style={{ boxShadow: '4px 4px 0 #000' }}
-            >
-                <WarningCircle className="w-5 h-5 text-white/30 shrink-0" weight="fill" />
-                <span className="text-[12px] font-medium text-white/45 leading-snug">
-                    Adresse non géolocalisée — l&apos;ETA live sera dispo une fois le lieu repéré sur la carte.
-                </span>
-            </div>
-        );
-    }
-
-    if (!destination) return null;
+    // Note: we show the button even without destination coords.
+    // In that case the active state just shows "En route" without a numerical ETA.
 
     return (
         <>
