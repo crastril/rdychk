@@ -239,10 +239,20 @@ export default function HomeClient() {
       setLocationResults([]);
       return;
     }
-    const filtered = FRENCH_CITIES.filter(city => 
+    const filtered = FRENCH_CITIES.filter(city =>
       city.toLowerCase().includes(query.toLowerCase())
     ).slice(0, 10);
-    setLocationResults(filtered.map(city => ({ name: city })));
+    const results = filtered.map(city => ({ name: city }));
+
+    // Auto-select when only one match remains
+    if (results.length === 1) {
+      setBaseLocation({ name: results[0].name, lat: 0, lng: 0 });
+      setLocationSearch(results[0].name);
+      setLocationResults([]);
+      return;
+    }
+
+    setLocationResults(results);
   };
 
   // Reset form state when switching modes
