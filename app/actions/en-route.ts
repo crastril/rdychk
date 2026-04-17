@@ -142,23 +142,58 @@ export async function stopEnRouteAction(slug: string, memberId: string) {
 }
 
 /**
- * Server Action: geocode the group's confirmed location and persist
- * lat/lng inside the location JSON. Called once when the location is
- * confirmed — idempotent (no-op if lat/lng are already present).
- *
- * Any admin of the group can trigger it (we verify via the standard
- * guest session cookie).
- */
 /**
- * @param fallbackName  Display name to geocode if group.location is null
- *   (e.g. when the location comes from a proposal rather than the admin
- *   direct-set modal). When provided and geocoding succeeds, the result is
- *   stored as group.location so subsequent calls are idempotent.
+ * Extract Google Maps place_id from a maps.google.com link.
+ */
+function extractPlaceId(link?: string | null): string | null {
+    if (!link) return null;
+    try {
+        return new URL(link).searchParams.get('query_place_id');
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Geocode via Google Places Details API using a place_id.
+ * Exact, unambiguous — no city needed, no false positives.
+ */
+async function geocodeByPlaceId(placeId: string): Promise<{ lat: number; lng: number } | null> {
+    const apiKey = process.env.GOOGLE_MAPS_SERVER_API_KEY;
+    if (!apiKey) return null;
+    try {
+        const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${encodeURIComponent(placeId)}&fields=geometry&key=${apiKey}`;
+        const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+        if (!res.ok) return null;
+        const data = await res.json() as {
+            result?: { geometry?: { location?: { lat: number; lng: number } } };
+            status: string;
+        };
+        if (data.status !== 'OK' || !data.result?.geometry?.location) return null;
+        return data.result.geometry.location;
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Server Action: geocode the group's confirmed location and persist
+ * lat/lng inside the location JSON. Idempotent (no-op if already present).
+ *
+ * Strategy (in order):
+ *  1. Google Places Details via place_id extracted from Google Maps link
+ *     → exact, no city needed, no false positives.
+ *  2. Nominatim with city suffix (countrycodes=fr not set; city provides context)
+ *  3. Nominatim with bare name as last resort.
+ *
+ * @param fallbackName     Display name when group.location is null (proposal source).
+ * @param googleMapsLink   Google Maps link from the top proposal (has place_id).
  */
 export async function geocodeGroupLocationAction(
     slug: string,
     memberId: string,
     fallbackName?: string,
+    googleMapsLink?: string,
 ) {
     const ok = await verifyGuestSession(slug, memberId);
     if (!ok) return { success: false, error: 'Unauthorized' };
@@ -172,35 +207,36 @@ export async function geocodeGroupLocationAction(
     if (!group) return { success: false, error: 'Group not found' };
 
     const loc = group.location as {
-        name?: string;
-        address?: string;
-        lat?: number;
-        lng?: number;
+        name?: string; address?: string; link?: string; lat?: number; lng?: number;
     } | null;
 
-    // Idempotent: bail if already geocoded
+    // Idempotent
     if (loc && typeof loc.lat === 'number' && typeof loc.lng === 'number') {
         return { success: true, cached: true };
     }
 
-    // If group.location is null but we have a fallback name (from a proposal),
-    // geocode that and bootstrap group.location with minimal data.
-    const city = (group as { city?: string | null }).city;
-    const baseName = loc?.address || loc?.name || fallbackName;
-    if (!baseName) return { success: false, error: 'No location to geocode' };
+    let coords: { lat: number; lng: number } | null = null;
 
-    // Append city to improve Nominatim hit rate for venue names like
-    // "ROCKWOOD - Good place & good taste" which fail without context.
-    const query = city ? `${baseName} ${city}` : baseName;
+    // Strategy 1: Google Places Details via place_id (exact)
+    const placeId = extractPlaceId(googleMapsLink || loc?.link);
+    if (placeId) coords = await geocodeByPlaceId(placeId);
 
-    // Try with city first; fall back to bare name if that fails.
-    let coords = await geocodeAddress(query);
-    if (!coords && city) coords = await geocodeAddress(baseName);
+    // Strategy 2 & 3: Nominatim fallback
+    if (!coords) {
+        const city = (group as { city?: string | null }).city;
+        const baseName = loc?.address || loc?.name || fallbackName;
+        if (!baseName) return { success: false, error: 'No location to geocode' };
+        const query = city ? `${baseName} ${city}` : baseName;
+        coords = await geocodeAddress(query);
+        if (!coords && city) coords = await geocodeAddress(baseName);
+    }
+
     if (!coords) return { success: false, error: 'Geocoding failed' };
 
+    const displayName = loc?.name || fallbackName || 'Lieu';
     const updated = loc
         ? { ...loc, lat: coords.lat, lng: coords.lng }
-        : { name: query, lat: coords.lat, lng: coords.lng };
+        : { name: displayName, lat: coords.lat, lng: coords.lng };
 
     const { error } = await supabase
         .from('groups')

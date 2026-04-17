@@ -174,7 +174,8 @@ export function HomeTab({
         if (!memberId || !displayLocation || _locHasCoords || group.type !== 'in_person') return;
         // Pass the display name as fallback so the action can set group.location
         // even when it's currently null (e.g. location came from a proposal).
-        geocodeGroupLocationAction(slug, memberId, displayLocation).then((res) => {
+        const proposalLink = filteredTopProposal?.link ?? undefined;
+        geocodeGroupLocationAction(slug, memberId, displayLocation, proposalLink).then((res) => {
             if (res.success && 'coords' in res) onGroupChange();
         });
     // eslint-disable-next-line react-hooks/exhaustive-deps
