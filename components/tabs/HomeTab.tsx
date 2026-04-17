@@ -17,8 +17,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AddLocationProposalModal } from '@/components/AddLocationProposalModal';
 import { InviteBlock } from '@/components/InviteBlock';
 import { EnRouteBlock } from '@/components/EnRouteBlock';
+import { NextEventModal } from '@/components/NextEventModal';
 import { geocodeGroupLocationAction } from '@/app/actions/en-route';
+import { resetGroupForNextEventAction } from '@/app/actions/next-event';
 import { isEnRouteActive } from '@/lib/geo';
+import { ArrowClockwise } from '@phosphor-icons/react';
 import dynamic from 'next/dynamic';
 
 // Leaflet must never run on the server
@@ -87,6 +90,7 @@ export function HomeTab({
     const [showLocationModal, setShowLocationModal] = useState(false);
     const [etaModalOpen, setEtaModalOpen] = useState(false);
     const [mapCollapsed, setMapCollapsed] = useState(false);
+    const [nextEventModalOpen, setNextEventModalOpen] = useState(false);
 
     const optionsRef = useRef<HTMLDivElement>(null);
     const calendarRef = useRef<HTMLDivElement>(null);
@@ -733,6 +737,61 @@ export function HomeTab({
                 </>
             )}
 
+            {/* ── Prochaine sortie (admin, quand une date est confirmée) ── */}
+            {isAdmin && memberId && group.confirmed_date && (
+                <button
+                    onClick={() => setNextEventModalOpen(true)}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl border-[3px] border-black bg-[#0e0e0e] hover:bg-[#141414] active:translate-y-[2px] transition-all group"
+                    style={{ boxShadow: '4px 4px 0 #000' }}
+                >
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border-[2px] border-black bg-white/5">
+                        <ArrowClockwise className="w-4 h-4 text-white/40 group-hover:text-white/70 transition-colors" weight="bold" />
+                    </div>
+                    <div className="flex-1 text-left">
+                        <p className="text-[12px] font-black uppercase tracking-[0.1em] text-white/50 group-hover:text-white/70 transition-colors"
+                           style={{ fontFamily: 'var(--font-barlow-condensed)' }}>
+                            Planifier la prochaine sortie
+                        </p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.1em] text-white/25 mt-0.5">
+                            Réinitialise les votes · garde les membres
+                        </p>
+                    </div>
+                    <span className="text-white/20 group-hover:text-white/40 transition-colors text-sm">→</span>
+                </button>
+            )}
+
+            {/* ── Historique des sorties passées ── */}
+            {group.past_events && group.past_events.length > 0 && (
+                <div className="flex flex-col gap-2 px-0.5">
+                    <p className="text-[10px] font-black uppercase tracking-[0.28em] text-white/20"
+                       style={{ fontFamily: 'var(--font-barlow-condensed)' }}>
+                        Sorties passées
+                    </p>
+                    <div className="flex flex-col gap-1.5">
+                        {group.past_events.map((evt, i) => {
+                            const formatted = new Date(evt.date + 'T00:00:00').toLocaleDateString('fr-FR', {
+                                weekday: 'short', day: 'numeric', month: 'short',
+                            });
+                            return (
+                                <div
+                                    key={i}
+                                    className="flex items-center gap-3 px-3 py-2 rounded-xl border border-white/6 bg-white/[0.02]"
+                                >
+                                    <div className="w-1.5 h-1.5 rounded-full bg-white/20 shrink-0" />
+                                    <span className="text-[11px] font-black text-white/40 capitalize">{formatted}</span>
+                                    {evt.location_name && (
+                                        <span className="text-[11px] text-white/25 truncate">· {evt.location_name}</span>
+                                    )}
+                                    <span className="ml-auto text-[10px] font-black text-white/20 shrink-0">
+                                        {evt.ready_count}/{evt.total_count}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
             {showInviteNudge && (
                 <InviteBlock
                     groupName={group.name}
@@ -741,6 +800,24 @@ export function HomeTab({
                     isRemote={isRemote}
                 />
             )}
+
+            {/* Next event modal */}
+            <NextEventModal
+                open={nextEventModalOpen}
+                onClose={() => setNextEventModalOpen(false)}
+                onConfirm={async () => {
+                    if (!memberId) return;
+                    const res = await resetGroupForNextEventAction(slug, memberId);
+                    if (res.success) {
+                        setNextEventModalOpen(false);
+                        onGroupChange();
+                    }
+                }}
+                currentDate={confirmedDate}
+                currentLocation={displayLocation}
+                memberCount={members.length}
+                isRemote={isRemote}
+            />
 
             {/* Add location modal (admin, non-voting mode) */}
             {showLocationModal && (

@@ -16,6 +16,7 @@ export type Database = {
                     calendar_voting_enabled: boolean;
                     location_voting_enabled: boolean;
                     confirmed_date: string | null;
+                    past_events: PastEvent[];
                 };
                 Insert: {
                     id?: string;
@@ -31,6 +32,7 @@ export type Database = {
                     calendar_voting_enabled?: boolean;
                     location_voting_enabled?: boolean;
                     confirmed_date?: string | null;
+                    past_events?: PastEvent[];
                 };
                 Update: {
                     id?: string;
@@ -45,6 +47,7 @@ export type Database = {
                     calendar_voting_enabled?: boolean;
                     location_voting_enabled?: boolean;
                     confirmed_date?: string | null;
+                    past_events?: PastEvent[];
                 };
             };
             members: {
@@ -119,6 +122,16 @@ export type Database = {
             };
         };
     };
+};
+
+/** Snapshot of one past event, stored in groups.past_events. */
+export type PastEvent = {
+    date: string;              // confirmed_date, e.g. "2026-04-17"
+    location_name?: string;
+    location_image?: string;
+    ready_count: number;       // members who were is_ready at archive time
+    total_count: number;       // total members at archive time
+    archived_at: string;       // ISO timestamp when the reset happened
 };
 
 export type Group = Database['public']['Tables']['groups']['Row'];
