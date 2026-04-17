@@ -186,6 +186,145 @@ const LiquidWaves = ({ mobile = false }: { mobile?: boolean }) => {
   );
 };
 
+// ── Mini calendar — no year shown, past dates disabled ──────────────────────
+function MiniCalendar({
+  value,
+  onChange,
+  disabled = false,
+  theme = 'red',
+}: {
+  value: string;
+  onChange: (date: string) => void;
+  disabled?: boolean;
+  theme?: 'red' | 'purple';
+}) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const [viewYear, setViewYear] = useState(() =>
+    value ? parseInt(value.split('-')[0]) : today.getFullYear()
+  );
+  const [viewMonth, setViewMonth] = useState(() =>
+    value ? parseInt(value.split('-')[1]) - 1 : today.getMonth()
+  );
+
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  // French calendar: week starts Monday → offset = (Sun=0 → 6, Mon=1 → 0, …)
+  const firstDayOffset = (new Date(viewYear, viewMonth, 1).getDay() + 6) % 7;
+
+  const isRed = theme === 'red';
+  const hoverBg   = isRed ? 'rgba(255,46,46,0.14)' : 'rgba(168,85,247,0.14)';
+  const accentBg  = isRed ? '#c0392b'               : '#7c3aed';
+  const textMuted = isRed ? 'rgba(255,255,255,0.22)' : 'rgba(167,139,250,0.35)';
+  const textNorm  = isRed ? 'rgba(255,255,255,0.85)' : '#c4b5fd';
+
+  const canGoPrev = new Date(viewYear, viewMonth, 1) >
+                    new Date(today.getFullYear(), today.getMonth(), 1);
+
+  const goPrev = () => {
+    if (!canGoPrev) return;
+    if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); }
+    else setViewMonth(m => m - 1);
+  };
+  const goNext = () => {
+    if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y + 1); }
+    else setViewMonth(m => m + 1);
+  };
+
+  const handleDay = (day: number) => {
+    if (disabled) return;
+    const d = new Date(viewYear, viewMonth, day);
+    if (d < today) return;
+    onChange(`${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
+  };
+
+  const selDay   = value ? parseInt(value.split('-')[2]) : null;
+  const selMonth = value ? parseInt(value.split('-')[1]) - 1 : null;
+  const selYear  = value ? parseInt(value.split('-')[0]) : null;
+  const isSelected = (d: number) =>
+    selDay === d && selMonth === viewMonth && selYear === viewYear;
+  const isPast     = (d: number) => new Date(viewYear, viewMonth, d) < today;
+  const isTodayDay = (d: number) =>
+    today.getDate() === d && today.getMonth() === viewMonth && today.getFullYear() === viewYear;
+
+  const containerStyle = isRed
+    ? { background: '#0a0a0a', border: '2.5px solid rgba(255,255,255,0.08)', borderRadius: '12px' }
+    : { background: 'rgba(8,0,20,0.8)', border: '1px solid rgba(168,85,247,0.2)', borderRadius: '4px' };
+  const dividerStyle = isRed
+    ? '2px solid rgba(255,255,255,0.06)'
+    : '1px solid rgba(168,85,247,0.12)';
+
+  return (
+    <div style={containerStyle} className="w-full overflow-hidden select-none">
+      {/* Month header */}
+      <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: dividerStyle }}>
+        <button
+          type="button" onClick={goPrev} disabled={!canGoPrev || disabled}
+          className="w-8 h-8 flex items-center justify-center rounded text-lg font-bold transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+          style={{ color: isRed ? 'rgba(255,255,255,0.55)' : '#a78bfa' }}
+          onMouseEnter={e => { if (canGoPrev) (e.currentTarget as HTMLElement).style.background = hoverBg; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+        >‹</button>
+        <span
+          className="font-black uppercase text-white"
+          style={isRed
+            ? { fontFamily: 'var(--font-barlow-condensed)', letterSpacing: '0.18em', fontSize: '0.95rem' }
+            : { fontFamily: 'monospace', color: '#c4b5fd', fontSize: '0.78rem', letterSpacing: '0.2em' }}
+        >
+          {MONTHS_FR[viewMonth].name}
+        </span>
+        <button
+          type="button" onClick={goNext} disabled={disabled}
+          className="w-8 h-8 flex items-center justify-center rounded text-lg font-bold transition-colors disabled:opacity-20"
+          style={{ color: isRed ? 'rgba(255,255,255,0.55)' : '#a78bfa' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = hoverBg; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+        >›</button>
+      </div>
+
+      {/* Day-of-week header: L M M J V S D */}
+      <div className="grid grid-cols-7 px-3 pt-3 pb-1">
+        {['L','M','M','J','V','S','D'].map((d, i) => (
+          <div key={i} className="text-center font-bold" style={{ fontSize: '10px', color: textMuted, letterSpacing: '0.05em' }}>
+            {d}
+          </div>
+        ))}
+      </div>
+
+      {/* Day cells */}
+      <div className="grid grid-cols-7 gap-y-0.5 gap-x-0 px-3 pb-3">
+        {Array.from({ length: firstDayOffset }).map((_, i) => <div key={`e${i}`} />)}
+        {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
+          const past     = isPast(day);
+          const selected = isSelected(day);
+          const todayMark = isTodayDay(day);
+          return (
+            <button
+              key={day}
+              type="button"
+              onClick={() => handleDay(day)}
+              disabled={past || disabled}
+              className="w-full aspect-square flex items-center justify-center font-bold transition-all disabled:cursor-not-allowed"
+              style={{
+                fontSize: '13px',
+                borderRadius: isRed ? '6px' : '2px',
+                color: past ? textMuted : selected ? '#fff' : textNorm,
+                background: selected ? accentBg : 'transparent',
+                border: todayMark && !selected ? `1.5px solid ${isRed ? 'rgba(255,255,255,0.3)' : 'rgba(167,139,250,0.45)'}` : 'none',
+                boxShadow: selected && isRed ? '2px 2px 0 #000' : 'none',
+              }}
+              onMouseEnter={e => { if (!past && !selected) (e.currentTarget as HTMLElement).style.background = hoverBg; }}
+              onMouseLeave={e => { if (!selected) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+            >
+              {day}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function HomeClient() {
   const { user } = useAuth();
   const router = useRouter();
@@ -213,26 +352,11 @@ export default function HomeClient() {
   const [wantDateVote, setWantDateVote] = useState(true);
   const [wantLocationVote, setWantLocationVote] = useState(true);
   const [confirmedDate, setConfirmedDate] = useState('');
-  // Intermediate state for the day/month picker (year is derived automatically)
-  const [pickerDay, setPickerDay] = useState('');
-  const [pickerMonth, setPickerMonth] = useState('');
   const [baseLocation, setBaseLocation] = useState<{ name: string; lat: number; lng: number } | null>(null);
   const [locationSearch, setLocationSearch] = useState('');
   const [locationResults, setLocationResults] = useState<any[]>([]);
   const [isSearchingLocation, setIsSearchingLocation] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  // Build a full ISO date from day + month, rolling to next year if already past
-  const buildDateFromParts = (day: string, month: string): string => {
-    const d = parseInt(day);
-    const m = parseInt(month);
-    if (!d || !m || d < 1 || d > 31 || m < 1 || m > 12) return '';
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    let year = today.getFullYear();
-    const proposed = new Date(year, m - 1, d);
-    if (proposed < today) year += 1;
-    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-  };
 
   const handleSearchLocation = (query: string) => {
     if (!query.trim()) {
@@ -262,8 +386,6 @@ export default function HomeClient() {
     setLocationSearch('');
     setLocationResults([]);
     setConfirmedDate('');
-    setPickerDay('');
-    setPickerMonth('');
   }, [mode]);
 
   // Cycle messages with a delay proportional to message length (1s–2s)
@@ -796,71 +918,12 @@ export default function HomeClient() {
                             La date sera confirmée pour tout le groupe.
                           </p>
                         </div>
-                        <div className="flex gap-3">
-                          {/* Jour */}
-                          <div className="flex flex-col gap-1.5" style={{ width: '88px' }}>
-                            <label
-                              className="text-xs font-black uppercase tracking-[0.15em]"
-                              style={{ fontFamily: 'var(--font-barlow-condensed)', color: '#9c3030' }}
-                            >
-                              Jour
-                            </label>
-                            <input
-                              type="number"
-                              min={1}
-                              max={31}
-                              value={pickerDay}
-                              onChange={(e) => {
-                                const d = e.target.value;
-                                setPickerDay(d);
-                                setConfirmedDate(d && pickerMonth ? buildDateFromParts(d, pickerMonth) : '');
-                              }}
-                              disabled={mode !== 'in_person'}
-                              autoFocus={mode === 'in_person'}
-                              placeholder="15"
-                              className="w-full h-14 rounded-xl px-3 text-xl font-black text-white placeholder-white/20 focus:outline-none transition-all disabled:opacity-50"
-                              style={{
-                                background: '#000',
-                                border: '2.5px solid rgba(255,255,255,0.12)',
-                                fontFamily: 'var(--font-barlow-condensed)',
-                              }}
-                              onFocus={e => (e.currentTarget.style.borderColor = 'var(--v2-primary)')}
-                              onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)')}
-                            />
-                          </div>
-                          {/* Mois */}
-                          <div className="flex flex-col gap-1.5 flex-1">
-                            <label
-                              className="text-xs font-black uppercase tracking-[0.15em]"
-                              style={{ fontFamily: 'var(--font-barlow-condensed)', color: '#9c3030' }}
-                            >
-                              Mois
-                            </label>
-                            <select
-                              value={pickerMonth}
-                              onChange={(e) => {
-                                const m = e.target.value;
-                                setPickerMonth(m);
-                                setConfirmedDate(pickerDay && m ? buildDateFromParts(pickerDay, m) : '');
-                              }}
-                              disabled={mode !== 'in_person'}
-                              className="w-full h-14 rounded-xl px-3 text-lg font-black text-white focus:outline-none transition-all disabled:opacity-50"
-                              style={{
-                                background: '#000',
-                                border: '2.5px solid rgba(255,255,255,0.12)',
-                                fontFamily: 'var(--font-barlow-condensed)',
-                                colorScheme: 'dark',
-                              }}
-                              onFocus={e => (e.currentTarget.style.borderColor = 'var(--v2-primary)')}
-                              onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)')}
-                            >
-                              <option value="">Mois</option>
-                              {MONTHS_FR.map(m => (
-                                <option key={m.num} value={m.num}>{m.name}</option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
+                        <MiniCalendar
+                          value={confirmedDate}
+                          onChange={setConfirmedDate}
+                          disabled={mode !== 'in_person'}
+                          theme="red"
+                        />
                         {/* Confirmation */}
                         {confirmedDate && (
                           <div
@@ -1224,7 +1287,7 @@ export default function HomeClient() {
                       />
                     </div>
                   ) : step === 'date' ? (
-                    /* Online date step — Jour + Mois (year auto-filled) */
+                    /* Online date step — calendar */
                     <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-right duration-500">
                       <div>
                         <p className="font-mono text-sm uppercase tracking-[0.15em] mb-1" style={{ color: '#c4b5fd' }}>
@@ -1234,63 +1297,12 @@ export default function HomeClient() {
                           {'// la date sera confirmée pour tout le groupe'}
                         </p>
                       </div>
-                      <div className="flex gap-3">
-                        {/* Jour */}
-                        <div className="flex flex-col gap-2" style={{ width: '96px' }}>
-                          <label className="font-mono text-[10px] text-purple-400/70 tracking-widest uppercase">&gt; JOUR_</label>
-                          <input
-                            type="number"
-                            min={1}
-                            max={31}
-                            value={pickerDay}
-                            onChange={(e) => {
-                              const d = e.target.value;
-                              setPickerDay(d);
-                              setConfirmedDate(d && pickerMonth ? buildDateFromParts(d, pickerMonth) : '');
-                            }}
-                            disabled={mode !== 'remote'}
-                            autoFocus={mode === 'remote'}
-                            placeholder="15"
-                            className="w-full py-4 px-4 font-mono text-base focus:outline-none transition-all disabled:opacity-50"
-                            style={{
-                              background: 'rgba(8,0,20,0.8)',
-                              border: '1px solid rgba(168,85,247,0.4)',
-                              borderRadius: '4px',
-                              color: '#c4b5fd',
-                            }}
-                            onFocus={e => (e.currentTarget.style.borderColor = 'rgba(168,85,247,0.8)')}
-                            onBlur={e => (e.currentTarget.style.borderColor = 'rgba(168,85,247,0.4)')}
-                          />
-                        </div>
-                        {/* Mois */}
-                        <div className="flex flex-col gap-2 flex-1">
-                          <label className="font-mono text-[10px] text-purple-400/70 tracking-widest uppercase">&gt; MOIS_</label>
-                          <select
-                            value={pickerMonth}
-                            onChange={(e) => {
-                              const m = e.target.value;
-                              setPickerMonth(m);
-                              setConfirmedDate(pickerDay && m ? buildDateFromParts(pickerDay, m) : '');
-                            }}
-                            disabled={mode !== 'remote'}
-                            className="w-full py-4 px-4 font-mono text-base focus:outline-none transition-all disabled:opacity-50"
-                            style={{
-                              background: 'rgba(8,0,20,0.8)',
-                              border: '1px solid rgba(168,85,247,0.4)',
-                              borderRadius: '4px',
-                              color: '#c4b5fd',
-                              colorScheme: 'dark',
-                            }}
-                            onFocus={e => (e.currentTarget.style.borderColor = 'rgba(168,85,247,0.8)')}
-                            onBlur={e => (e.currentTarget.style.borderColor = 'rgba(168,85,247,0.4)')}
-                          >
-                            <option value="">// mois</option>
-                            {MONTHS_FR.map(m => (
-                              <option key={m.num} value={m.num}>{m.name.toUpperCase()}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
+                      <MiniCalendar
+                        value={confirmedDate}
+                        onChange={setConfirmedDate}
+                        disabled={mode !== 'remote'}
+                        theme="purple"
+                      />
                       {/* Confirmation */}
                       {confirmedDate && (
                         <p className="font-mono text-sm" style={{ color: '#8b5cf6' }}>
