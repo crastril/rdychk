@@ -102,7 +102,10 @@ export function HomeTab({
 
     const today = new Date().toISOString().slice(0, 10);
     const isActualDay = !!group.confirmed_date && group.confirmed_date === today;
-    const isPlanning = calendarEnabled || locationEnabled;
+    // Planning = decision still pending. Once date is confirmed and location is set,
+    // the group moves to "ready" phase regardless of whether voting was enabled.
+    const isPlanning = (calendarEnabled && !group.confirmed_date) ||
+                       (locationEnabled && !group.location?.name);
 
     // En mode planification, les membres qui ont voté
     const votedMemberIds = isPlanning ? new Set(votes.map(v => v.member_id)) : undefined;
