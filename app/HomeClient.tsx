@@ -329,7 +329,12 @@ export default function HomeClient() {
   const { user } = useAuth();
   const router = useRouter();
 
-  const [showLoader] = useState(false);
+  const [showLoader, setShowLoader] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowLoader(false), 1800);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Detect mobile to skip heavy animations
   const [isMobile, setIsMobile] = useState(false);
@@ -571,6 +576,8 @@ export default function HomeClient() {
   return (
     <div className="relative min-h-screen overflow-x-hidden overflow-y-auto custom-scroll bg-black text-slate-100 font-display selection:bg-purple-500/30">
 
+      {showLoader && <PageLoader />}
+
       {/* Top Navigation */}
       <nav className="fixed top-0 left-0 w-full z-50 flex justify-between items-center py-6 px-4 md:px-12 pointer-events-none">
 
@@ -661,11 +668,11 @@ export default function HomeClient() {
               </div>
 
               <div className="text-left md:text-center w-full order-2">
-                <h1 className="text-5xl lg:text-8xl font-black text-white tracking-tighter leading-none brutalist-stamp">
+                <h1 className="text-5xl lg:text-8xl font-black text-white tracking-tighter leading-none brutalist-stamp stamp-burn" data-text="ARRÊTEZ DE">
                   ARRÊTEZ DE
                 </h1>
                 <div className="relative inline-block w-full text-left md:text-center mt-1 mb-2">
-                  <h1 className="text-5xl lg:text-8xl font-black text-white tracking-tighter leading-none relative z-10 brutalist-stamp" style={{ animationDelay: '2.5s' }}>
+                  <h1 className="text-5xl lg:text-8xl font-black text-white tracking-tighter leading-none relative z-10 brutalist-stamp stamp-burn" data-text="DEMANDER" style={{ animationDelay: '2.5s' }}>
                     DEMANDER
                   </h1>
                 </div>
@@ -676,9 +683,9 @@ export default function HomeClient() {
               </div>
 
               {/* Exact height matching container for animated chat */}
-              <div className="w-full h-[180px] md:h-[220px] relative max-w-sm md:max-w-md md:mx-auto overflow-hidden text-left mb-6 px-2 md:px-0 flex flex-col justify-end order-1"
+              <div className="w-full h-[180px] md:h-[220px] relative max-w-[400px] md:max-w-[480px] md:mx-auto overflow-hidden text-left mb-6 px-2 md:px-0 flex flex-col justify-end order-1"
                 style={{ WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 35%)', maskImage: 'linear-gradient(to bottom, transparent 0%, black 35%)' }}>
-                <div className="relative w-full max-w-[280px] h-full md:mx-auto">
+                <div className="relative w-full h-full">
 
                   {/* 3 Messages rendered at all times */}
                   {[0, 1, 2].map((offset) => {
@@ -694,12 +701,11 @@ export default function HomeClient() {
                       if (msgIndex >= 0) {
                         const prevMsg = PERSON_MESSAGES[msgIndex % PERSON_MESSAGES.length];
                         const len = prevMsg.text.length;
-                        if (len > 32) {
-                          messageShift += 165;
-                        } else if (len > 20) {
-                          messageShift += 130;
+                        // With wider bubbles most messages fit on 1 line; only very long ones wrap
+                        if (len > 40) {
+                          messageShift += 150;
                         } else {
-                          messageShift += 92;
+                          messageShift += 76;
                         }
                       }
                     }
@@ -741,8 +747,11 @@ export default function HomeClient() {
                             >
                               {sender.name}
                             </span>
-                            <div className="imessage-received-bubble font-medium text-xl md:text-2xl max-w-[210px]">
-                              {msg.text}
+                            <div className="imessage-received-bubble font-medium text-xl md:text-2xl flex items-end gap-3 max-w-[360px]">
+                              <span>{msg.text}</span>
+                              <span className="text-[9px] font-normal opacity-40 whitespace-nowrap leading-none mb-[2px] flex-shrink-0">
+                                {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
                             </div>
                           </div>
                         </div>

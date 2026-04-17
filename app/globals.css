@@ -1023,6 +1023,52 @@
   91.5%           { text-shadow: 4px  3px 0 #ff2e2e, 5px  4px 0 rgba(0,0,0,0.22); }
 }
 
+/* ── Brutalist impact: "branding iron" burn effect (in-person hero) ── *
+ * Counterpart to the online glitch. Pseudo-elements burn red slices    *
+ * through the text on a periodic loop, like a hot stamp being pressed. *
+ * ─────────────────────────────────────────────────────────────────── */
+.stamp-burn {
+  position: relative;
+}
+.stamp-burn::before,
+.stamp-burn::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+.stamp-burn::before {
+  color: #ff2e2e;
+  opacity: 0;
+  animation: burn-slice 8s infinite;
+}
+.stamp-burn::after {
+  color: transparent;
+  text-shadow:
+    0 0 18px rgba(255, 46, 46, 0.9),
+    0 0 40px rgba(255, 46, 46, 0.5),
+    0 0 80px rgba(255, 100, 0, 0.3);
+  opacity: 0;
+  animation: burn-glow 8s infinite;
+}
+
+@keyframes burn-slice {
+  0%,  72%, 100% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+  74%  { opacity: 0.55; transform: translate(5px, 0)  skewX(-1deg); clip-path: inset(5%  0 60% 0); }
+  75.5%{ opacity: 0;    transform: none; }
+  76.5%{ opacity: 0.45; transform: translate(-4px, 1px) skewX(0.5deg); clip-path: inset(55% 0 8%  0); }
+  78%  { opacity: 0;    transform: none; clip-path: inset(0 0 100% 0); }
+  79%  { opacity: 0.35; transform: translate(3px, -1px); clip-path: inset(30% 0 35% 0); }
+  80%  { opacity: 0;    transform: none; clip-path: inset(0 0 100% 0); }
+}
+
+@keyframes burn-glow {
+  0%,  70%, 100% { opacity: 0; }
+  72%  { opacity: 0.9; }
+  81%  { opacity: 0; }
+}
+
 /* ── Live map: leaflet overrides + scan-line ─────────────────────── *
  * CartoDB Dark Matter tiles. Markers are native Leaflet CircleMarker  *
  * (no custom DivIcon, no ring animations).                            *
