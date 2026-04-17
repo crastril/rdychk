@@ -149,7 +149,17 @@ export async function stopEnRouteAction(slug: string, memberId: string) {
  * Any admin of the group can trigger it (we verify via the standard
  * guest session cookie).
  */
-export async function geocodeGroupLocationAction(slug: string, memberId: string) {
+/**
+ * @param fallbackName  Display name to geocode if group.location is null
+ *   (e.g. when the location comes from a proposal rather than the admin
+ *   direct-set modal). When provided and geocoding succeeds, the result is
+ *   stored as group.location so subsequent calls are idempotent.
+ */
+export async function geocodeGroupLocationAction(
+    slug: string,
+    memberId: string,
+    fallbackName?: string,
+) {
     const ok = await verifyGuestSession(slug, memberId);
     if (!ok) return { success: false, error: 'Unauthorized' };
 
@@ -159,25 +169,32 @@ export async function geocodeGroupLocationAction(slug: string, memberId: string)
         .eq('slug', slug)
         .single();
 
-    if (!group?.location) return { success: false, error: 'No location set' };
+    if (!group) return { success: false, error: 'Group not found' };
 
     const loc = group.location as {
-        name: string;
+        name?: string;
         address?: string;
         lat?: number;
         lng?: number;
-    };
+    } | null;
 
     // Idempotent: bail if already geocoded
-    if (typeof loc.lat === 'number' && typeof loc.lng === 'number') {
+    if (loc && typeof loc.lat === 'number' && typeof loc.lng === 'number') {
         return { success: true, cached: true };
     }
 
-    const query = loc.address || loc.name;
+    // If group.location is null but we have a fallback name (from a proposal),
+    // geocode that and bootstrap group.location with minimal data.
+    const query = loc?.address || loc?.name || fallbackName;
+    if (!query) return { success: false, error: 'No location to geocode' };
+
     const coords = await geocodeAddress(query);
     if (!coords) return { success: false, error: 'Geocoding failed' };
 
-    const updated = { ...loc, lat: coords.lat, lng: coords.lng };
+    const updated = loc
+        ? { ...loc, lat: coords.lat, lng: coords.lng }
+        : { name: query, lat: coords.lat, lng: coords.lng };
+
     const { error } = await supabase
         .from('groups')
         .update({ location: updated })

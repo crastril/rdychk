@@ -95,17 +95,7 @@ export function HomeTab({
         if (isLocationOpen) scrollIntoViewIfNeeded(locationRef, 330);
     }, [isLocationOpen]);
 
-    // Auto-geocode the confirmed location exactly once so the EnRouteBlock
-    // can compute ETAs. Idempotent server-side (no-op if lat/lng already set).
-    const loc = group.location;
-    const locKey = loc?.address || loc?.name || null;
-    const locHasCoords = typeof loc?.lat === 'number' && typeof loc?.lng === 'number';
-    useEffect(() => {
-        if (!memberId || !locKey || locHasCoords || group.type !== 'in_person') return;
-        geocodeGroupLocationAction(slug, memberId).then((res) => {
-            if (res.success && 'coords' in res) onGroupChange();
-        });
-    }, [memberId, locKey, locHasCoords, group.type, slug, onGroupChange]);
+    const _locHasCoords = typeof group.location?.lat === 'number' && typeof group.location?.lng === 'number';
 
     const currentMember = members.find(m => m.id === memberId);
     const effectiveReady = localOptimisticReady !== null ? localOptimisticReady : isReady;
@@ -176,6 +166,19 @@ export function HomeTab({
         : null;
 
     const displayLocation = group.location?.name || filteredTopProposal?.name;
+
+    // Auto-geocode the display location exactly once so the EnRouteBlock can
+    // compute ETAs. Works whether the source is group.location or a proposal.
+    // The action will store coords on group.location (idempotent).
+    useEffect(() => {
+        if (!memberId || !displayLocation || _locHasCoords || group.type !== 'in_person') return;
+        // Pass the display name as fallback so the action can set group.location
+        // even when it's currently null (e.g. location came from a proposal).
+        geocodeGroupLocationAction(slug, memberId, displayLocation).then((res) => {
+            if (res.success && 'coords' in res) onGroupChange();
+        });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [memberId, displayLocation, _locHasCoords, group.type, slug]);
     const locationImage = group.location?.image || filteredTopProposal?.image;
     const locationMapsUrl = (() => {
         const link = group.location?.link || filteredTopProposal?.link;
@@ -577,22 +580,17 @@ export function HomeTab({
                         />
                     )}
 
-                    {/* Live ETA — jour J, in-person only, lieu défini */}
-                    {memberId && isActualDay && !isRemote && group.location?.name && (
+                    {/* Live ETA — jour J, in-person only, lieu connu (group.location ou top proposal) */}
+                    {memberId && isActualDay && !isRemote && displayLocation && (
                         <EnRouteBlock
                             slug={slug}
                             memberId={memberId}
                             currentMember={currentMember ?? null}
-                            destination={
-                                typeof group.location.lat === 'number' &&
-                                typeof group.location.lng === 'number'
-                                    ? { lat: group.location.lat, lng: group.location.lng, name: group.location.name }
-                                    : null
+                            destination={_locHasCoords
+                                ? { lat: group.location!.lat as number, lng: group.location!.lng as number, name: displayLocation }
+                                : null
                             }
-                            destinationMissingCoords={
-                                typeof group.location.lat !== 'number' ||
-                                typeof group.location.lng !== 'number'
-                            }
+                            destinationMissingCoords={!_locHasCoords}
                         />
                     )}
 
