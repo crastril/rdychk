@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { NavigationArrow, CheckCircle, XCircle, WarningCircle } from '@phosphor-icons/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEnRoute } from '@/hooks/useEnRoute';
-import { computeEtaMinutes, formatDistance, formatEta, haversineMeters } from '@/lib/geo';
+import { computeEtaMinutes, formatDistance, formatEta, haversineMeters, isEnRouteActive } from '@/lib/geo';
 import { EnRoutePermissionModal } from './EnRoutePermissionModal';
 import type { Member } from '@/types/database';
 
@@ -35,13 +35,13 @@ export function EnRouteBlock({
     destinationMissingCoords,
 }: EnRouteBlockProps) {
     const enRouteStartedAt = currentMember?.en_route_at ?? null;
-    const isEnRoute = !!enRouteStartedAt && !currentMember?.arrived_at;
+    const isEnRoute = isEnRouteActive(enRouteStartedAt, currentMember?.arrived_at ?? null);
     // We keep the "arrived" banner visible for the rest of the day — the
     // whole block unmounts on the next day via isActualDay in HomeTab.
     const hasArrived = !!currentMember?.arrived_at && !!enRouteStartedAt;
 
     const [modalOpen, setModalOpen] = useState(false);
-    const { status, error, start, stop } = useEnRoute(slug, memberId, isEnRoute);
+    const { status, error, start, stop } = useEnRoute(slug, memberId, enRouteStartedAt);
 
     const handleClickStart = () => setModalOpen(true);
     const handleConfirm = async () => {

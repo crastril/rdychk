@@ -61,6 +61,16 @@ export const ARRIVAL_THRESHOLD_M = 100;
 export const MAX_EN_ROUTE_MS = 1 * 60 * 60 * 1000; // 1h
 
 /**
+ * True if a member's en-route session is still within the time window.
+ * Guards against stale DB rows where the client timer never fired
+ * (closed tab, crash, session from before the limit was enforced, etc.).
+ */
+export function isEnRouteActive(enRouteAt: string | null, arrivedAt: string | null): boolean {
+    if (!enRouteAt || arrivedAt) return false;
+    return Date.now() - new Date(enRouteAt).getTime() < MAX_EN_ROUTE_MS;
+}
+
+/**
  * Formats a distance for UI display.
  *   850   → "850 m"
  *   1500  → "1,5 km"

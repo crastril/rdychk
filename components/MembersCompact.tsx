@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import type { Member } from '@/types/database';
 import { Crown, CaretDown, NavigationArrow } from '@phosphor-icons/react';
 import { useState, useRef, useEffect } from 'react';
-import { computeEtaMinutes, formatEta, haversineMeters } from '@/lib/geo';
+import { computeEtaMinutes, formatEta, haversineMeters, isEnRouteActive } from '@/lib/geo';
 
 interface MembersCompactProps {
     members: Member[];
@@ -25,7 +25,7 @@ interface MembersCompactProps {
  */
 function enRouteEta(m: Member, destination?: { lat: number; lng: number } | null): string | null {
     if (!destination) return null;
-    if (!m.en_route_at || m.arrived_at) return null;
+    if (!isEnRouteActive(m.en_route_at, m.arrived_at)) return null;
     if (typeof m.current_lat !== 'number' || typeof m.current_lng !== 'number') return null;
     const dist = haversineMeters(
         { lat: m.current_lat, lng: m.current_lng },
@@ -383,7 +383,7 @@ export function MembersCompact({
                         const isActive = isPlanning
                             ? (votedMemberIds?.has(m.id) ?? false)
                             : m.is_ready;
-                        const isEnRoute = !isPlanning && !!m.en_route_at && !m.arrived_at;
+                        const isEnRoute = !isPlanning && isEnRouteActive(m.en_route_at, m.arrived_at);
                         return (
                             <div key={m.id} className="relative shrink-0">
                                 <div

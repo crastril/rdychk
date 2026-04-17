@@ -18,6 +18,7 @@ import { AddLocationProposalModal } from '@/components/AddLocationProposalModal'
 import { InviteBlock } from '@/components/InviteBlock';
 import { EnRouteBlock } from '@/components/EnRouteBlock';
 import { geocodeGroupLocationAction } from '@/app/actions/en-route';
+import { isEnRouteActive } from '@/lib/geo';
 import dynamic from 'next/dynamic';
 
 // Leaflet must never run on the server
@@ -118,11 +119,11 @@ export function HomeTab({
 
     // True as soon as at least one member has clicked "Je pars" and not yet arrived.
     // When true: show live map + hide VenueCard Google Maps link.
-    const anyoneEnRoute = members.some(m => !!m.en_route_at && !m.arrived_at);
+    const anyoneEnRoute = members.some(m => isEnRouteActive(m.en_route_at, m.arrived_at));
 
     // HeroBlock is hidden only for the current user while THEY are sharing their
     // location. As soon as they stop (or never started), the button comes back.
-    const iAmEnRoute = !!currentMember?.en_route_at && !currentMember?.arrived_at;
+    const iAmEnRoute = isEnRouteActive(currentMember?.en_route_at ?? null, currentMember?.arrived_at ?? null);
 
     const isRemote = group.type === 'remote';
     const calendarEnabled = group.calendar_voting_enabled;

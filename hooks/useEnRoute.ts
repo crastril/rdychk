@@ -6,7 +6,7 @@ import {
     updateLocationAction,
     stopEnRouteAction,
 } from '@/app/actions/en-route';
-import { MAX_EN_ROUTE_MS, haversineMeters } from '@/lib/geo';
+import { MAX_EN_ROUTE_MS, haversineMeters, isEnRouteActive } from '@/lib/geo';
 
 /**
  * Client hook that drives the "je suis en route" live-location session.
@@ -37,8 +37,13 @@ export type EnRouteStatus =
 const MIN_UPDATE_INTERVAL_MS = 30_000;
 const MIN_UPDATE_DISTANCE_M = 150;
 
-export function useEnRoute(slug: string, memberId: string, initiallyEnRoute: boolean) {
-    const [status, setStatus] = useState<EnRouteStatus>(initiallyEnRoute ? 'active' : 'idle');
+/**
+ * @param enRouteAt  The raw en_route_at timestamp from the DB (or null).
+ *                   Used to detect stale sessions that survived tab closes.
+ */
+export function useEnRoute(slug: string, memberId: string, enRouteAt: string | null) {
+    const activeOnMount = isEnRouteActive(enRouteAt, null);
+    const [status, setStatus] = useState<EnRouteStatus>(activeOnMount ? 'active' : 'idle');
     const [error, setError] = useState<string | null>(null);
 
     const watchIdRef = useRef<number | null>(null);
@@ -173,11 +178,19 @@ export function useEnRoute(slug: string, memberId: string, initiallyEnRoute: boo
         return true;
     }, [slug, memberId, handlePosition, handleError, stop]);
 
+    // Self-healing: if the DB has a stale en_route_at (session survived a tab
+    // close or crash past the time limit), silently reset it so the UI clears.
+    useEffect(() => {
+        if (enRouteAt && !isEnRouteActive(enRouteAt, null)) {
+            stopEnRouteAction(slug, memberId).catch(() => {});
+        }
+    // Run once on mount only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     // Cleanup on unmount — but do NOT call stopEnRoute on the server.
     // The member may reopen the app on another device; we only tear down
-    // the browser watcher. Server state lives until an explicit stop or
-    // arrival or the 4h deadline (which is enforced from startEnRoute
-    // timestamp if we ever add a cron; client timer only covers this tab).
+    // the browser watcher. Server state lives until an explicit stop or arrival.
     useEffect(() => {
         return () => {
             clearWatch();
