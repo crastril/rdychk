@@ -331,11 +331,6 @@ export default function HomeClient() {
 
   const [showLoader, setShowLoader] = useState(true);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setShowLoader(false), 1800);
-    return () => clearTimeout(timer);
-  }, []);
-
   // Detect mobile to skip heavy animations
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -576,7 +571,7 @@ export default function HomeClient() {
   return (
     <div className="relative min-h-screen overflow-x-hidden overflow-y-auto custom-scroll bg-black text-slate-100 font-display selection:bg-purple-500/30">
 
-      {showLoader && <PageLoader />}
+      {showLoader && <PageLoader onComplete={() => setShowLoader(false)} />}
 
       {/* Top Navigation */}
       <nav className="fixed top-0 left-0 w-full z-50 flex justify-between items-center py-6 px-4 md:px-12 pointer-events-none">
