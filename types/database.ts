@@ -9,7 +9,7 @@ export type Database = {
                     created_at: string;
                     created_by?: string;
                     type: 'remote' | 'in_person';
-                    location?: { name: string; address?: string; link?: string; image?: string; description?: string; preview_title?: string; proposed_by?: string; proposed_by_id?: string } | null;
+                    location?: { name: string; address?: string; link?: string; image?: string; description?: string; preview_title?: string; proposed_by?: string; proposed_by_id?: string; lat?: number; lng?: number } | null;
                     base_lat?: number | null;
                     base_lng?: number | null;
                     city: string | null;
@@ -59,6 +59,11 @@ export type Database = {
                     timer_end_time: string | null;
                     proposed_time: string | null;
                     role: 'admin' | 'member';
+                    en_route_at: string | null;
+                    current_lat: number | null;
+                    current_lng: number | null;
+                    location_updated_at: string | null;
+                    arrived_at: string | null;
                 };
                 Insert: {
                     id?: string;
@@ -71,6 +76,11 @@ export type Database = {
                     timer_end_time?: string | null;
                     proposed_time?: string | null;
                     role?: 'admin' | 'member';
+                    en_route_at?: string | null;
+                    current_lat?: number | null;
+                    current_lng?: number | null;
+                    location_updated_at?: string | null;
+                    arrived_at?: string | null;
                 };
                 Update: {
                     id?: string;
@@ -80,6 +90,11 @@ export type Database = {
                     joined_at?: string;
                     updated_at?: string;
                     role?: 'admin' | 'member';
+                    en_route_at?: string | null;
+                    current_lat?: number | null;
+                    current_lng?: number | null;
+                    location_updated_at?: string | null;
+                    arrived_at?: string | null;
                 };
             };
             profiles: {
