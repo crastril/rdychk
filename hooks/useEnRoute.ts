@@ -106,15 +106,17 @@ export function useEnRoute(slug: string, memberId: string, initiallyEnRoute: boo
         if (err.code === err.PERMISSION_DENIED) {
             clearWatch();
             setStatus('denied');
-            setError('Permission de géolocalisation refusée.');
-            // Fire-and-forget server cleanup so other members don't see us as stuck
+            setError('Permission de géolocalisation refusée. Active-la dans les réglages du navigateur.');
             stopEnRouteAction(slug, memberId).catch(() => {});
-        } else {
+        } else if (err.code === err.TIMEOUT || err.code === err.POSITION_UNAVAILABLE) {
+            // Non-fatal: GPS couldn't get a fix this time. Keep watching but
+            // surface a message so the user knows something went wrong.
             setError(
                 err.code === err.TIMEOUT
-                    ? 'Signal GPS trop faible.'
-                    : 'Position indisponible.',
+                    ? 'Acquisition GPS trop longue — toujours en attente…'
+                    : 'Signal GPS indisponible — toujours en attente…',
             );
+            // watchPosition continues running; next successful fix clears the error.
         }
     }, [clearWatch, slug, memberId]);
 
@@ -130,9 +132,16 @@ export function useEnRoute(slug: string, memberId: string, initiallyEnRoute: boo
         setStatus('requesting');
 
         // Tell the server we're starting BEFORE the first position arrives.
-        // That way the group sees "Marie est en route" immediately even if
-        // GPS acquisition takes a few seconds.
-        const srv = await startEnRouteAction(slug, memberId);
+        let srv: { success: boolean; error?: string };
+        try {
+            srv = await startEnRouteAction(slug, memberId);
+        } catch (e) {
+            // Network error, missing server action, etc.
+            setStatus('error');
+            setError('Impossible de démarrer le partage (erreur réseau).');
+            console.error('[useEnRoute] startEnRouteAction threw:', e);
+            return false;
+        }
         if (!srv.success) {
             setStatus('error');
             setError(srv.error ?? 'Impossible de démarrer le partage.');
@@ -142,13 +151,17 @@ export function useEnRoute(slug: string, memberId: string, initiallyEnRoute: boo
         watchIdRef.current = navigator.geolocation.watchPosition(
             (pos) => {
                 if (statusRef.current !== 'active') setStatus('active');
+                setError(null); // clear any previous timeout/unavailable error
                 handlePosition(pos);
             },
             handleError,
             {
-                enableHighAccuracy: true,
-                maximumAge: 10_000,
-                timeout: 20_000,
+                // enableHighAccuracy: false lets the browser use WiFi/cell
+                // positioning immediately instead of waiting for GPS lock.
+                // For urban ETAs (< 30 km) the extra precision is not needed.
+                enableHighAccuracy: false,
+                maximumAge: 60_000,  // accept a cached position up to 1 min old
+                timeout: 30_000,
             },
         );
 
