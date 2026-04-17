@@ -580,8 +580,8 @@ export function HomeTab({
                         />
                     )}
 
-                    {/* Live ETA — jour J, in-person only, lieu connu (group.location ou top proposal) */}
-                    {memberId && isActualDay && !isRemote && displayLocation && (
+                    {/* Live ETA — jour J, in-person only, lieu connu, et seulement si l'utilisateur est prêt */}
+                    {memberId && isActualDay && !isRemote && displayLocation && effectiveReady && (
                         <EnRouteBlock
                             slug={slug}
                             memberId={memberId}
