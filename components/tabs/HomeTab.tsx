@@ -245,13 +245,6 @@ export function HomeTab({
                     )}
                 </button>
             )}
-            {displayDate && isActualDay && (
-                <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full">
-                    <CalendarDots className="w-3 h-3 text-green-400 shrink-0" weight="fill" />
-                    <span className="text-xs font-black text-green-400 capitalize truncate">{displayDate}</span>
-                    <span className="text-[11px] font-black text-green-400 ml-0.5 shrink-0">✓</span>
-                </div>
-            )}
             {displayLocation && (
                 isRemote || !locationMapsUrl ? (
                     <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full">
