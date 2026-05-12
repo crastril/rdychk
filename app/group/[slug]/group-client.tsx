@@ -43,6 +43,63 @@ function ModeToggle({
     onToggle: (m: 'planning' | 'day-of') => void;
 }) {
     const isDayOf = mode === 'day-of';
+
+    if (!isRemote) {
+        // ── NEO-BRUTALIST SEGMENTED CONTROL ──
+        return (
+            <div className="flex justify-center">
+                <div
+                    className="flex overflow-hidden"
+                    style={{
+                        background: '#111',
+                        border: '3px solid #000',
+                        borderRadius: '14px',
+                        boxShadow: '4px 4px 0 #000',
+                    }}
+                >
+                    <button
+                        type="button"
+                        onClick={() => isAdmin && onToggle('planning')}
+                        className="flex items-center gap-1.5 px-5 py-2.5 transition-colors duration-200"
+                        style={{
+                            cursor: isAdmin ? 'pointer' : 'default',
+                            fontFamily: 'var(--font-barlow-condensed)',
+                            fontWeight: 900,
+                            fontSize: '0.95rem',
+                            letterSpacing: '0.04em',
+                            textTransform: 'uppercase',
+                            background: !isDayOf ? 'var(--v2-primary)' : 'transparent',
+                            color: !isDayOf ? '#fff' : 'rgba(255,255,255,0.28)',
+                            borderRight: '2px solid #000',
+                        }}
+                    >
+                        <CalendarDots className="w-3.5 h-3.5 shrink-0" weight="fill" />
+                        Planification
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => isAdmin && onToggle('day-of')}
+                        className="flex items-center gap-1.5 px-5 py-2.5 transition-colors duration-200"
+                        style={{
+                            cursor: isAdmin ? 'pointer' : 'default',
+                            fontFamily: 'var(--font-barlow-condensed)',
+                            fontWeight: 900,
+                            fontSize: '0.95rem',
+                            letterSpacing: '0.04em',
+                            textTransform: 'uppercase',
+                            background: isDayOf ? 'rgba(74,222,128,0.9)' : 'transparent',
+                            color: isDayOf ? '#000' : 'rgba(255,255,255,0.28)',
+                        }}
+                    >
+                        <CheckCircle className="w-3.5 h-3.5 shrink-0" weight="fill" />
+                        Rendez-vous
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    // ── CYBERPUNK SLIDING PILL ──
     return (
         <div className="flex justify-center">
             <div
@@ -50,10 +107,9 @@ function ModeToggle({
                 style={{
                     background: 'rgba(0,0,0,0.45)',
                     backdropFilter: 'blur(8px)',
-                    border: isRemote ? '1px solid rgba(168,85,247,0.15)' : '1px solid rgba(255,255,255,0.07)',
+                    border: '1px solid rgba(168,85,247,0.15)',
                 }}
             >
-                {/* Sliding pill */}
                 <div
                     className="absolute top-1 bottom-1 rounded-full transition-all duration-500"
                     style={{
@@ -62,9 +118,7 @@ function ModeToggle({
                         transitionTimingFunction: 'cubic-bezier(0.34,1.56,0.64,1)',
                         ...(isDayOf
                             ? { background: 'rgba(74,222,128,0.15)', border: '1px solid rgba(74,222,128,0.35)', boxShadow: '0 0 12px rgba(74,222,128,0.12)' }
-                            : isRemote
-                                ? { background: 'rgba(168,85,247,0.12)', border: '1px solid rgba(168,85,247,0.3)' }
-                                : { background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)' }
+                            : { background: 'rgba(168,85,247,0.12)', border: '1px solid rgba(168,85,247,0.3)' }
                         ),
                     }}
                 />
@@ -74,19 +128,9 @@ function ModeToggle({
                     className="relative z-10 flex items-center gap-1.5 px-4 py-2 rounded-full transition-colors duration-300"
                     style={{ cursor: isAdmin ? 'pointer' : 'default' }}
                 >
-                    <CalendarDots
-                        className="w-3.5 h-3.5 shrink-0"
-                        weight="fill"
-                        style={{ color: !isDayOf ? (isRemote ? '#c4b5fd' : 'rgba(255,255,255,0.85)') : 'rgba(255,255,255,0.25)' }}
-                    />
-                    <span
-                        className="text-xs font-black uppercase tracking-wide whitespace-nowrap"
-                        style={{
-                            fontFamily: isRemote ? 'monospace' : 'var(--font-barlow-condensed)',
-                            color: !isDayOf ? (isRemote ? '#c4b5fd' : 'rgba(255,255,255,0.85)') : 'rgba(255,255,255,0.25)',
-                        }}
-                    >
-                        {isRemote ? 'PLANIF' : 'Planification'}
+                    <CalendarDots className="w-3.5 h-3.5 shrink-0" weight="fill" style={{ color: !isDayOf ? '#c4b5fd' : 'rgba(255,255,255,0.25)' }} />
+                    <span className="text-xs font-black uppercase tracking-wide whitespace-nowrap" style={{ fontFamily: 'monospace', color: !isDayOf ? '#c4b5fd' : 'rgba(255,255,255,0.25)' }}>
+                        PLANIF
                     </span>
                 </button>
                 <button
@@ -95,19 +139,9 @@ function ModeToggle({
                     className="relative z-10 flex items-center gap-1.5 px-4 py-2 rounded-full transition-colors duration-300"
                     style={{ cursor: isAdmin ? 'pointer' : 'default' }}
                 >
-                    <CheckCircle
-                        className="w-3.5 h-3.5 shrink-0"
-                        weight="fill"
-                        style={{ color: isDayOf ? 'rgb(74,222,128)' : 'rgba(255,255,255,0.25)' }}
-                    />
-                    <span
-                        className="text-xs font-black uppercase tracking-wide whitespace-nowrap"
-                        style={{
-                            fontFamily: isRemote ? 'monospace' : 'var(--font-barlow-condensed)',
-                            color: isDayOf ? 'rgb(74,222,128)' : 'rgba(255,255,255,0.25)',
-                        }}
-                    >
-                        {isRemote ? 'SESSION' : 'Rendez-vous'}
+                    <CheckCircle className="w-3.5 h-3.5 shrink-0" weight="fill" style={{ color: isDayOf ? 'rgb(74,222,128)' : 'rgba(255,255,255,0.25)' }} />
+                    <span className="text-xs font-black uppercase tracking-wide whitespace-nowrap" style={{ fontFamily: 'monospace', color: isDayOf ? 'rgb(74,222,128)' : 'rgba(255,255,255,0.25)' }}>
+                        SESSION
                     </span>
                 </button>
             </div>
@@ -715,7 +749,13 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
             />
 
             {/* Sticky Navigation */}
-            <nav className="w-full border-b border-white/5 bg-black/50 backdrop-blur-md sticky top-0 z-50">
+            <nav
+                className="w-full sticky top-0 z-50"
+                style={group.type === 'remote'
+                    ? { borderBottom: '1px solid rgba(168,85,247,0.1)', background: 'rgba(4,0,10,0.92)', backdropFilter: 'blur(12px)' }
+                    : { borderBottom: '3px solid #000', background: '#111' }
+                }
+            >
                 <div className="max-w-xl mx-auto px-4 h-16 flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                         <span className="text-2xl font-black tracking-tighter text-white">
@@ -723,18 +763,36 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                         </span>
                     </Link>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
                         {isAdmin && (
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-slate-400 hover:text-white"
-                                onClick={() => setIsSettingsModalOpen(true)}
-                            >
-                                <Gear className="w-5 h-5" />
-                            </Button>
+                            group.type === 'remote' ? (
+                                <button
+                                    className="w-8 h-8 flex items-center justify-center transition-colors"
+                                    style={{ border: '1px solid rgba(168,85,247,0.2)', borderRadius: '2px', background: 'transparent', color: '#8b5cf6', cursor: 'pointer' }}
+                                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(168,85,247,0.4)'; e.currentTarget.style.color = '#c4b5fd'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(168,85,247,0.2)'; e.currentTarget.style.color = '#8b5cf6'; }}
+                                    onClick={() => setIsSettingsModalOpen(true)}
+                                >
+                                    <Gear className="w-4 h-4" />
+                                </button>
+                            ) : (
+                                <button
+                                    className="w-9 h-9 flex items-center justify-center transition-all hover:opacity-80"
+                                    style={{
+                                        background: 'transparent',
+                                        border: '2px solid rgba(255,255,255,0.15)',
+                                        borderRadius: '10px',
+                                        color: 'rgba(255,255,255,0.5)',
+                                        boxShadow: '2px 2px 0 #000',
+                                        cursor: 'pointer',
+                                    }}
+                                    onClick={() => setIsSettingsModalOpen(true)}
+                                >
+                                    <Gear className="w-4 h-4" />
+                                </button>
+                            )
                         )}
-                        <AuthButton view="icon" className="text-slate-400 hover:text-white" />
+                        <AuthButton view="icon" isRemote={group.type === 'remote'} />
                     </div>
                 </div>
             </nav>
@@ -824,15 +882,19 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                                     </span>
                                 ) : isConfirmedFuture ? (
                                     <span
-                                        className="inline-flex items-center gap-1.5 font-bold uppercase"
+                                        className="inline-flex items-center gap-1.5 px-2.5 py-0.5 font-black uppercase"
                                         style={{
                                             fontFamily: 'var(--font-barlow-condensed)',
                                             fontSize: '13px',
-                                            letterSpacing: '0.04em',
-                                            color: 'rgba(255,255,255,0.35)',
+                                            letterSpacing: '0.06em',
+                                            background: '#e8e8e8',
+                                            color: '#111',
+                                            border: '2px solid #000',
+                                            borderRadius: '8px',
+                                            boxShadow: '2px 2px 0 #000',
                                         }}
                                     >
-                                        <span className="w-1 h-1 rounded-full bg-white/25" />
+                                        <span className="w-1 h-1 rounded-sm bg-black/30" />
                                         {confirmedDateLabel}
                                     </span>
                                 ) : null
