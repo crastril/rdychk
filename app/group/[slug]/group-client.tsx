@@ -22,12 +22,97 @@ import {
     AlertDialogAction,
     AlertDialogCancel,
 } from '@/components/ui/alert-dialog';
-import { Gear, SignOut } from '@phosphor-icons/react';
+import { Gear, SignOut, CalendarDots, CheckCircle } from '@phosphor-icons/react';
 import { AuthButton } from '@/components/auth-button';
 import { GroupSettingsModal } from '@/components/GroupSettingsModal';
+import { setGroupModeAction } from '@/app/actions/group';
 import { ConnectionStatus } from '@/components/ConnectionStatus';
 import { HomeTab } from '@/components/tabs/HomeTab';
 import type { Group, Member, DateVote, LocationProposal } from '@/types/database';
+
+function ModeToggle({
+    mode,
+    isAdmin,
+    isRemote,
+    onToggle,
+}: {
+    mode: 'planning' | 'day-of';
+    isAdmin: boolean;
+    isRemote: boolean;
+    onToggle: (m: 'planning' | 'day-of') => void;
+}) {
+    const isDayOf = mode === 'day-of';
+    return (
+        <div className="flex justify-center">
+            <div
+                className="relative flex items-center p-1 rounded-full shadow-xl"
+                style={{
+                    background: 'rgba(0,0,0,0.45)',
+                    backdropFilter: 'blur(8px)',
+                    border: isRemote ? '1px solid rgba(168,85,247,0.15)' : '1px solid rgba(255,255,255,0.07)',
+                }}
+            >
+                {/* Sliding pill */}
+                <div
+                    className="absolute top-1 bottom-1 rounded-full transition-all duration-500"
+                    style={{
+                        width: 'calc(50% - 0.25rem)',
+                        left: isDayOf ? 'calc(50% + 0.125rem)' : '0.25rem',
+                        transitionTimingFunction: 'cubic-bezier(0.34,1.56,0.64,1)',
+                        ...(isDayOf
+                            ? { background: 'rgba(74,222,128,0.15)', border: '1px solid rgba(74,222,128,0.35)', boxShadow: '0 0 12px rgba(74,222,128,0.12)' }
+                            : isRemote
+                                ? { background: 'rgba(168,85,247,0.12)', border: '1px solid rgba(168,85,247,0.3)' }
+                                : { background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)' }
+                        ),
+                    }}
+                />
+                <button
+                    type="button"
+                    onClick={() => isAdmin && onToggle('planning')}
+                    className="relative z-10 flex items-center gap-1.5 px-4 py-2 rounded-full transition-colors duration-300"
+                    style={{ cursor: isAdmin ? 'pointer' : 'default' }}
+                >
+                    <CalendarDots
+                        className="w-3.5 h-3.5 shrink-0"
+                        weight="fill"
+                        style={{ color: !isDayOf ? (isRemote ? '#c4b5fd' : 'rgba(255,255,255,0.85)') : 'rgba(255,255,255,0.25)' }}
+                    />
+                    <span
+                        className="text-xs font-black uppercase tracking-wide whitespace-nowrap"
+                        style={{
+                            fontFamily: isRemote ? 'monospace' : 'var(--font-barlow-condensed)',
+                            color: !isDayOf ? (isRemote ? '#c4b5fd' : 'rgba(255,255,255,0.85)') : 'rgba(255,255,255,0.25)',
+                        }}
+                    >
+                        {isRemote ? 'PLANIF' : 'Planification'}
+                    </span>
+                </button>
+                <button
+                    type="button"
+                    onClick={() => isAdmin && onToggle('day-of')}
+                    className="relative z-10 flex items-center gap-1.5 px-4 py-2 rounded-full transition-colors duration-300"
+                    style={{ cursor: isAdmin ? 'pointer' : 'default' }}
+                >
+                    <CheckCircle
+                        className="w-3.5 h-3.5 shrink-0"
+                        weight="fill"
+                        style={{ color: isDayOf ? 'rgb(74,222,128)' : 'rgba(255,255,255,0.25)' }}
+                    />
+                    <span
+                        className="text-xs font-black uppercase tracking-wide whitespace-nowrap"
+                        style={{
+                            fontFamily: isRemote ? 'monospace' : 'var(--font-barlow-condensed)',
+                            color: isDayOf ? 'rgb(74,222,128)' : 'rgba(255,255,255,0.25)',
+                        }}
+                    >
+                        {isRemote ? 'SESSION' : 'Rendez-vous'}
+                    </span>
+                </button>
+            </div>
+        </div>
+    );
+}
 
 const LiquidWaves = () => {
     return (
@@ -755,6 +840,21 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                         isRemote={group.type === 'remote'}
                     />
                 </div>
+
+                {/* Mode toggle pill */}
+                {memberId && (
+                    <ModeToggle
+                        mode={group.mode ?? 'planning'}
+                        isAdmin={isAdmin}
+                        isRemote={group.type === 'remote'}
+                        onToggle={async (newMode) => {
+                            const prev = group.mode ?? 'planning';
+                            setGroup(g => g ? { ...g, mode: newMode } : g);
+                            const result = await setGroupModeAction(slug, memberId, newMode);
+                            if (!result.success) setGroup(g => g ? { ...g, mode: prev } : g);
+                        }}
+                    />
+                )}
 
                 {/* Single-scroll home view */}
                 {memberId && (

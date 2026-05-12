@@ -509,7 +509,7 @@ export function MembersCompact({
                                                 <span className="text-[11px] font-black shrink-0 text-sky-400/80 tabular-nums">→ {eta}</span>
                                             );
                                             return (
-                                                <span className="text-[11px] font-black uppercase tracking-[0.14em] shrink-0 text-white/30">En attente</span>
+                                                <span className="text-[11px] font-black uppercase tracking-[0.14em] shrink-0 text-white/30">Pas encore voté</span>
                                             );
                                         })()
                                     ) : (
@@ -529,7 +529,7 @@ export function MembersCompact({
                                             );
                                             if (m.is_ready) return <span className="text-[11px] font-black uppercase tracking-[0.14em] shrink-0 text-green-400/90">✓ Prêt</span>;
                                             if (m.proposed_time) return <span className="text-[11px] font-black shrink-0 tabular-nums text-sky-400/80">→ {m.proposed_time.slice(0, 5)}</span>;
-                                            return <span className="text-[11px] font-black uppercase tracking-[0.14em] shrink-0 text-white/30">En attente</span>;
+                                            return <span className="text-[11px] font-black uppercase tracking-[0.14em] shrink-0 text-white/30">Pas encore prêt</span>;
                                         })()
                                     )}
                                 </div>

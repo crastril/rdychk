@@ -166,6 +166,36 @@ export async function voteLocationProposalAction(
     return { success: true, score: newScore, myVote: vote };
 }
 
+export async function setGroupModeAction(
+    slug: string,
+    memberId: string,
+    mode: 'planning' | 'day-of'
+) {
+    const isAuthorized = await verifyGuestSession(slug, memberId);
+    if (!isAuthorized) return { success: false, error: 'Unauthorized' };
+
+    const { data: member } = await supabase
+        .from('members')
+        .select('group_id, role')
+        .eq('id', memberId)
+        .single();
+
+    if (!member) return { success: false, error: 'Member not found' };
+    if (member.role !== 'admin') return { success: false, error: 'Admin only' };
+
+    const { error } = await supabase
+        .from('groups')
+        .update({ mode })
+        .eq('id', member.group_id);
+
+    if (error) {
+        console.error('Error updating group mode:', error);
+        return { success: false, error: error.message };
+    }
+
+    return { success: true };
+}
+
 export async function deleteLocationProposalAction(
     slug: string,
     memberId: string,

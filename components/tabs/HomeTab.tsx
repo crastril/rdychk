@@ -135,6 +135,7 @@ export function HomeTab({
 
     const today = new Date().toISOString().slice(0, 10);
     const isActualDay = !!group.confirmed_date && group.confirmed_date === today;
+    const isDayOf = group.mode === 'day-of';
     // Planning = decision still pending. Once date is confirmed and location is set,
     // the group moves to "ready" phase regardless of whether voting was enabled.
     const isPlanning = (calendarEnabled && !group.confirmed_date) ||
@@ -303,7 +304,7 @@ export function HomeTab({
                     className="w-full text-[12px] font-black uppercase tracking-[0.28em] text-white/25 px-0.5"
                     style={{ fontFamily: 'var(--font-barlow-condensed)' }}
                 >
-                    Choisi ce que tu préf
+                    Vote pour la date et le lieu
                 </p>
             )}
 
@@ -377,7 +378,7 @@ export function HomeTab({
                             ) : (
                                 isRemote
                                     ? <p className="font-mono text-[11px] uppercase tracking-[0.18em]" style={{ color: '#8b5cf6' }}>TIMESTAMP_TBD</p>
-                                    : <p className="text-xs text-white/25 font-black uppercase tracking-wider">À déterminer</p>
+                                    : <p className="text-xs text-white/25 font-black uppercase tracking-wider">Personne n'a encore voté</p>
                             )}
                             {isRemote ? (
                                 <p className="font-mono text-[10px] uppercase tracking-[0.15em]" style={{ color: '#a78bfa' }}>
@@ -473,7 +474,7 @@ export function HomeTab({
                                             className="uppercase leading-none"
                                             style={{ fontFamily: 'var(--font-barlow-condensed)', fontWeight: 900, fontSize: '1.05rem', letterSpacing: '0.12em', color: needsLocationAction ? '#fbbf24' : 'rgba(255,255,255,0.75)' }}
                                         >
-                                            {isRemote ? 'Jeu ?' : 'Où ?'}
+                                            {isRemote ? 'Jeu ?' : 'Lieu du rdv'}
                                         </span>
                                     )}
                                 </div>
@@ -496,7 +497,7 @@ export function HomeTab({
                                     </p>
                                 ) : (
                                     <p className="text-xs text-white/25 font-black uppercase tracking-wider">
-                                        {needsLocationAction ? 'Vote pour un endroit !' : 'Aucune prop.'}
+                                        {needsLocationAction ? 'Vote pour un endroit !' : proposals.length === 0 ? 'Sois le premier à proposer →' : 'Aucune prop.'}
                                     </p>
                                 )
                             )}
@@ -548,7 +549,7 @@ export function HomeTab({
     );
 
     // Map visible as soon as anyone is en route (in-person, jour J, coords known).
-    const showLiveMap = !isRemote && isActualDay && _locHasCoords && anyoneEnRoute;
+    const showLiveMap = !isRemote && (isDayOf || isActualDay) && _locHasCoords && anyoneEnRoute;
 
     return (
         <div className="flex flex-col gap-4">
@@ -569,14 +570,14 @@ export function HomeTab({
                         date={confirmedDate ?? formattedPopularDate}
                         // Hide Maps link once the live map is up — saves space
                         mapsUrl={showLiveMap ? null : locationMapsUrl}
-                        onAddToCalendar={confirmedDate && !isActualDay ? addToCalendar : undefined}
-                        showCalendar={!!confirmedDate && !isActualDay}
+                        onAddToCalendar={confirmedDate && !isDayOf ? addToCalendar : undefined}
+                        showCalendar={!!confirmedDate && !isDayOf}
                     />
                 )
             ) : statusStrip}
 
                 {/* ── PLANNING : votes d'abord, membres ensuite ── */}
-            {isPlanning && (
+            {!isDayOf && (
                 <>
                     {actionCards}
                     <MembersCompact
@@ -593,7 +594,7 @@ export function HomeTab({
             )}
 
             {/* ── JOUR J / PRÉ-JOUR : hero + ETA + membres ── */}
-            {!isPlanning && (
+            {isDayOf && (
                 <>
                     {/* Live map — collapsible */}
                     {showLiveMap && (
@@ -664,7 +665,7 @@ export function HomeTab({
                     )}
 
                     {/* Live ETA — jour J, in-person only, lieu connu, et seulement si l'utilisateur est prêt */}
-                    {memberId && isActualDay && !isRemote && displayLocation && effectiveReady && (
+                    {memberId && isDayOf && !isRemote && displayLocation && effectiveReady && (
                         <EnRouteBlock
                             slug={slug}
                             memberId={memberId}
@@ -678,9 +679,9 @@ export function HomeTab({
                     )}
 
                     {/* ETA inline — jour J uniquement, avant d'être prêt */}
-                    {memberId && isActualDay && (
+                    {memberId && isDayOf && (
                         <AnimatePresence initial={false}>
-                            {!effectiveReady && (
+                            {!effectiveReady && !iAmEnRoute && (
                                 <motion.div
                                     key="depart-block"
                                     initial={{ opacity: 0, height: 0 }}
@@ -702,20 +703,6 @@ export function HomeTab({
                                 </motion.div>
                             )}
                         </AnimatePresence>
-                    )}
-
-                    {/* ETA modal contrôlé — pré-jour J */}
-                    {memberId && !isActualDay && (
-                        <TimeProposalModal
-                            currentProposedTime={currentMember?.proposed_time ?? null}
-                            onUpdate={async (updates) => {
-                                if (!memberId) return;
-                                await updateMemberAction(slug, memberId, updates);
-                            }}
-                            isRemote={isRemote}
-                            open={etaModalOpen}
-                            onOpenChange={setEtaModalOpen}
-                        />
                     )}
 
                     <MembersCompact

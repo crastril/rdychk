@@ -16,6 +16,7 @@ export type Database = {
                     calendar_voting_enabled: boolean;
                     location_voting_enabled: boolean;
                     confirmed_date: string | null;
+                    mode: 'planning' | 'day-of';
                     past_events: PastEvent[];
                 };
                 Insert: {

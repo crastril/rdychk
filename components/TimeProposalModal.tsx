@@ -207,7 +207,7 @@ export function TimeProposalModal({ currentProposedTime, onUpdate, isRemote, ope
                                         color: currentProposedTime ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.25)',
                                     }}
                                 >
-                                    Je pense arriver à…
+                                    J'arriverai plus tard
                                 </span>
                                 <span
                                     className="ml-auto tabular-nums leading-none shrink-0"
@@ -250,10 +250,10 @@ export function TimeProposalModal({ currentProposedTime, onUpdate, isRemote, ope
                             className="font-black uppercase tracking-widest text-white"
                             style={{ fontFamily: 'var(--font-barlow-condensed)', fontWeight: 900 }}
                         >
-                            Je pense arriver à…
+                            J'arriverai plus tard
                         </DialogTitle>
                         <DialogDescription className="text-[12px] text-white/45">
-                            Les autres membres du groupe verront l'heure que tu indiques.
+                            Tes amis verront ton heure estimée d'arrivée.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="flex items-center justify-center py-6">

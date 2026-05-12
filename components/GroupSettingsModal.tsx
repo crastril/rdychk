@@ -9,7 +9,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { supabase } from '@/lib/supabase';
-import { CircleNotch, SignOut, MapPin, CalendarDots, CheckSquare, GameController } from '@phosphor-icons/react';
+import { CircleNotch, SignOut, MapPin, CalendarDots, GameController } from '@phosphor-icons/react';
 import { GroupTypeSelector } from '@/components/GroupTypeSelector';
 import { FRENCH_CITIES } from '@/lib/cities';
 import { Input } from '@/components/ui/input';
@@ -34,8 +34,6 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
     const [locationResults, setLocationResults] = useState<string[]>([]);
     const [calendarEnabled, setCalendarEnabled] = useState(false);
     const [locationEnabled, setLocationEnabled] = useState(false);
-    const [phase, setPhase] = useState<'planning' | 'day-of'>('planning');
-    const [confirmedDate, setConfirmedDate] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
 
@@ -49,7 +47,7 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
         setLoading(true);
         const { data } = await supabase
             .from('groups')
-            .select('type, city, calendar_voting_enabled, location_voting_enabled, confirmed_date')
+            .select('type, city, calendar_voting_enabled, location_voting_enabled')
             .eq('id', groupId)
             .single();
 
@@ -59,12 +57,6 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
             setLocationSearch(data.city || '');
             setCalendarEnabled(data.calendar_voting_enabled ?? false);
             setLocationEnabled(data.location_voting_enabled ?? false);
-            setConfirmedDate(data.confirmed_date ?? null);
-            const today = new Date().toISOString().slice(0, 10);
-            const isDayOf =
-                (data.confirmed_date && data.confirmed_date <= today) ||
-                (!data.calendar_voting_enabled && !data.location_voting_enabled);
-            setPhase(isDayOf ? 'day-of' : 'planning');
         }
         setLoading(false);
     };
@@ -89,10 +81,6 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                 return;
             }
 
-            const dateToSave = phase === 'day-of' && !confirmedDate
-                ? new Date().toISOString().slice(0, 10)
-                : confirmedDate;
-
             const { error: typeError } = await supabase
                 .from('groups')
                 .update({
@@ -100,7 +88,6 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                     city: groupType === 'in_person' ? location : null,
                     calendar_voting_enabled: calendarEnabled,
                     location_voting_enabled: locationEnabled,
-                    confirmed_date: dateToSave,
                 })
                 .eq('id', groupId);
 
@@ -111,22 +98,6 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
             alert("Erreur lors de l'enregistrement");
         } finally {
             setSaving(false);
-        }
-    };
-
-    const setModePlanning = () => {
-        setPhase('planning');
-        setCalendarEnabled(true);
-        setLocationEnabled(true);
-        setConfirmedDate(null);
-    };
-
-    const setModeDayOf = () => {
-        setPhase('day-of');
-        setCalendarEnabled(false);
-        setLocationEnabled(false);
-        if (!confirmedDate) {
-            setConfirmedDate(new Date().toISOString().slice(0, 10));
         }
     };
 
@@ -264,52 +235,6 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                         )}
                                     </div>
                                 )}
-
-                                {/* ── SESSION PHASE ── */}
-                                <div className="flex flex-col gap-3">
-                                    <p className="font-mono text-[9px] uppercase tracking-[0.2em]" style={{ color: '#8b5cf6' }}>
-                                        // SESSION_PHASE
-                                    </p>
-                                    <div
-                                        className="grid grid-cols-2 gap-1.5 p-1"
-                                        style={{ border: '1px solid rgba(168,85,247,0.15)', borderRadius: '3px', background: 'rgba(168,85,247,0.02)' }}
-                                    >
-                                        <button
-                                            type="button"
-                                            disabled={!isAdmin}
-                                            onClick={setModePlanning}
-                                            className="flex flex-col items-center gap-1.5 py-3 px-2 font-mono transition-all"
-                                            style={{
-                                                borderRadius: '2px',
-                                                border: `1px solid ${phase === 'planning' ? 'rgba(168,85,247,0.4)' : 'transparent'}`,
-                                                background: phase === 'planning' ? 'rgba(168,85,247,0.12)' : 'transparent',
-                                                cursor: !isAdmin ? 'not-allowed' : 'pointer',
-                                                opacity: !isAdmin ? 0.5 : 1,
-                                            }}
-                                        >
-                                            <CalendarDots className="w-4 h-4" style={{ color: phase === 'planning' ? '#a855f7' : '#8b5cf6' }} weight="fill" />
-                                            <span className="text-[10px] uppercase tracking-[0.1em]" style={{ color: phase === 'planning' ? '#c4b5fd' : '#8b5cf6' }}>PLANNING</span>
-                                            <span className="text-[9px] text-center leading-tight" style={{ color: '#8b5cf6' }}>// vote en cours</span>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            disabled={!isAdmin}
-                                            onClick={setModeDayOf}
-                                            className="flex flex-col items-center gap-1.5 py-3 px-2 font-mono transition-all"
-                                            style={{
-                                                borderRadius: '2px',
-                                                border: `1px solid ${phase === 'day-of' ? 'rgba(74,222,128,0.4)' : 'transparent'}`,
-                                                background: phase === 'day-of' ? 'rgba(74,222,128,0.06)' : 'transparent',
-                                                cursor: !isAdmin ? 'not-allowed' : 'pointer',
-                                                opacity: !isAdmin ? 0.5 : 1,
-                                            }}
-                                        >
-                                            <CheckSquare className="w-4 h-4" style={{ color: phase === 'day-of' ? '#4ade80' : '#8b5cf6' }} weight="fill" />
-                                            <span className="text-[10px] uppercase tracking-[0.1em]" style={{ color: phase === 'day-of' ? '#4ade80' : '#8b5cf6' }}>SESSION_DAY</span>
-                                            <span className="text-[9px] text-center leading-tight" style={{ color: '#8b5cf6' }}>// décision finale</span>
-                                        </button>
-                                    </div>
-                                </div>
 
                                 {/* ── FEATURE TOGGLES ── */}
                                 <div className="flex flex-col gap-3">
@@ -546,64 +471,6 @@ export function GroupSettingsModal({ isOpen, onOpenChange, groupId, slug, member
                                     )}
                                 </div>
                             )}
-
-                            {/* ── PHASE TOGGLE ── */}
-                            <div>
-                                <h3 className="font-black uppercase tracking-widest text-xs text-white/40" style={{ marginBottom: '10px' }}>
-                                    Phase du groupe
-                                </h3>
-                                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-1 grid grid-cols-2 gap-1">
-                                    {/* Planification */}
-                                    <button
-                                        type="button"
-                                        disabled={!isAdmin}
-                                        onClick={setModePlanning}
-                                        className={cn(
-                                            'flex flex-col items-center gap-1.5 py-3 px-2 text-center transition-all',
-                                            phase === 'planning'
-                                                ? 'rounded-xl border border-black bg-black/40 text-white'
-                                                : 'rounded-lg border border-transparent bg-transparent text-white/40',
-                                        )}
-                                        style={{
-                                            cursor: !isAdmin ? 'not-allowed' : 'pointer',
-                                            opacity: !isAdmin ? 0.5 : 1,
-                                        }}
-                                    >
-                                        <CalendarDots
-                                            className="w-4 h-4"
-                                            weight="fill"
-                                            style={{ color: phase === 'planning' ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.3)' }}
-                                        />
-                                        <span className="font-black uppercase text-xs tracking-widest">Planification</span>
-                                        <span className="text-[10px] text-white/35">On se met d'accord</span>
-                                    </button>
-
-                                    {/* Jour J */}
-                                    <button
-                                        type="button"
-                                        disabled={!isAdmin}
-                                        onClick={setModeDayOf}
-                                        className={cn(
-                                            'flex flex-col items-center gap-1.5 py-3 px-2 text-center transition-all',
-                                            phase === 'day-of'
-                                                ? 'rounded-xl border border-green-500/40 bg-green-500/[0.08] text-green-400'
-                                                : 'rounded-lg border border-transparent bg-transparent text-white/40',
-                                        )}
-                                        style={{
-                                            cursor: !isAdmin ? 'not-allowed' : 'pointer',
-                                            opacity: !isAdmin ? 0.5 : 1,
-                                        }}
-                                    >
-                                        <CheckSquare
-                                            className="w-4 h-4"
-                                            weight="fill"
-                                            style={{ color: phase === 'day-of' ? '#4ade80' : 'rgba(255,255,255,0.3)' }}
-                                        />
-                                        <span className="font-black uppercase text-xs tracking-widest">Jour J</span>
-                                        <span className="text-[10px] text-white/35">C'est décidé</span>
-                                    </button>
-                                </div>
-                            </div>
 
                             {/* ── FEATURE TOGGLES ── */}
                             <div>
