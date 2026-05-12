@@ -25,6 +25,7 @@ import {
 import { Gear, SignOut, CalendarDots, CheckCircle } from '@phosphor-icons/react';
 import { AuthButton } from '@/components/auth-button';
 import { GroupSettingsModal } from '@/components/GroupSettingsModal';
+import { OnboardingModal } from '@/components/OnboardingModal';
 import { setGroupModeAction } from '@/app/actions/group';
 import { ConnectionStatus } from '@/components/ConnectionStatus';
 import { HomeTab } from '@/components/tabs/HomeTab';
@@ -156,6 +157,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
     const [votes, setVotes] = useState<DateVote[]>([]);
     const [proposals, setProposals] = useState<LocationProposal[]>([]);
     const [myLocationVotes, setMyLocationVotes] = useState<Record<string, 1 | -1>>({});
+    const [showOnboarding, setShowOnboarding] = useState(false);
 
     const fetchGroup = async () => {
         try {
@@ -523,6 +525,10 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
             // set by the server action.
             localStorage.setItem(`member_${slug}`, result.member.id);
             localStorage.setItem(`member_name_${slug}`, result.member.name);
+
+            if (!localStorage.getItem('rdychk_onboarded')) {
+                setShowOnboarding(true);
+            }
 
             // Force aggressive sync with server and local state
             await fetchMembers();
@@ -1036,6 +1042,16 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {showOnboarding && (
+                <OnboardingModal
+                    isRemote={group.type === 'remote'}
+                    onClose={() => {
+                        setShowOnboarding(false);
+                        localStorage.setItem('rdychk_onboarded', '1');
+                    }}
+                />
+            )}
 
             {memberId && (
                 <>
