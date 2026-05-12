@@ -42,6 +42,20 @@ next-env.d.ts
 
 # eslint output
 eslint-results*.json
+eslint*.txt
+eslint*.json
 
 # supabase temp
 supabase/.temp/
+
+# debug/error dumps
+*.txt
+supa-err.json
+build_error.txt
+
+# stitch files
+_stitch*.html
+stitch_screen.html
+
+# claude local config
+.claude/
