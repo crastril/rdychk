@@ -50,8 +50,14 @@ supabase/.temp/
 
 # debug/error dumps
 *.txt
+*.cjs
 supa-err.json
 build_error.txt
+
+# one-shot test scripts
+test-*.js
+test-*.mjs
+slice.js
 
 # stitch files
 _stitch*.html
