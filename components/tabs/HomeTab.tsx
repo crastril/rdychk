@@ -226,6 +226,7 @@ export function HomeTab({
     const hasProposedLocation = filteredProposals.some(p => p.member_id === memberId);
     const hasVotedLocation = Object.keys(myLocationVotes).length > 0;
     const needsLocationAction = locationEnabled && filteredProposals.length > 0 && !hasProposedLocation && !hasVotedLocation && !!memberId;
+    const needsLocationNudge = locationEnabled && !displayLocation && !hasProposedLocation && !hasVotedLocation && !!memberId;
 
     const showInviteNudge = members.length < 3 && !!memberId;
 
@@ -432,7 +433,7 @@ export function HomeTab({
                         className={cn(
                             'flex flex-col overflow-hidden h-full transition-all duration-300',
                             !isRemote && 'rounded-2xl border-[3px] border-black',
-                            !isRemote && (needsLocationAction ? 'animate-vote-nudge' : ''),
+                            !isRemote && (needsLocationNudge ? 'animate-vote-nudge' : ''),
                         )}
                         style={isRemote ? {
                             borderRadius: '4px',
@@ -441,7 +442,7 @@ export function HomeTab({
                             boxShadow: needsLocationAction ? '0 0 20px rgba(217,70,239,0.15)' : '0 0 12px rgba(168,85,247,0.05)',
                         } : {
                             background: '#0c0c0c',
-                            boxShadow: needsLocationAction ? '5px 5px 0px #fbbf24' : '5px 5px 0px #000',
+                            boxShadow: needsLocationNudge ? '5px 5px 0px #fbbf24' : '5px 5px 0px #000',
                         }}
                     >
                         <button
@@ -456,7 +457,7 @@ export function HomeTab({
                                 <div className="flex items-center gap-2">
                                     {isRemote
                                         ? <GameController className="w-4 h-4 shrink-0" style={{ color: needsLocationAction ? '#d946ef' : '#8b5cf6' }} weight="fill" />
-                                        : <MapTrifold className="w-4 h-4 shrink-0" style={{ color: needsLocationAction ? '#fbbf24' : 'rgba(255,255,255,0.4)' }} weight="fill" />
+                                        : <MapTrifold className="w-4 h-4 shrink-0" style={{ color: needsLocationNudge ? '#fbbf24' : 'rgba(255,255,255,0.4)' }} weight="fill" />
                                     }
                                     {isRemote ? (
                                         <span className="font-mono text-[0.8rem] uppercase tracking-[0.18em]" style={{ color: needsLocationAction ? '#d946ef' : '#c4b5fd' }}>
@@ -465,7 +466,7 @@ export function HomeTab({
                                     ) : (
                                         <span
                                             className="uppercase leading-none"
-                                            style={{ fontFamily: 'var(--font-barlow-condensed)', fontWeight: 900, fontSize: '1.05rem', letterSpacing: '0.12em', color: needsLocationAction ? '#fbbf24' : 'rgba(255,255,255,0.75)' }}
+                                            style={{ fontFamily: 'var(--font-barlow-condensed)', fontWeight: 900, fontSize: '1.05rem', letterSpacing: '0.12em', color: needsLocationNudge ? '#fbbf24' : 'rgba(255,255,255,0.75)' }}
                                         >
                                             {isRemote ? 'Jeu ?' : 'Lieu du rdv'}
                                         </span>
@@ -483,36 +484,31 @@ export function HomeTab({
                                 ) : (
                                     <p className="leading-tight text-white truncate" style={{ fontFamily: 'var(--font-barlow-condensed)', fontWeight: 900, fontSize: '1.35rem', letterSpacing: '0.01em' }}>{displayLocation}</p>
                                 )
-                            ) : (
-                                isRemote ? (
-                                    <p className="font-mono text-[11px] uppercase tracking-[0.18em]" style={{ color: '#8b5cf6' }}>
-                                        {needsLocationAction ? 'GAME_VOTE_REQUIRED' : 'NO_PROPOSALS'}
-                                    </p>
-                                ) : (
-                                    <p className="text-xs text-white/25 font-black uppercase tracking-wider">
-                                        {needsLocationAction ? 'Vote pour un endroit !' : proposals.length === 0 ? 'Sois le premier à proposer →' : 'Aucune prop.'}
-                                    </p>
-                                )
-                            )}
+                            ) : isRemote ? (
+                                <p className="font-mono text-[11px] uppercase tracking-[0.18em]" style={{ color: '#8b5cf6' }}>
+                                    {needsLocationAction ? 'GAME_VOTE_REQUIRED' : 'NO_PROPOSALS'}
+                                </p>
+                            ) : null}
                             {isRemote ? (
                                 <p className="font-mono text-[10px] uppercase tracking-[0.15em]" style={{ color: '#a78bfa' }}>
                                     {proposals.length}_PROP{proposals.length !== 1 ? 'S' : ''}
                                 </p>
                             ) : (
-                                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/30">
-                                    {proposals.length} proposition{proposals.length !== 1 ? 's' : ''}
-                                </p>
+                                <>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/30">
+                                        {proposals.length} proposition{proposals.length !== 1 ? 's' : ''}
+                                    </p>
+                                    {proposals.length > 0 && !displayLocation && (
+                                        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/20" style={{ fontFamily: 'var(--font-barlow-condensed)' }}>
+                                            Votez pour ce que vous préférez
+                                        </p>
+                                    )}
+                                </>
                             )}
-                            {needsLocationAction && (
-                                isRemote ? (
-                                    <span className="self-start font-mono text-[10px] uppercase tracking-[0.12em] px-2 py-0.5" style={{ border: '1px solid rgba(217,70,239,0.4)', background: 'rgba(217,70,239,0.08)', color: '#d946ef', borderRadius: '2px' }}>
-                                        VOTE_REQUIRED {'>'}
-                                    </span>
-                                ) : (
-                                    <span className="self-start text-[10px] font-black uppercase tracking-[0.12em] px-2 py-0.5 rounded-md border border-amber-400/40 bg-amber-400/10 text-amber-400" style={{ fontFamily: 'var(--font-barlow-condensed)' }}>
-                                        Ton vote →
-                                    </span>
-                                )
+                            {needsLocationAction && isRemote && (
+                                <span className="self-start font-mono text-[10px] uppercase tracking-[0.12em] px-2 py-0.5" style={{ border: '1px solid rgba(217,70,239,0.4)', background: 'rgba(217,70,239,0.08)', color: '#d946ef', borderRadius: '2px' }}>
+                                    VOTE_REQUIRED {'>'}
+                                </span>
                             )}
                         </button>
                         <div className={cn(

@@ -614,24 +614,6 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                 )}
             </div>
 
-            {/* Empty state */}
-            {proposals.length === 0 && (
-                <div
-                    className="flex items-center gap-3 rounded-xl border border-white/10"
-                    style={{
-                        padding: '12px 16px',
-                        background: 'rgba(255,255,255,0.02)',
-                    }}
-                >
-                    <span className="text-base leading-none shrink-0">📍</span>
-                    <p
-                        className="text-xs font-medium italic"
-                        style={{ color: 'rgba(255,255,255,0.4)' }}
-                    >
-                        Propose un lieu — le groupe votera pour le meilleur endroit.
-                    </p>
-                </div>
-            )}
 
             <div className="flex flex-col gap-5">
                 <AnimatePresence mode="popLayout" initial={false}>
