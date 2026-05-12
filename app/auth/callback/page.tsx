@@ -33,7 +33,6 @@ export default function AuthCallbackPage() {
         }
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            console.log("Auth event in callback:", event, !!session);
             if (event === 'SIGNED_IN' && session) {
                 if (isMounted) router.push('/');
             }

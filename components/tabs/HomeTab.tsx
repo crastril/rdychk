@@ -190,7 +190,7 @@ export function HomeTab({
     };
 
     const categoryFilter = isRemote ? 'game' : 'location';
-    const filteredProposals = proposals.filter(p => (p as any).category === categoryFilter || ((p as any).category == null && !isRemote));
+    const filteredProposals = proposals.filter(p => p.category === categoryFilter || (p.category == null && !isRemote));
     const filteredTopProposal = filteredProposals.length > 0
         ? [...filteredProposals].sort((a, b) => b.score - a.score)[0]
         : null;

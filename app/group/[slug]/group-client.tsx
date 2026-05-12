@@ -229,8 +229,9 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
         }
 
         if (data) {
-            const membersWithAvatars = data.map((m: any) => {
-                const profile = Array.isArray(m.profiles) ? m.profiles[0] : m.profiles;
+            const membersWithAvatars = data.map((m) => {
+                const rawProfile = m.profiles as { avatar_url: string | null } | { avatar_url: string | null }[] | null;
+                const profile = Array.isArray(rawProfile) ? rawProfile[0] : rawProfile;
                 return {
                     ...m,
                     avatar_url: profile?.avatar_url
@@ -496,7 +497,6 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
                 if (memberId) {
                     const currentMember = members.find(m => m.id === memberId);
                     if (currentMember && !currentMember.user_id) {
-                        console.log('Linking guest session to user profile...');
                         await linkGuestToUserAction(slug, memberId, user.id);
                         // No need to setMemberId again, just update local list for UI consistency
                         setMembers(prev => prev.map(m => m.id === memberId ? { ...m, user_id: user.id } : m));

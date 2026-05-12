@@ -1,3 +1,16 @@
+export type GroupLocation = {
+    name: string;
+    address?: string | null;
+    link?: string | null;
+    image?: string | null;
+    description?: string | null;
+    preview_title?: string | null;
+    proposed_by?: string | null;
+    proposed_by_id?: string | null;
+    lat?: number | null;
+    lng?: number | null;
+};
+
 export type Database = {
     public: {
         Tables: {
@@ -9,7 +22,7 @@ export type Database = {
                     created_at: string;
                     created_by?: string;
                     type: 'remote' | 'in_person';
-                    location?: { name: string; address?: string; link?: string; image?: string; description?: string; preview_title?: string; proposed_by?: string; proposed_by_id?: string; lat?: number; lng?: number } | null;
+                    location?: GroupLocation | null;
                     base_lat?: number | null;
                     base_lng?: number | null;
                     city: string | null;
@@ -26,7 +39,7 @@ export type Database = {
                     created_at?: string;
                     created_by?: string;
                     type?: 'remote' | 'in_person';
-                    location?: { name: string; address?: string; link?: string; image?: string; description?: string; preview_title?: string; proposed_by?: string; proposed_by_id?: string } | null;
+                    location?: GroupLocation | null;
                     base_lat?: number | null;
                     base_lng?: number | null;
                     city?: string | null;
@@ -41,7 +54,7 @@ export type Database = {
                     slug?: string;
                     created_at?: string;
                     type?: 'remote' | 'in_person';
-                    location?: { name: string; address?: string; link?: string; image?: string; description?: string; preview_title?: string; proposed_by?: string; proposed_by_id?: string } | null;
+                    location?: GroupLocation | null;
                     base_lat?: number | null;
                     base_lng?: number | null;
                     city?: string | null;
@@ -159,6 +172,7 @@ export type LocationProposal = {
     score: number;
     created_at: string;
     preview_title?: string | null;
+    category?: 'location' | 'game' | null;
 };
 
 export type LocationVote = {

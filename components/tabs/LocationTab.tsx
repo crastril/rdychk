@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import type { LocationProposal, Member } from '@/types/database';
+import type { LocationProposal, Member, GroupLocation } from '@/types/database';
 import { addLocationProposalAction, voteLocationProposalAction, deleteLocationProposalAction, updateLocationAction } from '@/app/actions/group';
 import { MapPin, GameController, CaretUp, CaretDown, Plus, CircleNotch, Star, Trash, WarningOctagon, Check } from '@phosphor-icons/react';
 import { AddLocationProposalModal } from '@/components/AddLocationProposalModal';
@@ -69,7 +69,7 @@ interface LocationTabProps {
         type?: 'remote' | 'in_person';
         location_voting_enabled: boolean;
         city: string | null;
-        location?: { name: string; address?: string } | null;
+        location?: GroupLocation | null;
         base_lat?: number | null;
         base_lng?: number | null;
     };
@@ -86,7 +86,7 @@ interface LocationTabProps {
 export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes: initialMyVotes, onProposalsChange, members, onGroupChange }: LocationTabProps) {
     const isRemote = group.type === 'remote';
     const category = isRemote ? 'game' : 'location';
-    const filteredProposals = proposals.filter(p => (p as any).category === category || (p as any).category == null && !isRemote);
+    const filteredProposals = proposals.filter(p => p.category === category || (p.category == null && !isRemote));
     // Local copies of votes & scores that we control; synced from parent but overridden locally after voting
     const [myVotes, setMyVotes] = useState<Record<string, 1 | -1>>(initialMyVotes);
     const [localScores, setLocalScores] = useState<Record<string, number>>({});

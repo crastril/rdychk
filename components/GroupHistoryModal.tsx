@@ -43,12 +43,8 @@ export function GroupHistoryModal({ open, onOpenChange }: GroupHistoryModalProps
     const [confirmLeaveId, setConfirmLeaveId] = useState<string | null>(null);
 
     const fetchGroups = async () => {
-        if (!user) {
-            console.log('GroupHistoryModal: No user in auth context, skipping fetch');
-            return;
-        }
+        if (!user) return;
         setLoading(true);
-        console.log('GroupHistoryModal: Fetching history for user:', user.id);
         try {
             // Get membership details with joined group data
             const { data, error } = await supabase
@@ -63,12 +59,9 @@ export function GroupHistoryModal({ open, onOpenChange }: GroupHistoryModalProps
             }
 
             if (!data || data.length === 0) {
-                console.log('GroupHistoryModal: No history found in DB for this user ID');
                 setGroups([]);
                 return;
             }
-
-            console.log(`GroupHistoryModal: Found ${data.length} memberships, transforming...`);
 
             // Transform data to match JoinedGroup interface
             const joinedGroups: JoinedGroup[] = (data as unknown as any[])
@@ -94,7 +87,6 @@ export function GroupHistoryModal({ open, onOpenChange }: GroupHistoryModalProps
                 })
                 .filter((item): item is JoinedGroup => item !== null);
 
-            console.log(`GroupHistoryModal: ${joinedGroups.length} history items ready to display`);
             setGroups(joinedGroups);
         } catch (error) {
             console.error('Error fetching history:', error);

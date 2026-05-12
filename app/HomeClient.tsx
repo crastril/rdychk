@@ -451,8 +451,6 @@ export default function HomeClient() {
       if (error) {
         console.error("Error fetching recent groups from page.tsx:", error);
       }
-      console.log("Fetched raw recents data:", data);
-
       if (data && data.length > 0) {
         let transformedGroups = (data as any[])
           .map((member) => {
@@ -468,8 +466,6 @@ export default function HomeClient() {
             };
           })
           .filter((g): g is NonNullable<typeof g> => g !== null);
-
-        console.log("Transformed groups:", transformedGroups);
 
         // Filter by mode (treat null type as 'in_person' for legacy groups)
         if (mode === 'in_person') {

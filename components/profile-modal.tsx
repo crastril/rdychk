@@ -54,7 +54,6 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
                 throw upsertError;
             }
 
-            console.log("Profile updated successfully with avatar:", avatarUrl);
             await refreshProfile();
             onOpenChange?.(false);
         } catch (err: unknown) {

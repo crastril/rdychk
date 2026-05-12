@@ -43,7 +43,6 @@ export function ConnectionStatus({ onRefresh }: ConnectionStatusProps) {
                 const timeDiff = now - lastVisibleTime;
 
                 if (timeDiff > REFRESH_THRESHOLD) {
-                    console.log(`User returned after ${timeDiff / 1000}s. Refreshing...`);
                     handleSmartRefresh();
                 } else {
                     // Even if short absence, consider a quick silent poll? 

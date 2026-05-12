@@ -40,7 +40,6 @@ export function AvatarUpload({ url, uid, onUpload }: AvatarUploadProps) {
                 .from("avatars")
                 .getPublicUrl(filePath);
 
-            console.log("Avatar uploaded successfully. Public URL:", publicUrl);
             onUpload(publicUrl);
         } catch (error) {
             console.error("Error uploading avatar:", error);

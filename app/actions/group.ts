@@ -2,12 +2,13 @@
 
 import { supabase } from '@/lib/supabase';
 import { verifyGuestSession } from './member';
+import { GroupLocation } from '@/types/database';
 
 export async function updateLocationAction(
     slug: string,
     memberId: string,
     groupId: string,
-    newLocation: any
+    newLocation: GroupLocation | null
 ) {
     const isAuthorized = await verifyGuestSession(slug, memberId);
 
