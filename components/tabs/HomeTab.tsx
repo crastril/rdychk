@@ -570,8 +570,8 @@ export function HomeTab({
                         date={confirmedDate ?? formattedPopularDate}
                         // Hide Maps link once the live map is up — saves space
                         mapsUrl={showLiveMap ? null : locationMapsUrl}
-                        onAddToCalendar={confirmedDate && !isDayOf ? addToCalendar : undefined}
-                        showCalendar={!!confirmedDate && !isDayOf}
+                        onAddToCalendar={confirmedDate && !isDayOf && !!group.confirmed_date && group.confirmed_date > today ? addToCalendar : undefined}
+                        showCalendar={!!confirmedDate && !isDayOf && !!group.confirmed_date && group.confirmed_date > today}
                     />
                 )
             ) : statusStrip}
@@ -724,8 +724,8 @@ export function HomeTab({
                 </>
             )}
 
-            {/* ── Prochaine sortie (admin, quand une date est confirmée) ── */}
-            {isAdmin && memberId && group.confirmed_date && (
+            {/* ── Prochaine sortie (admin, après la date de sortie) ── */}
+            {isAdmin && memberId && group.confirmed_date && group.confirmed_date < today && (
                 <button
                     onClick={() => setNextEventModalOpen(true)}
                     className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl border-[3px] border-black bg-[#0e0e0e] hover:bg-[#141414] active:translate-y-[2px] transition-all group"
