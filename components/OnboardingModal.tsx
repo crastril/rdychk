@@ -7,17 +7,17 @@ import Image from 'next/image';
 
 const SLIDES = [
     {
-        image: '/onboarding/slide-1.png',
+        image: '/onboarding/slide-1.jpg',
         title: 'Où et quand ?',
         description: 'Vote avec tes amis pour choisir une date et un lieu. Chacun propose, tout le monde décide — fini les boucles de messages infinies.',
     },
     {
-        image: '/onboarding/slide-2.png',
+        image: '/onboarding/slide-2.jpg',
         title: 'Tout le monde dans la boucle',
         description: 'Partage le lien du groupe. Dès que tes amis rejoignent, vous pouvez vous coordonner en temps réel sans avoir à vous appeler.',
     },
     {
-        image: '/onboarding/slide-3.png',
+        image: '/onboarding/slide-3.jpg',
         title: 'On y va !',
         description: 'Quand c\'est décidé, chacun clique "Prêt". Tu vois en direct qui est partant. Plus d\'excuse pour annuler au dernier moment.',
     },
