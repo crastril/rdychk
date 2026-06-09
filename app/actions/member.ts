@@ -4,9 +4,14 @@ import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import crypto from 'crypto';
 
-// Secret key for HMAC (In production, use a secure env variable like process.env.SESSION_SECRET)
-// For this standalone app, we can use the Anon Key as a basic salt if no other is provided.
-const getSecretStr = () => process.env.SESSION_SECRET || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'default_secret';
+// Secret key for HMAC signing. Must be set via the SESSION_SECRET env variable.
+// We deliberately do NOT fall back to the public anon key — that would make every
+// session cookie forgeable by anyone holding the (public) anon key.
+const getSecretStr = () => {
+    const secret = process.env.SESSION_SECRET;
+    if (!secret) throw new Error('SESSION_SECRET is not set — refusing to sign sessions with an insecure fallback');
+    return secret;
+};
 
 /**
  * Generates an HMAC signature for a given Member ID to prevent tampering.

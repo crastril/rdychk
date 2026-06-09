@@ -13,7 +13,9 @@ function getDb() {
 }
 
 function getSecret() {
-    return process.env.SESSION_SECRET || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'default_secret';
+    const secret = process.env.SESSION_SECRET;
+    if (!secret) throw new Error('SESSION_SECRET is not set');
+    return secret;
 }
 
 function signMemberId(memberId: string): string {
