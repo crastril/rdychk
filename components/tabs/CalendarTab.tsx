@@ -110,7 +110,13 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
     const year = viewDate.getFullYear();
     const month = viewDate.getMonth();
 
-    const weekStart = (() => { const d = new Date(viewDate); d.setHours(0,0,0,0); return d; })();
+    const weekStart = (() => {
+        const d = new Date(viewDate);
+        d.setHours(0, 0, 0, 0);
+        // Align to Monday: getDay() is 0=Sun..6=Sat, so (getDay()+6)%7 = days since Monday.
+        d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+        return d;
+    })();
     const weekDays: Date[] = Array.from({ length: 7 }, (_, i) => {
         const d = new Date(weekStart);
         d.setDate(d.getDate() + i);
@@ -123,7 +129,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     const isCurrentPeriod = viewMode === 'week'
-        ? toDateStr(weekStart) === todayStr
+        ? todayStr >= toDateStr(weekStart) && todayStr <= toDateStr(weekDays[6])
         : (viewDate.getMonth() === today.getMonth() && viewDate.getFullYear() === today.getFullYear());
 
     const navPrev = () => {
@@ -245,6 +251,103 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
     }
 
     // ── Neo-brutalist day cell ───────────────────────────────────────────────
+    // ── Vertical week rows (Monday→Sunday), used in week mode for both themes ──
+    const renderWeekRow = (d: Date) => {
+        const dateStr = toDateStr(d);
+        const voteCount = votesByDate[dateStr] || 0;
+        const isMine = myVotes.has(dateStr);
+        const isBestMatch = bestMatchDates.has(dateStr);
+        const isConfirmed = confirmedDate === dateStr;
+        const isPast = dateStr < todayStr;
+        const isToday = dateStr === todayStr;
+        const isPending = pendingDates.has(dateStr);
+        const label = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'short' });
+
+        return (
+            <button
+                key={dateStr}
+                onClick={() => !isPast && handleVote(dateStr)}
+                disabled={isPast || isPending || !memberId}
+                className={cn(
+                    'relative flex items-center gap-3 px-4 min-h-[44px] rounded-xl font-bold transition-all duration-150 text-left',
+                    isPast ? 'opacity-30 cursor-not-allowed' : 'active:scale-[0.99] cursor-pointer',
+                    isConfirmed && 'bg-green-500/15 border-2 border-green-500',
+                    isBestMatch && !isConfirmed && 'bg-amber-500/10 border-2 border-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.2)]',
+                    isMine && !isBestMatch && !isConfirmed && 'border-2 border-white/60 bg-white/5',
+                    !isMine && !isBestMatch && !isConfirmed && !isPast && !isToday && 'border border-white/5 hover:border-white/15 hover:bg-white/[0.03]',
+                    isToday && !isMine && !isBestMatch && !isConfirmed && !isPast && 'border border-[var(--v2-primary)]/40',
+                    !isMine && !isBestMatch && !isConfirmed && isPast && 'border border-transparent',
+                )}
+            >
+                <span className={cn(
+                    'text-[13px] capitalize flex-1 leading-none',
+                    isConfirmed ? 'text-green-400' :
+                        isBestMatch ? 'text-amber-300' :
+                            isMine ? 'text-white' :
+                                isToday ? 'text-[var(--v2-primary)]' :
+                                    isPast ? 'text-white/30' : 'text-white/70',
+                )}>
+                    {label}
+                </span>
+                {voteCount > 0 && (
+                    <span className={cn(
+                        'text-[11px] font-black tabular-nums leading-none shrink-0',
+                        isConfirmed ? 'text-green-400/70' :
+                            isBestMatch ? 'text-amber-400/80' : 'text-white/40',
+                    )}>
+                        {voteCount}/{totalMembers}
+                    </span>
+                )}
+            </button>
+        );
+    };
+
+    const renderWeekRowRemote = (d: Date) => {
+        const dateStr = toDateStr(d);
+        const voteCount = votesByDate[dateStr] || 0;
+        const isMine = myVotes.has(dateStr);
+        const isBestMatch = bestMatchDates.has(dateStr);
+        const isConfirmed = confirmedDate === dateStr;
+        const isPast = dateStr < todayStr;
+        const isToday = dateStr === todayStr;
+        const isPending = pendingDates.has(dateStr);
+        const label = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'short' });
+
+        let borderColor = 'rgba(168,85,247,0.1)';
+        let bgColor = 'transparent';
+        let textColor = '#8b5cf6';
+        let countColor = 'rgba(139,92,246,0.5)';
+        if (isConfirmed) { borderColor = 'rgba(74,222,128,0.5)'; bgColor = 'rgba(74,222,128,0.06)'; textColor = '#4ade80'; countColor = 'rgba(74,222,128,0.6)'; }
+        else if (isBestMatch) { borderColor = 'rgba(232,121,249,0.55)'; bgColor = 'rgba(232,121,249,0.06)'; textColor = '#e879f9'; countColor = 'rgba(232,121,249,0.6)'; }
+        else if (isMine) { borderColor = 'rgba(168,85,247,0.5)'; bgColor = 'rgba(168,85,247,0.1)'; textColor = '#c4b5fd'; countColor = 'rgba(168,85,247,0.6)'; }
+        else if (isToday) { borderColor = 'rgba(168,85,247,0.3)'; textColor = '#a78bfa'; }
+
+        return (
+            <button
+                key={dateStr}
+                onClick={() => !isPast && handleVote(dateStr)}
+                disabled={isPast || isPending || !memberId}
+                className="relative flex items-center gap-3 px-4 min-h-[40px] transition-all duration-150 active:scale-[0.99] text-left"
+                style={{
+                    border: `1px solid ${borderColor}`,
+                    borderRadius: '2px',
+                    background: bgColor,
+                    opacity: isPast ? 0.25 : 1,
+                    cursor: isPast ? 'not-allowed' : 'pointer',
+                }}
+            >
+                <span className="font-mono text-[12px] capitalize leading-none flex-1" style={{ color: textColor }}>
+                    {label}
+                </span>
+                {voteCount > 0 && (
+                    <span className="font-mono text-[10px] tabular-nums leading-none shrink-0" style={{ color: countColor }}>
+                        {voteCount}/{totalMembers}
+                    </span>
+                )}
+            </button>
+        );
+    };
+
     const renderDayCell = (dateStr: string, day: number) => {
         const voteCount = votesByDate[dateStr] || 0;
         const isMine = myVotes.has(dateStr);
@@ -428,19 +531,21 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                     </div>
                 </div>
 
-                {/* ── Day headers ────────────────────────────────────── */}
-                <div className="grid grid-cols-7 gap-0.5">
-                    {(viewMode === 'week' ? weekDays.map(d => DAYS_FR[(d.getDay() + 6) % 7]) : DAYS_FR).map((d, i) => (
-                        <div key={i} className="text-center font-mono py-1" style={{ fontSize: '9px', letterSpacing: '0.15em', color: '#8b5cf6' }}>
-                            {d.toUpperCase()}
-                        </div>
-                    ))}
-                </div>
+                {/* ── Day headers (month only; week rows carry their own label) ── */}
+                {viewMode === 'month' && (
+                    <div className="grid grid-cols-7 gap-0.5">
+                        {DAYS_FR.map((d, i) => (
+                            <div key={i} className="text-center font-mono py-1" style={{ fontSize: '9px', letterSpacing: '0.15em', color: '#8b5cf6' }}>
+                                {d.toUpperCase()}
+                            </div>
+                        ))}
+                    </div>
+                )}
 
                 {/* ── Grid ───────────────────────────────────────────── */}
                 {viewMode === 'week' ? (
-                    <div className="grid grid-cols-7 gap-0.5">
-                        {weekDays.map(d => renderDayCellRemote(toDateStr(d), d.getDate()))}
+                    <div className="flex flex-col gap-1">
+                        {weekDays.map(d => renderWeekRowRemote(d))}
                     </div>
                 ) : (
                     <div className="grid grid-cols-7 gap-0.5">
@@ -789,22 +894,21 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                 </div>
             </div>
 
-            {/* ── En-têtes jours ─────────────────────────────────────────── */}
-            <div className="grid grid-cols-7 gap-0.5">
-                {(viewMode === 'week' ? weekDays.map(d => DAYS_FR[(d.getDay() + 6) % 7]) : DAYS_FR).map((d, i) => (
-                    <div key={i} className="text-center text-[9px] font-black uppercase tracking-wide text-white/20 py-1">
-                        {d}
-                    </div>
-                ))}
-            </div>
+            {/* ── En-têtes jours (mois uniquement ; en semaine chaque ligne porte son libellé) ── */}
+            {viewMode === 'month' && (
+                <div className="grid grid-cols-7 gap-0.5">
+                    {DAYS_FR.map((d, i) => (
+                        <div key={i} className="text-center text-[9px] font-black uppercase tracking-wide text-white/20 py-1">
+                            {d}
+                        </div>
+                    ))}
+                </div>
+            )}
 
             {/* ── Grille ──────────────────────────────────────────────────── */}
             {viewMode === 'week' ? (
-                <div className="grid grid-cols-7 gap-0.5">
-                    {weekDays.map(d => {
-                        const dateStr = toDateStr(d);
-                        return renderDayCell(dateStr, d.getDate());
-                    })}
+                <div className="flex flex-col gap-1.5">
+                    {weekDays.map(d => renderWeekRow(d))}
                 </div>
             ) : (
                 <div className="grid grid-cols-7 gap-0.5">
