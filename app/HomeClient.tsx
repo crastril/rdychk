@@ -10,7 +10,6 @@ import { AuthButton } from '@/components/auth-button';
 import { PageLoader } from '@/components/PageLoader';
 import { cn } from '@/lib/utils';
 import { createSlug } from '@/lib/slug';
-import { FRENCH_CITIES } from '@/lib/cities';
 
 const PERSON_SENDERS = [
   { name: 'Lucas', color: '#ffb347' },
@@ -352,31 +351,63 @@ export default function HomeClient() {
   const [wantDateVote, setWantDateVote] = useState(true);
   const [wantLocationVote, setWantLocationVote] = useState(true);
   const [confirmedDate, setConfirmedDate] = useState('');
-  const [baseLocation, setBaseLocation] = useState<{ name: string; lat: number; lng: number } | null>(null);
+  const [baseLocation, setBaseLocation] = useState<{ name: string; postcode: string; lat: number; lng: number } | null>(null);
   const [locationSearch, setLocationSearch] = useState('');
-  const [locationResults, setLocationResults] = useState<any[]>([]);
+  const [locationResults, setLocationResults] = useState<{ name: string; postcode: string; lat: number; lng: number }[]>([]);
   const [isSearchingLocation, setIsSearchingLocation] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchAbortRef = useRef<AbortController | null>(null);
+
+  // Search French communes via the official, free, no-key geo.api.gouv.fr.
+  // Every commune comes back with its postcode + coordinates, so same-name
+  // towns (e.g. the several Mérignac) are distinct entries and a single match
+  // auto-selects without a click.
   const handleSearchLocation = (query: string) => {
-    if (!query.trim()) {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    const q = query.trim();
+    if (q.length < 2) {
       setLocationResults([]);
+      setIsSearchingLocation(false);
       return;
     }
-    const filtered = FRENCH_CITIES.filter(city =>
-      city.toLowerCase().includes(query.toLowerCase())
-    ).slice(0, 10);
-    const results = filtered.map(city => ({ name: city }));
+    setIsSearchingLocation(true);
+    searchDebounceRef.current = setTimeout(async () => {
+      searchAbortRef.current?.abort();
+      const controller = new AbortController();
+      searchAbortRef.current = controller;
+      try {
+        const res = await fetch(
+          `https://geo.api.gouv.fr/communes?nom=${encodeURIComponent(q)}&fields=nom,codesPostaux,centre&boost=population&limit=10`,
+          { signal: controller.signal }
+        );
+        const data: { nom: string; codesPostaux?: string[]; centre?: { coordinates: [number, number] } }[] = await res.json();
+        const results = (Array.isArray(data) ? data : []).map((c) => ({
+          name: c.nom,
+          postcode: c.codesPostaux?.[0] ?? '',
+          lat: c.centre?.coordinates?.[1] ?? 0,
+          lng: c.centre?.coordinates?.[0] ?? 0,
+        }));
 
-    // Auto-select when only one match remains
-    if (results.length === 1) {
-      setBaseLocation({ name: results[0].name, lat: 0, lng: 0 });
-      setLocationSearch(results[0].name);
-      setLocationResults([]);
-      return;
-    }
-
-    setLocationResults(results);
+        // Auto-select when only one commune matches — no click needed.
+        if (results.length === 1) {
+          const only = results[0];
+          setBaseLocation(only);
+          setLocationSearch(only.postcode ? `${only.name} (${only.postcode})` : only.name);
+          setLocationResults([]);
+        } else {
+          setLocationResults(results);
+        }
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          console.error('City search failed:', err);
+          setLocationResults([]);
+        }
+      } finally {
+        setIsSearchingLocation(false);
+      }
+    }, 250);
   };
 
   // Reset form state when switching modes
@@ -515,6 +546,10 @@ export default function HomeClient() {
     }
 
     if (step === 'date') {
+      if (!confirmedDate) {
+        alert("Choisis une date pour ton événement.");
+        return;
+      }
       if (mode === 'in_person') {
         setStep('city');
         return;
@@ -543,10 +578,10 @@ export default function HomeClient() {
           calendar_voting_enabled: wantDateVote,
           location_voting_enabled: wantLocationVote,
           confirmed_date: confirmedDate || null,
-          city: baseLocation?.name ?? null,
+          city: baseLocation ? (baseLocation.postcode ? `${baseLocation.name} (${baseLocation.postcode})` : baseLocation.name) : null,
           location: null,
-          base_lat: null,
-          base_lng: null
+          base_lat: baseLocation?.lat ?? null,
+          base_lng: baseLocation?.lng ?? null
         });
 
       if (dbError) throw dbError;
@@ -993,19 +1028,20 @@ export default function HomeClient() {
                           >
                             {locationResults.map((p) => (
                               <button
-                                key={p.name}
+                                key={`${p.name}-${p.postcode}`}
                                 type="button"
                                 onClick={() => {
-                                  setBaseLocation({ name: p.name, lat: 0, lng: 0 });
-                                  setLocationSearch(p.name);
+                                  setBaseLocation(p);
+                                  setLocationSearch(p.postcode ? `${p.name} (${p.postcode})` : p.name);
                                   setLocationResults([]);
                                 }}
-                                className="w-full px-4 py-3 text-left text-sm text-white transition-colors"
+                                className="w-full px-4 py-3 text-left text-sm text-white transition-colors flex items-center justify-between gap-2"
                                 style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', fontFamily: 'var(--font-barlow-condensed)', fontWeight: 900, letterSpacing: '0.04em' }}
                                 onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,46,46,0.08)')}
                                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                               >
-                                {p.name}
+                                <span>{p.name}</span>
+                                {p.postcode && <span className="text-white/40 text-xs tabular-nums">{p.postcode}</span>}
                               </button>
                             ))}
                           </div>
@@ -1021,7 +1057,7 @@ export default function HomeClient() {
                               className="text-sm font-black uppercase tracking-[0.1em]"
                               style={{ fontFamily: 'var(--font-barlow-condensed)', color: '#9c3030' }}
                             >
-                              {baseLocation.name}
+                              {baseLocation.postcode ? `${baseLocation.name} (${baseLocation.postcode})` : baseLocation.name}
                             </span>
                           </div>
                         )}
