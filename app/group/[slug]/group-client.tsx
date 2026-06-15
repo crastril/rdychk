@@ -382,14 +382,33 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
             .on('postgres_changes', { event: '*', schema: 'public', table: 'date_votes', filter: `group_id=eq.${group.id}` }, () => fetchVotes())
             .subscribe();
 
+        // Patch a single proposal in place instead of refetching the whole list on every change.
+        // Covers cross-user score sync (the vote action updates location_proposals.score) + add/remove.
         const proposalsChannel = supabase
             .channel(`proposals_updates:${group.id}`)
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'location_proposals', filter: `group_id=eq.${group.id}` }, () => fetchProposals())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'location_proposals', filter: `group_id=eq.${group.id}` }, (payload) => {
+                if (payload.eventType === 'DELETE') {
+                    const oldId = (payload.old as { id?: string }).id;
+                    if (oldId) setProposals(prev => prev.filter(p => p.id !== oldId));
+                    return;
+                }
+                const row = payload.new as LocationProposal;
+                setProposals(prev => prev.some(p => p.id === row.id)
+                    ? prev.map(p => (p.id === row.id ? { ...p, ...row } : p))
+                    : [...prev, row]);
+            })
             .subscribe();
 
+        // Other members' votes only affect scores, which already arrive via proposals_updates above.
+        // So here we just keep the current member's own vote map in sync — votes are upsert-only (no deletes),
+        // and we no longer refetch all proposals on every vote (this channel has no group filter).
         const lpVotesChannel = supabase
             .channel(`lp_votes_updates:${group.id}`)
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'location_proposal_votes' }, () => fetchProposals())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'location_proposal_votes' }, (payload) => {
+                const row = payload.new as { member_id?: string; proposal_id?: string; vote?: 1 | -1 } | null;
+                if (!row || row.member_id !== memberId || !row.proposal_id || row.vote == null) return;
+                setMyLocationVotes(prev => ({ ...prev, [row.proposal_id!]: row.vote! }));
+            })
             .subscribe();
 
         return () => {
