@@ -74,24 +74,53 @@ async function seedDemoGroup(db: ReturnType<typeof getDb>, groupId: string) {
         await db.from('date_votes').insert(dateVotes);
     }
 
-    await db.from('location_proposals').insert([
-        {
-            group_id: groupId,
-            member_id: fakeMembers?.[0]?.id ?? adminMember.id,
-            name: 'Le Baron Rouge',
-            description: 'Bar à vins sympa, super ambiance',
-            link: 'https://maps.google.com',
-            score: 2,
-        },
-        {
-            group_id: groupId,
-            member_id: fakeMembers?.[1]?.id ?? adminMember.id,
-            name: 'MK2 Bibliothèque',
-            description: 'Cinéma accessible depuis le métro',
-            link: 'https://maps.google.com',
-            score: 1,
-        },
-    ]);
+    const memberFor = (i: number) => fakeMembers?.[i]?.id ?? adminMember.id;
+
+    const { data: createdProposals } = await db
+        .from('location_proposals')
+        .insert([
+            {
+                group_id: groupId,
+                member_id: memberFor(0),
+                name: 'Le Baron Rouge',
+                description: 'Bar à vins convivial, super ambiance',
+                link: 'https://maps.google.com',
+                image: 'https://picsum.photos/seed/baronrouge/600/400',
+                score: 3,
+            },
+            {
+                group_id: groupId,
+                member_id: memberFor(1),
+                name: 'MK2 Bibliothèque',
+                description: 'Cinéma accessible en métro',
+                link: 'https://maps.google.com',
+                image: 'https://picsum.photos/seed/mk2biblio/600/400',
+                score: 2,
+            },
+            {
+                group_id: groupId,
+                member_id: memberFor(2),
+                name: 'Bowling Mouffetard',
+                description: 'Bowling + bar à cocktails, fun garanti',
+                link: 'https://maps.google.com',
+                image: 'https://picsum.photos/seed/bowlingmouf/600/400',
+                score: 1,
+            },
+        ])
+        .select();
+
+    // Back the displayed scores with real votes (the score trigger recomputes from these).
+    if (createdProposals && createdProposals.length === 3) {
+        const [baron, mk2, bowling] = createdProposals;
+        await db.from('location_proposal_votes').insert([
+            { proposal_id: baron.id, member_id: adminMember.id, vote: 1 },
+            { proposal_id: baron.id, member_id: memberFor(0), vote: 1 },
+            { proposal_id: baron.id, member_id: memberFor(2), vote: 1 },
+            { proposal_id: mk2.id, member_id: memberFor(1), vote: 1 },
+            { proposal_id: mk2.id, member_id: memberFor(3), vote: 1 },
+            { proposal_id: bowling.id, member_id: adminMember.id, vote: 1 },
+        ]);
+    }
 
     return adminMember;
 }
@@ -105,9 +134,11 @@ export async function POST() {
             .upsert(
                 {
                     slug: DEMO_SLUG,
-                    name: 'Soirée Jeux Vidéo',
+                    name: 'Soirée entre potes',
                     type: 'in_person',
-                    city: 'Paris',
+                    city: 'Paris (75001)',
+                    base_lat: 48.8566,
+                    base_lng: 2.3522,
                     location_voting_enabled: true,
                     calendar_voting_enabled: true,
                 },
