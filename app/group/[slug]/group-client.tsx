@@ -175,7 +175,7 @@ const LiquidWaves = () => {
     );
 };
 
-export default function GroupClient({ initialGroup, slug }: { initialGroup: Group, slug: string }) {
+export default function GroupClient({ initialGroup, initialMembers, initialVotes, initialProposals, slug }: { initialGroup: Group, initialMembers: Member[], initialVotes: DateVote[], initialProposals: LocationProposal[], slug: string }) {
     const router = useRouter();
     const [group, setGroup] = useState<Group | null>(initialGroup);
     const [memberId, setMemberId] = useState<string | null>(null);
@@ -183,13 +183,13 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
     const [memberName, setMemberName] = useState<string | null>(null);
     const [isReady, setIsReady] = useState(false);
     const [timerEndTime, setTimerEndTime] = useState<string | null>(null);
-    const [members, setMembers] = useState<Member[]>([]);
+    const [members, setMembers] = useState<Member[]>(initialMembers);
     const [loadingMembers, setLoadingMembers] = useState(false);
     const [isManageModalOpen, setIsManageModalOpen] = useState(false);
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
     const [localOptimisticReady, setLocalOptimisticReady] = useState<boolean | null>(null);
-    const [votes, setVotes] = useState<DateVote[]>([]);
-    const [proposals, setProposals] = useState<LocationProposal[]>([]);
+    const [votes, setVotes] = useState<DateVote[]>(initialVotes);
+    const [proposals, setProposals] = useState<LocationProposal[]>(initialProposals);
     const [myLocationVotes, setMyLocationVotes] = useState<Record<string, 1 | -1>>({});
     const [showOnboarding, setShowOnboarding] = useState(false);
 
@@ -253,6 +253,22 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
         if (data) setVotes(data as DateVote[]);
     };
 
+    const fetchMyLocationVotes = async () => {
+        if (!memberId) return;
+        const { data: voteData } = await supabase
+            .from('location_proposal_votes')
+            .select('proposal_id, vote')
+            .eq('member_id', memberId);
+
+        if (voteData) {
+            const voteMap: Record<string, 1 | -1> = {};
+            voteData.forEach(v => {
+                voteMap[v.proposal_id] = v.vote as 1 | -1;
+            });
+            setMyLocationVotes(voteMap);
+        }
+    };
+
     const fetchProposals = async () => {
         if (!group?.id) return;
         const { data, error } = await supabase
@@ -263,20 +279,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
         if (error) console.error("Error fetching proposals:", error);
         if (data) setProposals(data as LocationProposal[]);
 
-        if (memberId) {
-            const { data: voteData } = await supabase
-                .from('location_proposal_votes')
-                .select('proposal_id, vote')
-                .eq('member_id', memberId);
-
-            if (voteData) {
-                const voteMap: Record<string, 1 | -1> = {};
-                voteData.forEach(v => {
-                    voteMap[v.proposal_id] = v.vote as 1 | -1;
-                });
-                setMyLocationVotes(voteMap);
-            }
-        }
+        await fetchMyLocationVotes();
     };
 
 
@@ -303,8 +306,7 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
     useEffect(() => {
         if (!group?.id) return;
 
-        fetchMembers();
-
+        // members are seeded from the server (initialMembers); realtime keeps them fresh.
         const membersChannel = supabase
             .channel(`members_updates:${group.id}`)
             .on(
@@ -374,8 +376,9 @@ export default function GroupClient({ initialGroup, slug }: { initialGroup: Grou
     useEffect(() => {
         if (!group?.id) return;
 
-        fetchVotes();
-        fetchProposals();
+        // votes & proposals are seeded from the server; only the current member's own
+        // location votes depend on memberId (unknown at SSR), so fetch just those here.
+        fetchMyLocationVotes();
 
         const votesChannel = supabase
             .channel(`votes_updates:${group.id}`)

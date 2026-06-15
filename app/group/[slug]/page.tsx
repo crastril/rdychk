@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import GroupClient from './group-client';
 import { Metadata } from 'next';
 import { cleanupPastDatesAction } from '@/app/actions/calendar';
+import type { Member, DateVote, LocationProposal } from '@/types/database';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
     const resolvedParams = await params;
@@ -55,5 +56,27 @@ export default async function GroupPage({ params }: { params: Promise<{ slug: st
     const { confirmed_date } = await cleanupPastDatesAction(group.id);
     const cleanGroup = { ...group, confirmed_date };
 
-    return <GroupClient initialGroup={cleanGroup} slug={slug} />;
+    // Seed the client with the rest of the group data so the first paint isn't blocked
+    // on a client round-trip. Realtime + handleRefresh keep these fresh afterwards.
+    const [membersRes, votesRes, proposalsRes] = await Promise.all([
+        supabase.from('members').select('*, profiles(avatar_url)').eq('group_id', group.id).order('joined_at', { ascending: true }),
+        supabase.from('date_votes').select('*').eq('group_id', group.id),
+        supabase.from('location_proposals').select('*').eq('group_id', group.id),
+    ]);
+
+    const initialMembers = (membersRes.data ?? []).map((m) => {
+        const rawProfile = m.profiles as { avatar_url: string | null } | { avatar_url: string | null }[] | null;
+        const profile = Array.isArray(rawProfile) ? rawProfile[0] : rawProfile;
+        return { ...m, avatar_url: profile?.avatar_url };
+    }) as Member[];
+
+    return (
+        <GroupClient
+            initialGroup={cleanGroup}
+            initialMembers={initialMembers}
+            initialVotes={(votesRes.data ?? []) as DateVote[]}
+            initialProposals={(proposalsRes.data ?? []) as LocationProposal[]}
+            slug={slug}
+        />
+    );
 }
