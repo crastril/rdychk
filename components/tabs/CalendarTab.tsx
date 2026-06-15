@@ -385,7 +385,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                 </span>
                 {voteCount > 0 && (
                     <span className={cn(
-                        'text-[8px] font-black tabular-nums mt-0.5 leading-none',
+                        'text-[11px] font-black tabular-nums mt-0.5 leading-none',
                         isConfirmed ? 'text-green-400/60' :
                             isBestMatch ? 'text-amber-400/70' :
                                 'text-white/25',
@@ -462,7 +462,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                     {isPending ? '·' : day}
                 </span>
                 {voteCount > 0 && (
-                    <span className="font-mono text-[8px] tabular-nums mt-0.5 leading-none" style={{ color: countColor }}>
+                    <span className="font-mono text-[11px] tabular-nums mt-0.5 leading-none" style={{ color: countColor }}>
                         {voteCount}/{totalMembers}
                     </span>
                 )}
@@ -649,7 +649,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                             style={{ width: `${pct}%`, background: isConf ? '#4ade80' : pct === 100 ? '#e879f9' : '#a855f7', borderRadius: '1px' }}
                                         />
                                     </div>
-                                    <span className="font-mono tabular-nums" style={{ fontSize: '8px', color: isConf ? 'rgba(74,222,128,0.7)' : '#8b5cf6' }}>
+                                    <span className="font-mono tabular-nums" style={{ fontSize: '11px', color: isConf ? 'rgba(74,222,128,0.7)' : '#8b5cf6' }}>
                                         {count}/{totalMembers} dispo
                                     </span>
                                 </div>
@@ -675,7 +675,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                         );
                                     })}
                                     {dateMembers.length > 4 && (
-                                        <span className="font-mono ml-0.5" style={{ fontSize: '8px', color: '#8b5cf6' }}>
+                                        <span className="font-mono ml-0.5" style={{ fontSize: '11px', color: '#8b5cf6' }}>
                                             +{dateMembers.length - 4}
                                         </span>
                                     )}
@@ -739,7 +739,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                                 <div className="h-1 overflow-hidden" style={{ background: 'rgba(168,85,247,0.08)', borderRadius: '1px' }}>
                                                     <div className="h-full transition-all duration-500" style={{ width: `${pct}%`, background: isConf ? '#4ade80' : pct === 100 ? '#e879f9' : '#a855f7', borderRadius: '1px' }} />
                                                 </div>
-                                                <span className="font-mono tabular-nums" style={{ fontSize: '8px', color: isConf ? 'rgba(74,222,128,0.7)' : '#8b5cf6' }}>
+                                                <span className="font-mono tabular-nums" style={{ fontSize: '11px', color: isConf ? 'rgba(74,222,128,0.7)' : '#8b5cf6' }}>
                                                     {count}/{totalMembers}
                                                 </span>
                                             </div>
@@ -753,7 +753,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                                         </div>
                                                     );
                                                 })}
-                                                {dateMembers.length > 4 && <span className="font-mono ml-0.5" style={{ fontSize: '8px', color: '#8b5cf6' }}>+{dateMembers.length - 4}</span>}
+                                                {dateMembers.length > 4 && <span className="font-mono ml-0.5" style={{ fontSize: '11px', color: '#8b5cf6' }}>+{dateMembers.length - 4}</span>}
                                             </div>
                                             {isConf && <Check className="w-3.5 h-3.5 shrink-0" style={{ color: '#4ade80' }} />}
                                         </div>
@@ -880,7 +880,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                             viewMode === 'week' ? 'bg-white/15 text-white' : 'text-white/30 hover:text-white/60'
                         )}
                     >
-                        Sem.
+                        Semaine
                     </button>
                     <button
                         onClick={() => setViewMode('month')}
@@ -1022,7 +1022,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                         />
                                     </div>
                                     <span className={cn(
-                                        'text-[8px] font-black tabular-nums',
+                                        'text-[11px] font-black tabular-nums',
                                         isConf ? 'text-green-400/60' : 'text-white/20',
                                     )}>
                                         {count}/{totalMembers} dispo
@@ -1050,7 +1050,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                         );
                                     })}
                                     {dateMembers.length > 4 && (
-                                        <span className="text-[8px] text-white/20 font-bold ml-0.5">
+                                        <span className="text-[11px] text-white/20 font-bold ml-0.5">
                                             +{dateMembers.length - 4}
                                         </span>
                                     )}
@@ -1112,7 +1112,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                                 style={{ width: `${pct}%` }}
                                             />
                                         </div>
-                                        <span className={cn('text-[8px] font-black tabular-nums', isConf ? 'text-green-400/60' : 'text-white/20')}>
+                                        <span className={cn('text-[11px] font-black tabular-nums', isConf ? 'text-green-400/60' : 'text-white/20')}>
                                             {count}/{totalMembers} dispo
                                         </span>
                                     </div>
@@ -1126,7 +1126,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                                 </div>
                                             );
                                         })}
-                                        {dateMembers.length > 4 && <span className="text-[8px] text-white/20 font-bold ml-0.5">+{dateMembers.length - 4}</span>}
+                                        {dateMembers.length > 4 && <span className="text-[11px] text-white/20 font-bold ml-0.5">+{dateMembers.length - 4}</span>}
                                     </div>
                                     {isConf && <Check className="w-3.5 h-3.5 text-green-400 shrink-0" />}
                                 </div>

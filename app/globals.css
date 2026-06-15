@@ -1112,3 +1112,26 @@
   animation: lm-scanline 5s linear infinite;
   animation-delay: 1.2s;
 }
+
+/* ── Shake (feedback when a locked action is attempted) ────────────────── */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-5px); }
+  30% { transform: translateX(5px); }
+  45% { transform: translateX(-4px); }
+  60% { transform: translateX(4px); }
+  75% { transform: translateX(-2px); }
+  90% { transform: translateX(2px); }
+}
+.animate-shake {
+  animation: shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* ── Toast slide-up (bottom-center) ───────────────────────────────────── */
+@keyframes toast-in {
+  0% { opacity: 0; transform: translate(-50%, 16px); }
+  100% { opacity: 1; transform: translate(-50%, 0); }
+}
+.animate-toast-in {
+  animation: toast-in 0.25s ease-out both;
+}

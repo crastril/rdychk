@@ -60,6 +60,7 @@ interface HomeTabProps {
     myLocationVotes: Record<string, 1 | -1>;
     onProposalsChange: (proposals: LocationProposal[]) => void;
     onGroupChange: () => void;
+    canAccessRendezvous: boolean;
 }
 
 export function HomeTab({
@@ -84,6 +85,7 @@ export function HomeTab({
     myLocationVotes,
     onProposalsChange,
     onGroupChange,
+    canAccessRendezvous,
 }: HomeTabProps) {
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [isLocationOpen, setIsLocationOpen] = useState(false);
@@ -353,7 +355,7 @@ export function HomeTab({
                                             className="uppercase leading-none"
                                             style={{ fontFamily: 'var(--font-barlow-condensed)', fontWeight: 900, fontSize: '1.05rem', letterSpacing: '0.12em', color: needsCalendarVote ? 'var(--v2-primary)' : 'rgba(255,255,255,0.75)' }}
                                         >
-                                            Quand ?
+                                            Date du rdv
                                         </span>
                                     )}
                                 </div>
@@ -401,16 +403,18 @@ export function HomeTab({
                         )}>
                             <div className="overflow-hidden">
                                 <div className={isRemote ? 'p-3' : 'border-t-[3px] border-black p-3'} style={isRemote ? { borderTop: '1px solid rgba(168,85,247,0.12)' } : {}}>
-                                    <CalendarTab
-                                        group={group}
-                                        slug={slug}
-                                        memberId={memberId}
-                                        members={members}
-                                        isAdmin={isAdmin}
-                                        onGroupChange={onGroupChange}
-                                        votes={votes}
-                                        onVotesChange={onVotesChange}
-                                    />
+                                    <div style={{ fontFamily: isRemote ? undefined : 'var(--font-barlow-condensed)' }}>
+                                        <CalendarTab
+                                            group={group}
+                                            slug={slug}
+                                            memberId={memberId}
+                                            members={members}
+                                            isAdmin={isAdmin}
+                                            onGroupChange={onGroupChange}
+                                            votes={votes}
+                                            onVotesChange={onVotesChange}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -568,6 +572,38 @@ export function HomeTab({
                 {/* ── PLANNING : votes d'abord, membres ensuite ── */}
             {!isDayOf && (
                 <>
+                    {!canAccessRendezvous && memberId && (
+                        <div
+                            className={cn(
+                                'flex items-start gap-3 px-4 py-3 rounded-2xl',
+                                !isRemote && 'border-[3px] border-black animate-vote-nudge',
+                            )}
+                            style={isRemote ? {
+                                borderRadius: '4px',
+                                border: '1px solid rgba(168,85,247,0.5)',
+                                background: 'rgba(168,85,247,0.08)',
+                                boxShadow: '0 0 20px rgba(168,85,247,0.12)',
+                            } : {
+                                background: 'rgba(255,46,46,0.07)',
+                                boxShadow: '5px 5px 0px var(--v2-primary)',
+                            }}
+                        >
+                            <span className="text-xl leading-none shrink-0 mt-0.5">🗳️</span>
+                            <div className="flex flex-col gap-0.5">
+                                <p
+                                    className="font-black uppercase leading-tight"
+                                    style={isRemote
+                                        ? { fontFamily: 'monospace', fontSize: '0.85rem', letterSpacing: '0.1em', color: '#c4b5fd' }
+                                        : { fontFamily: 'var(--font-barlow-condensed)', fontSize: '1.05rem', letterSpacing: '0.06em', color: 'var(--v2-primary)' }}
+                                >
+                                    On attend ton vote
+                                </p>
+                                <p className="text-[12px] font-medium leading-snug" style={{ color: isRemote ? '#a78bfa' : 'rgba(255,255,255,0.6)' }}>
+                                    Donne ton avis {calendarEnabled && locationEnabled ? 'sur la date ou le lieu' : calendarEnabled ? 'sur la date' : 'sur le lieu'} pour débloquer le 🔒 Rendez-vous.
+                                </p>
+                            </div>
+                        </div>
+                    )}
                     {actionCards}
                     <MembersCompact
                         members={members}
@@ -654,7 +690,7 @@ export function HomeTab({
                     )}
 
                     {/* Live ETA — jour J, in-person only, lieu connu, et seulement si l'utilisateur est prêt */}
-                    {memberId && isDayOf && !isRemote && displayLocation && effectiveReady && (
+                    {memberId && isActualDay && !isRemote && displayLocation && effectiveReady && (
                         <EnRouteBlock
                             slug={slug}
                             memberId={memberId}
@@ -667,8 +703,8 @@ export function HomeTab({
                         />
                     )}
 
-                    {/* ETA inline — jour J uniquement, avant d'être prêt */}
-                    {memberId && isDayOf && (
+                    {/* ETA inline — jour J réel uniquement, avant d'être prêt */}
+                    {memberId && isActualDay && (
                         <AnimatePresence initial={false}>
                             {!effectiveReady && !iAmEnRoute && (
                                 <motion.div

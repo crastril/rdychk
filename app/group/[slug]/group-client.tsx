@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { notFound, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -22,27 +22,31 @@ import {
     AlertDialogAction,
     AlertDialogCancel,
 } from '@/components/ui/alert-dialog';
-import { Gear, SignOut, CalendarDots, CheckCircle } from '@phosphor-icons/react';
+import { Gear, SignOut, CalendarDots, CheckCircle, Lock } from '@phosphor-icons/react';
 import { AuthButton } from '@/components/auth-button';
 import { GroupSettingsModal } from '@/components/GroupSettingsModal';
 import { OnboardingModal } from '@/components/OnboardingModal';
-import { setGroupModeAction } from '@/app/actions/group';
 import { ConnectionStatus } from '@/components/ConnectionStatus';
 import { HomeTab } from '@/components/tabs/HomeTab';
 import type { Group, Member, DateVote, LocationProposal } from '@/types/database';
 
 function ModeToggle({
-    mode,
-    isAdmin,
+    activeView,
+    canAccessRendezvous,
     isRemote,
-    onToggle,
+    shake,
+    onChange,
+    onLocked,
 }: {
-    mode: 'planning' | 'day-of';
-    isAdmin: boolean;
+    activeView: 'planning' | 'rendezvous';
+    canAccessRendezvous: boolean;
     isRemote: boolean;
-    onToggle: (m: 'planning' | 'day-of') => void;
+    shake: boolean;
+    onChange: (v: 'planning' | 'rendezvous') => void;
+    onLocked: () => void;
 }) {
-    const isDayOf = mode === 'day-of';
+    const isRdv = activeView === 'rendezvous';
+    const handleRdv = () => (canAccessRendezvous ? onChange('rendezvous') : onLocked());
 
     if (!isRemote) {
         // ── NEO-BRUTALIST SEGMENTED CONTROL ──
@@ -59,17 +63,17 @@ function ModeToggle({
                 >
                     <button
                         type="button"
-                        onClick={() => isAdmin && onToggle('planning')}
+                        onClick={() => onChange('planning')}
                         className="flex items-center gap-1.5 px-5 py-2.5 transition-colors duration-200"
                         style={{
-                            cursor: isAdmin ? 'pointer' : 'default',
+                            cursor: 'pointer',
                             fontFamily: 'var(--font-barlow-condensed)',
                             fontWeight: 900,
                             fontSize: '0.95rem',
                             letterSpacing: '0.04em',
                             textTransform: 'uppercase',
-                            background: !isDayOf ? 'var(--v2-primary)' : 'transparent',
-                            color: !isDayOf ? '#fff' : 'rgba(255,255,255,0.28)',
+                            background: !isRdv ? 'var(--v2-primary)' : 'transparent',
+                            color: !isRdv ? '#fff' : 'rgba(255,255,255,0.28)',
                             borderRight: '2px solid #000',
                         }}
                     >
@@ -78,20 +82,23 @@ function ModeToggle({
                     </button>
                     <button
                         type="button"
-                        onClick={() => isAdmin && onToggle('day-of')}
-                        className="flex items-center gap-1.5 px-5 py-2.5 transition-colors duration-200"
+                        onClick={handleRdv}
+                        className={cn('flex items-center gap-1.5 px-5 py-2.5 transition-colors duration-200', shake && 'animate-shake')}
                         style={{
-                            cursor: isAdmin ? 'pointer' : 'default',
+                            cursor: 'pointer',
                             fontFamily: 'var(--font-barlow-condensed)',
                             fontWeight: 900,
                             fontSize: '0.95rem',
                             letterSpacing: '0.04em',
                             textTransform: 'uppercase',
-                            background: isDayOf ? 'rgba(74,222,128,0.9)' : 'transparent',
-                            color: isDayOf ? '#000' : 'rgba(255,255,255,0.28)',
+                            background: isRdv ? 'rgba(74,222,128,0.9)' : 'transparent',
+                            color: isRdv ? '#000' : 'rgba(255,255,255,0.28)',
+                            opacity: canAccessRendezvous ? 1 : 0.55,
                         }}
                     >
-                        <CheckCircle className="w-3.5 h-3.5 shrink-0" weight="fill" />
+                        {canAccessRendezvous
+                            ? <CheckCircle className="w-3.5 h-3.5 shrink-0" weight="fill" />
+                            : <Lock className="w-3.5 h-3.5 shrink-0" weight="fill" />}
                         Rendez-vous
                     </button>
                 </div>
@@ -114,9 +121,9 @@ function ModeToggle({
                     className="absolute top-1 bottom-1 rounded-full transition-all duration-500"
                     style={{
                         width: 'calc(50% - 0.25rem)',
-                        left: isDayOf ? 'calc(50% + 0.125rem)' : '0.25rem',
+                        left: isRdv ? 'calc(50% + 0.125rem)' : '0.25rem',
                         transitionTimingFunction: 'cubic-bezier(0.34,1.56,0.64,1)',
-                        ...(isDayOf
+                        ...(isRdv
                             ? { background: 'rgba(74,222,128,0.15)', border: '1px solid rgba(74,222,128,0.35)', boxShadow: '0 0 12px rgba(74,222,128,0.12)' }
                             : { background: 'rgba(168,85,247,0.12)', border: '1px solid rgba(168,85,247,0.3)' }
                         ),
@@ -124,23 +131,25 @@ function ModeToggle({
                 />
                 <button
                     type="button"
-                    onClick={() => isAdmin && onToggle('planning')}
+                    onClick={() => onChange('planning')}
                     className="relative z-10 flex items-center gap-1.5 px-4 py-2 rounded-full transition-colors duration-300"
-                    style={{ cursor: isAdmin ? 'pointer' : 'default' }}
+                    style={{ cursor: 'pointer' }}
                 >
-                    <CalendarDots className="w-3.5 h-3.5 shrink-0" weight="fill" style={{ color: !isDayOf ? '#c4b5fd' : 'rgba(255,255,255,0.25)' }} />
-                    <span className="text-xs font-black uppercase tracking-wide whitespace-nowrap" style={{ fontFamily: 'monospace', color: !isDayOf ? '#c4b5fd' : 'rgba(255,255,255,0.25)' }}>
+                    <CalendarDots className="w-3.5 h-3.5 shrink-0" weight="fill" style={{ color: !isRdv ? '#c4b5fd' : 'rgba(255,255,255,0.25)' }} />
+                    <span className="text-xs font-black uppercase tracking-wide whitespace-nowrap" style={{ fontFamily: 'monospace', color: !isRdv ? '#c4b5fd' : 'rgba(255,255,255,0.25)' }}>
                         PLANIF
                     </span>
                 </button>
                 <button
                     type="button"
-                    onClick={() => isAdmin && onToggle('day-of')}
-                    className="relative z-10 flex items-center gap-1.5 px-4 py-2 rounded-full transition-colors duration-300"
-                    style={{ cursor: isAdmin ? 'pointer' : 'default' }}
+                    onClick={handleRdv}
+                    className={cn('relative z-10 flex items-center gap-1.5 px-4 py-2 rounded-full transition-colors duration-300', shake && 'animate-shake')}
+                    style={{ cursor: 'pointer', opacity: canAccessRendezvous ? 1 : 0.6 }}
                 >
-                    <CheckCircle className="w-3.5 h-3.5 shrink-0" weight="fill" style={{ color: isDayOf ? 'rgb(74,222,128)' : 'rgba(255,255,255,0.25)' }} />
-                    <span className="text-xs font-black uppercase tracking-wide whitespace-nowrap" style={{ fontFamily: 'monospace', color: isDayOf ? 'rgb(74,222,128)' : 'rgba(255,255,255,0.25)' }}>
+                    {canAccessRendezvous
+                        ? <CheckCircle className="w-3.5 h-3.5 shrink-0" weight="fill" style={{ color: isRdv ? 'rgb(74,222,128)' : 'rgba(255,255,255,0.25)' }} />
+                        : <Lock className="w-3.5 h-3.5 shrink-0" weight="fill" style={{ color: 'rgba(255,255,255,0.3)' }} />}
+                    <span className="text-xs font-black uppercase tracking-wide whitespace-nowrap" style={{ fontFamily: 'monospace', color: isRdv ? 'rgb(74,222,128)' : 'rgba(255,255,255,0.25)' }}>
                         SESSION
                     </span>
                 </button>
@@ -192,6 +201,11 @@ export default function GroupClient({ initialGroup, initialMembers, initialVotes
     const [proposals, setProposals] = useState<LocationProposal[]>(initialProposals);
     const [myLocationVotes, setMyLocationVotes] = useState<Record<string, 1 | -1>>({});
     const [showOnboarding, setShowOnboarding] = useState(false);
+    const [activeView, setActiveView] = useState<'planning' | 'rendezvous'>('planning');
+    const [rdvLocked, setRdvLocked] = useState(false);
+    const rdvLockTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const [rdvShake, setRdvShake] = useState(false);
+    const rdvShakeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const fetchGroup = async () => {
         try {
@@ -672,6 +686,17 @@ export default function GroupClient({ initialGroup, initialMembers, initialVotes
     const currentMember = members.find(m => m.id === memberId);
     const isAdmin = currentMember?.role === 'admin';
 
+    // Per-member gate: the Rendez-vous view unlocks once the member has given the
+    // input that's expected of them (at least one vote among the enabled types).
+    const votedDate = !!memberId && votes.some(v => v.member_id === memberId);
+    const votedLocation = Object.keys(myLocationVotes).length > 0 || (!!memberId && proposals.some(p => p.member_id === memberId));
+    const calVotingOn = !!group?.calendar_voting_enabled;
+    const locVotingOn = !!group?.location_voting_enabled;
+    const voteRequired = calVotingOn || locVotingOn;
+    const canAccessRendezvous = !voteRequired || (calVotingOn && votedDate) || (locVotingOn && votedLocation);
+    const effectiveView: 'planning' | 'rendezvous' = canAccessRendezvous ? activeView : 'planning';
+    const voteHint = calVotingOn && locVotingOn ? 'sur la date ou le lieu' : calVotingOn ? 'sur la date' : 'sur le lieu';
+
     // Group phase detection
     const todayStr = new Date().toISOString().split('T')[0];
     const isActualDay = !!group.confirmed_date && group.confirmed_date === todayStr;
@@ -931,25 +956,52 @@ export default function GroupClient({ initialGroup, initialMembers, initialVotes
                     />
                 </div>
 
-                {/* Mode toggle pill */}
+                {/* View toggle (per-member): Rendez-vous unlocks once you've voted */}
                 {memberId && (
-                    <ModeToggle
-                        mode={group.mode ?? 'planning'}
-                        isAdmin={isAdmin}
-                        isRemote={group.type === 'remote'}
-                        onToggle={async (newMode) => {
-                            const prev = group.mode ?? 'planning';
-                            setGroup(g => g ? { ...g, mode: newMode } : g);
-                            const result = await setGroupModeAction(slug, memberId, newMode);
-                            if (!result.success) setGroup(g => g ? { ...g, mode: prev } : g);
-                        }}
-                    />
+                    <>
+                        <div className="flex justify-center">
+                            <ModeToggle
+                                activeView={effectiveView}
+                                canAccessRendezvous={canAccessRendezvous}
+                                isRemote={group.type === 'remote'}
+                                shake={rdvShake}
+                                onChange={setActiveView}
+                                onLocked={() => {
+                                    setRdvLocked(true);
+                                    setRdvShake(true);
+                                    if (rdvLockTimer.current) clearTimeout(rdvLockTimer.current);
+                                    rdvLockTimer.current = setTimeout(() => setRdvLocked(false), 3500);
+                                    if (rdvShakeTimer.current) clearTimeout(rdvShakeTimer.current);
+                                    rdvShakeTimer.current = setTimeout(() => setRdvShake(false), 500);
+                                }}
+                            />
+                        </div>
+
+                        {/* Bottom-center toast when a locked action is attempted */}
+                        {rdvLocked && (
+                            <div
+                                className="fixed z-50 px-4 py-2.5 rounded-xl text-[12px] font-black text-center shadow-xl animate-toast-in pointer-events-none"
+                                style={{
+                                    left: '50%',
+                                    bottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)',
+                                    transform: 'translateX(-50%)',
+                                    maxWidth: '90vw',
+                                    ...(group.type === 'remote'
+                                        ? { color: '#e9d5ff', background: 'rgba(30,10,50,0.95)', border: '1px solid rgba(168,85,247,0.5)', fontFamily: 'monospace', boxShadow: '0 0 20px rgba(168,85,247,0.25)' }
+                                        : { color: '#fff', background: '#111', border: '3px solid #000', boxShadow: '5px 5px 0 #000', fontFamily: 'var(--font-barlow-condensed)', letterSpacing: '0.04em' }),
+                                }}
+                            >
+                                🔒 Vote d&apos;abord {voteHint} pour accéder au Rendez-vous.
+                            </div>
+                        )}
+                    </>
                 )}
 
                 {/* Single-scroll home view */}
                 {memberId && (
                     <HomeTab
-                        group={group}
+                        group={{ ...group, mode: effectiveView === 'rendezvous' ? 'day-of' : 'planning' }}
+                        canAccessRendezvous={canAccessRendezvous}
                         slug={slug}
                         memberId={memberId}
                         memberName={memberName}
