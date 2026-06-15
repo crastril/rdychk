@@ -689,6 +689,20 @@ export function HomeTab({
                         />
                     )}
 
+                    {/* Arrival-time picker (controlled) — opened from the HeroBlock before the event day */}
+                    {memberId && (
+                        <TimeProposalModal
+                            open={etaModalOpen}
+                            onOpenChange={setEtaModalOpen}
+                            currentProposedTime={currentMember?.proposed_time ?? null}
+                            onUpdate={async (updates) => {
+                                if (!memberId) return;
+                                await updateMemberAction(slug, memberId, updates);
+                            }}
+                            isRemote={isRemote}
+                        />
+                    )}
+
                     {/* Live ETA — jour J, in-person only, lieu connu, et seulement si l'utilisateur est prêt */}
                     {memberId && isActualDay && !isRemote && displayLocation && effectiveReady && (
                         <EnRouteBlock
