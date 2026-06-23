@@ -1194,7 +1194,6 @@ export default function GroupClient({ initialGroup, initialMembers, initialVotes
                     <ManageGroupModal
                         isOpen={isManageModalOpen}
                         onOpenChange={setIsManageModalOpen}
-                        groupId={group.id}
                         slug={slug}
                         members={members}
                         loading={loadingMembers}
