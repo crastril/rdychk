@@ -1,8 +1,7 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import { toggleReadyAction } from '@/app/actions/member';
-import { Check, Clock, CircleNotch, Timer, Warning } from '@phosphor-icons/react';
+import { Check, Clock, Timer, Warning } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 
 interface ReadyButtonProps {
