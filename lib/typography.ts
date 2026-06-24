@@ -17,7 +17,13 @@ import type { CSSProperties } from "react";
 
 export type TypoRole = "titre" | "t1" | "t2" | "t3" | "paragraphe" | "legende";
 
-const NEO_FONT = "var(--font-barlow-condensed)";
+// Neo (in-person) : Barlow Condensed pour les rôles "display" (titres, labels,
+// badges), sans lisible pour le corps de texte (paragraphe, légende) — Barlow
+// Condensed est trop condensée pour du corps de texte.
+const NEO_DISPLAY_FONT = "var(--font-barlow-condensed)";
+const NEO_BODY_FONT = "'Inter', system-ui, sans-serif"; // = body default (globals.css)
+const NEO_BODY_ROLES = new Set<TypoRole>(["paragraphe", "legende"]);
+
 const CYBER_FONT = "var(--font-geist-mono), monospace";
 
 // Échelle commune (px) — une seule source de vérité
@@ -51,8 +57,9 @@ const CYBER: Record<TypoRole, CSSProperties> = {
 };
 
 export function typo(role: TypoRole, isRemote: boolean): CSSProperties {
+  const neoFont = NEO_BODY_ROLES.has(role) ? NEO_BODY_FONT : NEO_DISPLAY_FONT;
   return {
-    fontFamily: isRemote ? CYBER_FONT : NEO_FONT,
+    fontFamily: isRemote ? CYBER_FONT : neoFont,
     fontSize: SIZE[role],
     ...(isRemote ? CYBER[role] : NEO[role]),
   };
