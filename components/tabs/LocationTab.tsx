@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
+import { typo } from '@/lib/typography';
 import type { LocationProposal, Member, GroupLocation } from '@/types/database';
 import { addLocationProposalAction, voteLocationProposalAction, deleteLocationProposalAction, updateLocationAction } from '@/app/actions/group';
 import { MapPin, GameController, CaretUp, CaretDown, Plus, CircleNotch, Star, Trash, WarningOctagon, Check } from '@phosphor-icons/react';
@@ -183,8 +184,8 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                     }
                 </div>
                 <div>
-                    <p className="text-white font-bold text-lg">Propositions désactivées</p>
-                    <p className="text-slate-500 mt-1 text-sm">L'admin peut activer les propositions dans les paramètres.</p>
+                    <p className="text-white" style={{ ...typo('t2', isRemote) }}>Propositions désactivées</p>
+                    <p className="text-slate-500 mt-1" style={{ ...typo('paragraphe', isRemote) }}>L'admin peut activer les propositions dans les paramètres.</p>
                 </div>
             </div>
         );
@@ -228,11 +229,10 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                     {isVoting ? <CircleNotch className={`${chevronSize} animate-spin`} /> : <CaretUp className={chevronSize} />}
                 </button>
                 <span
-                    className="font-mono tabular-nums"
+                    className="tabular-nums"
                     style={{
-                        fontSize: size === 'sm' ? '10px' : '12px',
+                        ...typo('legende', true),
                         color: isVoting ? 'transparent' : scoreColor,
-                        fontWeight: 700,
                         minWidth: '20px',
                         textAlign: 'center',
                     }}
@@ -303,9 +303,9 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                     {isVoting ? <CircleNotch className={loaderClass} /> : <CaretUp className={chevronClass} />}
                 </button>
                 <span
-                    className="font-black tabular-nums"
+                    className="tabular-nums"
                     style={{
-                        fontSize: btnSm ? '10px' : '12px',
+                        ...typo('legende', false),
                         color: isVoting ? 'transparent' : scoreColor,
                         minWidth: '20px',
                         textAlign: 'center',
@@ -343,14 +343,14 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                 {/* Header */}
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
-                        <h3 className="font-mono text-[9px] uppercase tracking-[0.2em]" style={{ color: '#8b5cf6' }}>
+                        <h3 style={{ ...typo('t3', true), color: '#8b5cf6' }}>
                             GAME_PROPOSALS ({filteredProposals.length})
                         </h3>
                         {isAdmin && (
                             <button
                                 onClick={() => setIsOverrideModalOpen(true)}
-                                className="font-mono text-[9px] uppercase tracking-[0.12em] flex items-center gap-1.5 px-2 py-1 transition-colors"
-                                style={{ border: '1px solid rgba(232,121,249,0.2)', borderRadius: '2px', color: '#e879f9' }}
+                                className="flex items-center gap-1.5 px-2 py-1 transition-colors"
+                                style={{ ...typo('t3', true), border: '1px solid rgba(232,121,249,0.2)', borderRadius: '2px', color: '#e879f9' }}
                                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(232,121,249,0.5)'; e.currentTarget.style.background = 'rgba(232,121,249,0.06)'; }}
                                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(232,121,249,0.2)'; e.currentTarget.style.background = 'transparent'; }}
                             >
@@ -364,8 +364,8 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                 {/* Empty state */}
                 {filteredProposals.length === 0 && (
                     <div className="flex items-start gap-2.5 px-3 py-2.5" style={{ border: '1px solid rgba(168,85,247,0.1)', borderRadius: '3px', background: 'rgba(168,85,247,0.03)' }}>
-                        <span className="font-mono text-sm leading-none mt-0.5 shrink-0" style={{ color: '#8b5cf6' }}>{'>'}</span>
-                        <p className="font-mono text-[11px] leading-relaxed" style={{ color: '#8b5cf6' }}>
+                        <span className="leading-none mt-0.5 shrink-0" style={{ ...typo('paragraphe', true), color: '#8b5cf6' }}>{'>'}</span>
+                        <p className="leading-relaxed" style={{ ...typo('paragraphe', true), color: '#8b5cf6' }}>
                             {'// propose un jeu — le groupe votera pour le meilleur choix'}
                         </p>
                     </div>
@@ -389,7 +389,7 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
 
                                 {/* Featured badge */}
                                 <div className="px-3 pt-3 pb-0 flex items-center relative z-10">
-                                    <div className="flex items-center gap-1.5 font-mono" style={{ fontSize: '9px', letterSpacing: '0.15em', color: '#e879f9' }}>
+                                    <div className="flex items-center gap-1.5" style={{ ...typo('t3', true), color: '#e879f9' }}>
                                         <Star className="w-3 h-3" weight="fill" />
                                         FEATURED
                                     </div>
@@ -403,12 +403,12 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                                             </div>
                                         )}
                                         <div className="flex-1 min-w-0">
-                                            <p className="font-mono text-sm line-clamp-1" style={{ color: '#c4b5fd' }}>{featured.name}</p>
-                                            <p className="font-mono mt-0.5" style={{ fontSize: '10px', color: '#8b5cf6' }}>
+                                            <p className="line-clamp-1" style={{ ...typo('t2', true), color: '#c4b5fd' }}>{featured.name}</p>
+                                            <p className="mt-0.5" style={{ ...typo('legende', true), textTransform: 'none', color: '#8b5cf6' }}>
                                                 {'// by '}<span style={{ color: '#a78bfa' }}>{members.find(m => m.id === featured.member_id)?.name || '???'}</span>
                                             </p>
                                             {featured.description && (
-                                                <p className="font-mono mt-1 line-clamp-2" style={{ fontSize: '11px', color: '#8b5cf6', letterSpacing: '0.03em' }}>
+                                                <p className="mt-1 line-clamp-2" style={{ ...typo('paragraphe', true), color: '#8b5cf6' }}>
                                                     [{featured.description}]
                                                 </p>
                                             )}
@@ -422,8 +422,8 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                                         <button
                                             onClick={() => handleDelete(featured.id)}
                                             disabled={!!deletingId}
-                                            className="w-full flex items-center justify-center gap-2 py-2 font-mono text-[10px] uppercase tracking-[0.15em] transition-all"
-                                            style={{ border: '1px solid rgba(239,68,68,0.2)', borderRadius: '2px', color: 'rgba(239,68,68,0.6)' }}
+                                            className="w-full flex items-center justify-center gap-2 py-2 transition-all"
+                                            style={{ ...typo('t3', true), border: '1px solid rgba(239,68,68,0.2)', borderRadius: '2px', color: 'rgba(239,68,68,0.6)' }}
                                             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.06)'; e.currentTarget.style.color = 'rgb(239,68,68)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)'; }}
                                             onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(239,68,68,0.6)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.2)'; }}
                                         >
@@ -440,8 +440,8 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                             <motion.div layout key="propose-btn" className="flex justify-center -mt-1 mb-2">
                                 <button
                                     onClick={() => setShowAddModal(true)}
-                                    className="w-full flex items-center justify-center gap-2 py-3 font-mono text-[11px] uppercase tracking-[0.15em] transition-all"
-                                    style={{ border: '1px solid rgba(168,85,247,0.2)', borderRadius: '3px', color: '#a78bfa' }}
+                                    className="w-full flex items-center justify-center gap-2 py-3 transition-all"
+                                    style={{ ...typo('t3', true), border: '1px solid rgba(168,85,247,0.2)', borderRadius: '3px', color: '#a78bfa' }}
                                     onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(168,85,247,0.5)'; e.currentTarget.style.color = '#c4b5fd'; e.currentTarget.style.background = 'rgba(168,85,247,0.06)'; }}
                                     onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(168,85,247,0.2)'; e.currentTarget.style.color = '#a78bfa'; e.currentTarget.style.background = 'transparent'; }}
                                 >
@@ -471,12 +471,12 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                                         </div>
                                     )}
                                     <div className="flex-1 min-w-0">
-                                        <p className="font-mono text-xs sm:text-sm truncate" style={{ color: '#c4b5fd' }}>{p.name}</p>
-                                        <p className="font-mono truncate" style={{ fontSize: '9px', color: '#8b5cf6' }}>
+                                        <p className="truncate" style={{ ...typo('paragraphe', true), color: '#c4b5fd' }}>{p.name}</p>
+                                        <p className="truncate" style={{ ...typo('legende', true), textTransform: 'none', color: '#8b5cf6' }}>
                                             {'// '}<span style={{ color: '#a78bfa' }}>{members.find(m => m.id === p.member_id)?.name || '???'}</span>
                                         </p>
                                         {p.description && (
-                                            <p className="font-mono line-clamp-1 mt-0.5" style={{ fontSize: '9px', color: '#8b5cf6', letterSpacing: '0.03em' }}>
+                                            <p className="line-clamp-1 mt-0.5" style={{ ...typo('legende', true), textTransform: 'none', color: '#8b5cf6' }}>
                                                 [{p.description}]
                                             </p>
                                         )}
@@ -526,7 +526,7 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                         <div className="w-full h-[2px] shrink-0" style={{ background: 'linear-gradient(90deg, #a855f7, #d946ef, #6366f1)' }} />
                         <div className="p-5">
                             <DialogHeader className="mb-4">
-                                <DialogTitle className="font-mono text-[0.8rem] uppercase tracking-[0.2em] flex items-center gap-2" style={{ color: '#c4b5fd' }}>
+                                <DialogTitle className="flex items-center gap-2" style={{ ...typo('t2', true), color: '#c4b5fd' }}>
                                     <WarningOctagon className="w-3.5 h-3.5" style={{ color: '#e879f9' }} />
                                     {'> FORCE_GAME_CHOICE'}
                                 </DialogTitle>
@@ -537,7 +537,7 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                                         key={p.id}
                                         onClick={() => handleConfirmLocation(p)}
                                         disabled={!!confirmingLocationId}
-                                        className="flex items-center justify-between px-3 py-2.5 font-mono text-left transition-colors"
+                                        className="flex items-center justify-between px-3 py-2.5 text-left transition-colors"
                                         style={{
                                             border: `1px solid ${group.location?.name === p.name ? 'rgba(168,85,247,0.4)' : 'rgba(168,85,247,0.12)'}`,
                                             borderRadius: '3px',
@@ -547,9 +547,9 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                                         onMouseEnter={e => { if (group.location?.name !== p.name) { e.currentTarget.style.background = 'rgba(168,85,247,0.06)'; e.currentTarget.style.borderColor = 'rgba(168,85,247,0.3)'; } }}
                                         onMouseLeave={e => { if (group.location?.name !== p.name) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(168,85,247,0.12)'; } }}
                                     >
-                                        <span className="text-sm truncate pr-3">{p.name}</span>
+                                        <span className="truncate pr-3" style={{ ...typo('paragraphe', true) }}>{p.name}</span>
                                         <div className="flex items-center gap-2 shrink-0">
-                                            <span className="font-mono text-[10px]" style={{ color: p.score > 0 ? '#4ade80' : p.score < 0 ? '#f87171' : '#8b5cf6' }}>
+                                            <span style={{ ...typo('legende', true), textTransform: 'none', color: p.score > 0 ? '#4ade80' : p.score < 0 ? '#f87171' : '#8b5cf6' }}>
                                                 {p.score > 0 ? '+' : ''}{p.score} pts
                                             </span>
                                             {confirmingLocationId === p.id
@@ -572,8 +572,8 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                                             setIsOverrideModalOpen(false);
                                         }}
                                         disabled={!!confirmingLocationId}
-                                        className="mt-2 px-3 py-2.5 font-mono text-[11px] uppercase tracking-[0.12em] transition-colors flex items-center justify-between"
-                                        style={{ border: '1px solid rgba(239,68,68,0.2)', borderRadius: '3px', color: 'rgba(239,68,68,0.65)' }}
+                                        className="mt-2 px-3 py-2.5 transition-colors flex items-center justify-between"
+                                        style={{ ...typo('t3', true), border: '1px solid rgba(239,68,68,0.2)', borderRadius: '3px', color: 'rgba(239,68,68,0.65)' }}
                                         onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.06)'; e.currentTarget.style.color = 'rgb(239,68,68)'; }}
                                         onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(239,68,68,0.65)'; }}
                                     >
@@ -596,16 +596,15 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
             {/* Header row */}
             <div className="flex items-center justify-between">
                 <span
-                    className="font-black uppercase tracking-widest text-xs"
-                    style={{ color: 'rgba(255,255,255,0.4)' }}
+                    style={{ ...typo('t3', false), color: 'rgba(255,255,255,0.4)' }}
                 >
                     PROPOSITIONS ({proposals.length})
                 </span>
                 {isAdmin && (
                     <button
                         onClick={() => setIsOverrideModalOpen(true)}
-                        className="rounded-lg border border-white/25 text-white/60 font-bold uppercase tracking-widest text-xs transition-colors"
-                        style={{ padding: '4px 12px' }}
+                        className="rounded-lg border border-white/25 text-white/60 transition-colors"
+                        style={{ ...typo('t3', false), padding: '4px 12px' }}
                         onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)'; e.currentTarget.style.color = 'white'; }}
                         onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; }}
                     >
@@ -638,8 +637,8 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                             {/* FAVORI badge */}
                             <div className="px-4 pt-3 pb-0 relative z-10">
                                 <span
-                                    className="rounded-md font-black uppercase text-xs tracking-widest text-white inline-block px-3 py-1"
-                                    style={{ background: 'var(--v2-primary)' }}
+                                    className="rounded-md text-white inline-block px-3 py-1"
+                                    style={{ ...typo('t3', false), background: 'var(--v2-primary)' }}
                                 >
                                     FAVORI
                                 </span>
@@ -657,12 +656,12 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                                         </div>
                                     )}
                                     <div className="flex-1 min-w-0">
-                                        <p className="font-black text-base line-clamp-1" style={{ color: 'white' }}>{featured.name}</p>
-                                        <p className="mt-0.5" style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)' }}>
+                                        <p className="line-clamp-1" style={{ ...typo('t2', false), color: 'white' }}>{featured.name}</p>
+                                        <p className="mt-0.5" style={{ ...typo('legende', false), textTransform: 'none', color: 'rgba(255,255,255,0.45)' }}>
                                             Proposé par <span style={{ color: 'rgba(255,255,255,0.75)' }}>{members.find(m => m.id === featured.member_id)?.name || 'Inconnu'}</span>
                                         </p>
                                         {featured.description && (
-                                            <p className="mt-1 line-clamp-2" style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>{featured.description}</p>
+                                            <p className="mt-1 line-clamp-2" style={{ ...typo('paragraphe', false), color: 'rgba(255,255,255,0.5)' }}>{featured.description}</p>
                                         )}
                                     </div>
                                 </div>
@@ -674,8 +673,9 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                                     <button
                                         onClick={() => handleDelete(featured.id)}
                                         disabled={!!deletingId}
-                                        className="w-full flex items-center justify-center gap-2 rounded-lg border border-red-500/25 text-red-400/60 font-black uppercase tracking-widest text-xs transition-colors"
+                                        className="w-full flex items-center justify-center gap-2 rounded-lg border border-red-500/25 text-red-400/60 transition-colors"
                                         style={{
+                                            ...typo('t3', false),
                                             padding: '8px',
                                         }}
                                         onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.5)'; }}
@@ -694,8 +694,8 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                         <motion.div layout key="propose-btn">
                             <button
                                 onClick={() => setShowAddModal(true)}
-                                className="w-full rounded-xl border border-white/20 bg-white/2 text-white/70 font-black uppercase tracking-widest flex items-center justify-center gap-3 py-4 transition-all"
-                                style={{ background: 'rgba(255,255,255,0.02)' }}
+                                className="w-full rounded-xl border border-white/20 bg-white/2 text-white/70 flex items-center justify-center gap-3 py-4 transition-all"
+                                style={{ ...typo('t3', false), background: 'rgba(255,255,255,0.02)' }}
                                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)'; e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
                                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; }}
                             >
@@ -731,8 +731,8 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                                     </div>
                                 )}
                                 <div className="flex-1 min-w-0">
-                                    <p className="font-bold text-sm truncate" style={{ color: 'white' }}>{p.name}</p>
-                                    <p className="truncate" style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>
+                                    <p className="truncate" style={{ ...typo('paragraphe', false), color: 'white' }}>{p.name}</p>
+                                    <p className="truncate" style={{ ...typo('legende', false), textTransform: 'none', color: 'rgba(255,255,255,0.4)' }}>
                                         {members.find(m => m.id === p.member_id)?.name || 'Inconnu'}
                                     </p>
                                 </div>
@@ -787,7 +787,7 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                 >
                     <div className="p-5">
                         <DialogHeader className="mb-4">
-                            <DialogTitle className="font-black uppercase tracking-widest flex items-center gap-2" style={{ color: 'white' }}>
+                            <DialogTitle className="flex items-center gap-2" style={{ ...typo('t2', false), color: 'white' }}>
                                 <WarningOctagon className="w-4 h-4" style={{ color: 'var(--v2-primary)' }} />
                                 Imposer un lieu
                             </DialogTitle>
@@ -810,9 +810,9 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                                         onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; } }}
                                         onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; } }}
                                     >
-                                        <span className="font-bold text-sm truncate pr-3">{p.name}</span>
+                                        <span className="truncate pr-3" style={{ ...typo('paragraphe', false) }}>{p.name}</span>
                                         <div className="flex items-center gap-2 shrink-0">
-                                            <span className="font-bold text-xs" style={{ color: scoreColor }}>
+                                            <span style={{ ...typo('legende', false), textTransform: 'none', color: scoreColor }}>
                                                 {p.score > 0 ? '+' : ''}{p.score} pts
                                             </span>
                                             {confirmingLocationId === p.id
@@ -836,7 +836,8 @@ export function LocationTab({ group, slug, memberId, isAdmin, proposals, myVotes
                                         setIsOverrideModalOpen(false);
                                     }}
                                     disabled={!!confirmingLocationId}
-                                    className="mt-2 px-3 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-between rounded-lg border border-red-500/25 text-red-400/65"
+                                    className="mt-2 px-3 py-2.5 transition-colors flex items-center justify-between rounded-lg border border-red-500/25 text-red-400/65"
+                                    style={{ ...typo('t3', false) }}
                                     onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.06)'; e.currentTarget.style.color = '#ef4444'; }}
                                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(239,68,68,0.65)'; }}
                                 >

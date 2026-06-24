@@ -1,6 +1,7 @@
 'use client';
 
 import { GameController, ArrowSquareOut } from '@phosphor-icons/react';
+import { typo } from '@/lib/typography';
 
 interface GameCardProps {
     name: string;
@@ -78,10 +79,10 @@ export function GameCard({ name, image, link, genres, date }: GameCardProps) {
                         className="w-1.5 h-1.5 rounded-full animate-pulse shrink-0"
                         style={{ background: '#22c55e', boxShadow: '0 0 6px #22c55e' }}
                     />
-                    <span className="font-mono text-[10px] uppercase tracking-[0.2em]" style={{ color: '#a78bfa' }}>
+                    <span style={{ ...typo('t3', true), color: '#a78bfa' }}>
                         CURRENT_GAME
                     </span>
-                    <span className="ml-auto font-mono text-[10px]" style={{ color: '#8b5cf6' }}>
+                    <span className="ml-auto" style={{ ...typo('legende', true), textTransform: 'none', color: '#8b5cf6' }}>
                         SRC:RAWG
                     </span>
                 </div>
@@ -89,25 +90,19 @@ export function GameCard({ name, image, link, genres, date }: GameCardProps) {
                 {/* Text overlay */}
                 <div className="absolute inset-x-0 bottom-0 px-4 pb-4 pt-8 flex flex-col gap-0.5 z-20">
                     {date && (
-                        <span
-                            className="font-mono text-[10px] uppercase tracking-[0.25em]"
-                            style={{ color: '#a78bfa' }}
-                        >
+                        <span style={{ ...typo('legende', true), color: '#a78bfa' }}>
                             {`// ${date}`}
                         </span>
                     )}
                     {genres && (
-                        <span
-                            className="font-mono text-[10px] uppercase tracking-[0.15em]"
-                            style={{ color: '#e879f9' }}
-                        >
+                        <span style={{ ...typo('legende', true), color: '#e879f9' }}>
                             {`[${genres}]`}
                         </span>
                     )}
                     <h2
-                        className="font-mono text-2xl uppercase leading-tight text-white"
+                        className="leading-tight text-white"
                         style={{
-                            letterSpacing: '0.04em',
+                            ...typo('t1', true),
                             textShadow: '0 0 20px rgba(168,85,247,0.4)',
                         }}
                     >
@@ -140,10 +135,7 @@ export function GameCard({ name, image, link, genres, date }: GameCardProps) {
                         }}
                     >
                         <GameController className="w-3.5 h-3.5 shrink-0" style={{ color: '#a855f7' }} weight="fill" />
-                        <span
-                            className="font-mono text-[11px] uppercase tracking-[0.1em]"
-                            style={{ color: '#c4b5fd' }}
-                        >
+                        <span style={{ ...typo('t3', true), color: '#c4b5fd' }}>
                             VIEW_ON_RAWG
                         </span>
                         <ArrowSquareOut className="w-3 h-3 shrink-0 transition-colors" style={{ color: '#8b5cf6' }} />

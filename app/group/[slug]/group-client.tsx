@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { notFound, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { typo } from '@/lib/typography';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/auth-provider';
 import { joinGroupAction, reclaimSessionAction, leaveGroupAction, promoteToAdminAction, linkGuestToUserAction } from '@/app/actions/member';
@@ -66,12 +67,8 @@ function ModeToggle({
                         onClick={() => onChange('planning')}
                         className="flex items-center gap-1.5 px-5 py-2.5 transition-colors duration-200"
                         style={{
+                            ...typo('t3', false),
                             cursor: 'pointer',
-                            fontFamily: 'var(--font-barlow-condensed)',
-                            fontWeight: 900,
-                            fontSize: '0.95rem',
-                            letterSpacing: '0.04em',
-                            textTransform: 'uppercase',
                             background: !isRdv ? 'var(--v2-primary)' : 'transparent',
                             color: !isRdv ? '#fff' : 'rgba(255,255,255,0.28)',
                             borderRight: '2px solid #000',
@@ -85,12 +82,8 @@ function ModeToggle({
                         onClick={handleRdv}
                         className={cn('flex items-center gap-1.5 px-5 py-2.5 transition-colors duration-200', shake && 'animate-shake')}
                         style={{
+                            ...typo('t3', false),
                             cursor: 'pointer',
-                            fontFamily: 'var(--font-barlow-condensed)',
-                            fontWeight: 900,
-                            fontSize: '0.95rem',
-                            letterSpacing: '0.04em',
-                            textTransform: 'uppercase',
                             background: isRdv ? 'rgba(74,222,128,0.9)' : 'transparent',
                             color: isRdv ? '#000' : 'rgba(255,255,255,0.28)',
                             opacity: canAccessRendezvous ? 1 : 0.55,
@@ -136,7 +129,7 @@ function ModeToggle({
                     style={{ cursor: 'pointer' }}
                 >
                     <CalendarDots className="w-3.5 h-3.5 shrink-0" weight="fill" style={{ color: !isRdv ? '#c4b5fd' : 'rgba(255,255,255,0.25)' }} />
-                    <span className="text-xs font-black uppercase tracking-wide whitespace-nowrap" style={{ fontFamily: 'monospace', color: !isRdv ? '#c4b5fd' : 'rgba(255,255,255,0.25)' }}>
+                    <span className="whitespace-nowrap" style={{ ...typo('t3', true), color: !isRdv ? '#c4b5fd' : 'rgba(255,255,255,0.25)' }}>
                         PLANIF
                     </span>
                 </button>
@@ -149,7 +142,7 @@ function ModeToggle({
                     {canAccessRendezvous
                         ? <CheckCircle className="w-3.5 h-3.5 shrink-0" weight="fill" style={{ color: isRdv ? 'rgb(74,222,128)' : 'rgba(255,255,255,0.25)' }} />
                         : <Lock className="w-3.5 h-3.5 shrink-0" weight="fill" style={{ color: 'rgba(255,255,255,0.3)' }} />}
-                    <span className="text-xs font-black uppercase tracking-wide whitespace-nowrap" style={{ fontFamily: 'monospace', color: isRdv ? 'rgb(74,222,128)' : 'rgba(255,255,255,0.25)' }}>
+                    <span className="whitespace-nowrap" style={{ ...typo('t3', true), color: isRdv ? 'rgb(74,222,128)' : 'rgba(255,255,255,0.25)' }}>
                         SESSION
                     </span>
                 </button>
@@ -849,13 +842,8 @@ export default function GroupClient({ initialGroup, initialMembers, initialVotes
                 <div className="flex items-start gap-3">
                     <div className="flex-1 min-w-0">
                         <h1
-                            className="text-white leading-none truncate uppercase"
-                            style={{
-                                fontFamily: 'var(--font-barlow-condensed)',
-                                fontWeight: 900,
-                                fontSize: '1.85rem',
-                                letterSpacing: '-0.01em',
-                            }}
+                            className="text-white leading-none truncate"
+                            style={{ ...typo('titre', group.type === 'remote') }}
                         >
                             {group.name}
                         </h1>
@@ -866,8 +854,8 @@ export default function GroupClient({ initialGroup, initialMembers, initialVotes
                                 // ── CYBERPUNK VARIANT ──
                                 isActualDay ? (
                                     <span
-                                        className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em]"
-                                        style={{ color: '#4ade80' }}
+                                        className="inline-flex items-center gap-1.5"
+                                        style={{ ...typo('t3', true), color: '#4ade80' }}
                                     >
                                         <span
                                             className="w-1.5 h-1.5 rounded-full animate-pulse"
@@ -877,8 +865,8 @@ export default function GroupClient({ initialGroup, initialMembers, initialVotes
                                     </span>
                                 ) : isPlanning ? (
                                     <span
-                                        className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em]"
-                                        style={{ color: '#a78bfa' }}
+                                        className="inline-flex items-center gap-1.5"
+                                        style={{ ...typo('t3', true), color: '#a78bfa' }}
                                     >
                                         <span
                                             className="w-1.5 h-1.5 rounded-full animate-pulse"
@@ -888,8 +876,8 @@ export default function GroupClient({ initialGroup, initialMembers, initialVotes
                                     </span>
                                 ) : isConfirmedFuture ? (
                                     <span
-                                        className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em]"
-                                        style={{ color: 'rgba(56,189,248,0.7)' }}
+                                        className="inline-flex items-center gap-1.5"
+                                        style={{ ...typo('t3', true), color: 'rgba(56,189,248,0.7)' }}
                                     >
                                         <span className="w-1.5 h-1.5 rounded-sm" style={{ background: 'rgba(56,189,248,0.5)' }} />
                                         {`SCHEDULED: ${confirmedDateLabel}`}
@@ -899,11 +887,9 @@ export default function GroupClient({ initialGroup, initialMembers, initialVotes
                                 // ── NEO-BRUTALIST VARIANT ──
                                 isActualDay ? (
                                     <span
-                                        className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border-[2px] border-black font-black uppercase"
+                                        className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border-[2px] border-black"
                                         style={{
-                                            fontFamily: 'var(--font-barlow-condensed)',
-                                            fontSize: '13px',
-                                            letterSpacing: '0.06em',
+                                            ...typo('t3', false),
                                             background: '#ff2e2e',
                                             color: '#fff',
                                             boxShadow: '2px 2px 0px #000',
@@ -914,11 +900,9 @@ export default function GroupClient({ initialGroup, initialMembers, initialVotes
                                     </span>
                                 ) : isPlanning ? (
                                     <span
-                                        className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border-[2px] border-black font-black uppercase"
+                                        className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border-[2px] border-black"
                                         style={{
-                                            fontFamily: 'var(--font-barlow-condensed)',
-                                            fontSize: '13px',
-                                            letterSpacing: '0.06em',
+                                            ...typo('t3', false),
                                             background: '#fbbf24',
                                             color: '#000',
                                             boxShadow: '2px 2px 0px #000',
@@ -929,11 +913,9 @@ export default function GroupClient({ initialGroup, initialMembers, initialVotes
                                     </span>
                                 ) : isConfirmedFuture ? (
                                     <span
-                                        className="inline-flex items-center gap-1.5 px-2.5 py-0.5 font-black uppercase"
+                                        className="inline-flex items-center gap-1.5 px-2.5 py-0.5"
                                         style={{
-                                            fontFamily: 'var(--font-barlow-condensed)',
-                                            fontSize: '13px',
-                                            letterSpacing: '0.06em',
+                                            ...typo('t3', false),
                                             background: '#e8e8e8',
                                             color: '#111',
                                             border: '2px solid #000',
@@ -1033,17 +1015,10 @@ export default function GroupClient({ initialGroup, initialMembers, initialVotes
                             onClick={() => setIsLeaveConfirmOpen(true)}
                             className="flex items-center gap-2 px-4 py-3 transition-all duration-150 active:opacity-60"
                             style={group.type === 'remote' ? {
-                                fontFamily: 'monospace',
-                                fontSize: '11px',
-                                letterSpacing: '0.12em',
-                                textTransform: 'uppercase',
+                                ...typo('t3', true),
                                 color: 'rgba(239,68,68,0.35)',
                             } : {
-                                fontFamily: 'var(--font-barlow-condensed)',
-                                fontWeight: 700,
-                                fontSize: '13px',
-                                letterSpacing: '0.06em',
-                                textTransform: 'uppercase',
+                                ...typo('t3', false),
                                 color: 'rgba(255,255,255,0.2)',
                             }}
                             onMouseEnter={e => {
@@ -1087,14 +1062,13 @@ export default function GroupClient({ initialGroup, initialMembers, initialVotes
                     {group.type === 'remote' ? (
                         <div className="px-5 pt-5 pb-4" style={{ borderBottom: '1px solid rgba(239,68,68,0.1)' }}>
                             <AlertDialogTitle
-                                className="font-mono text-sm uppercase tracking-[0.14em]"
-                                style={{ color: 'rgba(239,68,68,0.9)' }}
+                                style={{ ...typo('t2', true), color: 'rgba(239,68,68,0.9)' }}
                             >
                                 {'// CONFIRM_LEAVE'}
                             </AlertDialogTitle>
                             <AlertDialogDescription
-                                className="mt-3 font-mono text-[11px] leading-relaxed"
-                                style={{ color: 'rgba(196,181,253,0.6)' }}
+                                className="mt-3 leading-relaxed"
+                                style={{ ...typo('paragraphe', true), color: 'rgba(196,181,253,0.6)' }}
                             >
                                 Tu vas quitter le groupe <span style={{ color: '#c4b5fd' }}>{group.name}</span>.
                                 <br /><br />
@@ -1104,18 +1078,13 @@ export default function GroupClient({ initialGroup, initialMembers, initialVotes
                     ) : (
                         <div className="px-5 pt-5 pb-4" style={{ borderBottom: '2px solid #000' }}>
                             <AlertDialogTitle
-                                className="font-black uppercase tracking-tight"
-                                style={{
-                                    fontFamily: 'var(--font-barlow-condensed)',
-                                    fontSize: '1.4rem',
-                                    color: '#ff2e2e',
-                                }}
+                                style={{ ...typo('t2', false), color: '#ff2e2e' }}
                             >
                                 Quitter le groupe ?
                             </AlertDialogTitle>
                             <AlertDialogDescription
-                                className="mt-2 text-sm leading-relaxed"
-                                style={{ color: 'rgba(255,255,255,0.5)' }}
+                                className="mt-2 leading-relaxed"
+                                style={{ ...typo('paragraphe', false), color: 'rgba(255,255,255,0.5)' }}
                             >
                                 Tu vas quitter <span className="font-bold text-white/70">{group.name}</span>.
                                 <br /><br />
@@ -1134,43 +1103,39 @@ export default function GroupClient({ initialGroup, initialMembers, initialVotes
                         <AlertDialogAction
                             onClick={handleLeaveGroup}
                             className={cn(
-                                'flex-1 font-black uppercase tracking-wide border-0 transition-all duration-150 active:opacity-70',
-                                group.type === 'remote'
-                                    ? 'rounded-[3px] font-mono text-[11px] tracking-[0.14em] py-3'
-                                    : 'rounded-xl text-sm py-3'
+                                'flex-1 border-0 transition-all duration-150 active:opacity-70 py-3',
+                                group.type === 'remote' ? 'rounded-[3px]' : 'rounded-xl'
                             )}
                             style={group.type === 'remote' ? {
+                                ...typo('t3', true),
                                 background: 'rgba(239,68,68,0.12)',
                                 border: '1px solid rgba(239,68,68,0.3)',
                                 color: 'rgba(239,68,68,0.9)',
                             } : {
+                                ...typo('t3', false),
                                 background: '#ff2e2e',
                                 border: '2.5px solid #000',
                                 boxShadow: '3px 3px 0px #000',
                                 color: '#fff',
-                                fontFamily: 'var(--font-barlow-condensed)',
-                                fontSize: '1rem',
                             }}
                         >
                             {group.type === 'remote' ? 'CONFIRM_EXIT' : 'Quitter'}
                         </AlertDialogAction>
                         <AlertDialogCancel
                             className={cn(
-                                'flex-1 border-0 font-black uppercase tracking-wide transition-all duration-150 active:opacity-70',
-                                group.type === 'remote'
-                                    ? 'rounded-[3px] font-mono text-[11px] tracking-[0.14em] py-3'
-                                    : 'rounded-xl text-sm py-3'
+                                'flex-1 border-0 transition-all duration-150 active:opacity-70 py-3',
+                                group.type === 'remote' ? 'rounded-[3px]' : 'rounded-xl'
                             )}
                             style={group.type === 'remote' ? {
+                                ...typo('t3', true),
                                 background: 'rgba(168,85,247,0.06)',
                                 border: '1px solid rgba(168,85,247,0.15)',
                                 color: 'rgba(196,181,253,0.6)',
                             } : {
+                                ...typo('t3', false),
                                 background: '#0c0c0c',
                                 border: '2.5px solid #fff2',
                                 color: 'rgba(255,255,255,0.45)',
-                                fontFamily: 'var(--font-barlow-condensed)',
-                                fontSize: '1rem',
                             }}
                         >
                             {group.type === 'remote' ? 'ABORT' : 'Annuler'}

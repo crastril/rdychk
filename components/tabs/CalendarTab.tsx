@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { typo } from '@/lib/typography';
 import type { Group, Member, DateVote } from '@/types/database';
 import { voteDateAction, confirmDateAction } from '@/app/actions/calendar';
 import { CaretLeft, CaretRight, Check, CircleNotch, CalendarCheck, Crown } from '@phosphor-icons/react';
@@ -213,16 +214,16 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                         <CalendarCheck className="w-5 h-5" style={{ color: '#8b5cf6' }} />
                     </div>
                     <div>
-                        <p className="font-mono text-[11px] uppercase tracking-[0.15em]" style={{ color: '#a78bfa' }}>CALENDAR_VOTING_DISABLED</p>
+                        <p style={{ ...typo('t3', true), color: '#a78bfa' }}>CALENDAR_VOTING_DISABLED</p>
                         {confirmedDate ? (
-                            <p className="font-mono text-[10px] uppercase tracking-[0.1em] mt-2" style={{ color: '#8b5cf6' }}>
+                            <p className="mt-2" style={{ ...typo('legende', true), textTransform: 'none', color: '#8b5cf6' }}>
                                 {'// SESSION_DATE: '}
                                 <span style={{ color: '#4ade80' }}>
                                     {new Date(confirmedDate + 'T00:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
                                 </span>
                             </p>
                         ) : (
-                            <p className="font-mono text-[10px] mt-2" style={{ color: '#8b5cf6' }}>// NO_DATE_CONFIRMED</p>
+                            <p className="mt-2" style={{ ...typo('legende', true), textTransform: 'none', color: '#8b5cf6' }}>// NO_DATE_CONFIRMED</p>
                         )}
                     </div>
                 </div>
@@ -234,16 +235,16 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                     <CalendarCheck className="w-6 h-6 text-slate-500" />
                 </div>
                 <div>
-                    <p className="text-white font-bold">Vote de date désactivé</p>
+                    <p className="text-white" style={{ ...typo('t2', false) }}>Vote de date désactivé</p>
                     {confirmedDate ? (
-                        <p className="text-slate-400 mt-1 text-sm">
+                        <p className="text-slate-400 mt-1" style={{ ...typo('paragraphe', false) }}>
                             Date fixée :{' '}
-                            <span className="text-green-400 font-bold capitalize">
+                            <span className="text-green-400 capitalize" style={{ fontWeight: 900 }}>
                                 {new Date(confirmedDate + 'T00:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
                             </span>
                         </p>
                     ) : (
-                        <p className="text-slate-500 mt-1 text-sm">Aucune date fixée.</p>
+                        <p className="text-slate-500 mt-1" style={{ ...typo('paragraphe', false) }}>Aucune date fixée.</p>
                     )}
                 </div>
             </div>
@@ -279,22 +280,28 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                     !isMine && !isBestMatch && !isConfirmed && isPast && 'border border-transparent',
                 )}
             >
-                <span className={cn(
-                    'text-[13px] capitalize flex-1 leading-none',
-                    isConfirmed ? 'text-green-400' :
-                        isBestMatch ? 'text-amber-300' :
-                            isMine ? 'text-white' :
-                                isToday ? 'text-[var(--v2-primary)]' :
-                                    isPast ? 'text-white/30' : 'text-white/70',
-                )}>
+                <span
+                    className={cn(
+                        'capitalize flex-1 leading-none',
+                        isConfirmed ? 'text-green-400' :
+                            isBestMatch ? 'text-amber-300' :
+                                isMine ? 'text-white' :
+                                    isToday ? 'text-[var(--v2-primary)]' :
+                                        isPast ? 'text-white/30' : 'text-white/70',
+                    )}
+                    style={{ ...typo('paragraphe', false) }}
+                >
                     {label}
                 </span>
                 {voteCount > 0 && (
-                    <span className={cn(
-                        'text-[11px] font-black tabular-nums leading-none shrink-0',
-                        isConfirmed ? 'text-green-400/70' :
-                            isBestMatch ? 'text-amber-400/80' : 'text-white/40',
-                    )}>
+                    <span
+                        className={cn(
+                            'tabular-nums leading-none shrink-0',
+                            isConfirmed ? 'text-green-400/70' :
+                                isBestMatch ? 'text-amber-400/80' : 'text-white/40',
+                        )}
+                        style={{ ...typo('legende', false) }}
+                    >
                         {voteCount}/{totalMembers}
                     </span>
                 )}
@@ -336,11 +343,11 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                     cursor: isPast ? 'not-allowed' : 'pointer',
                 }}
             >
-                <span className="font-mono text-[12px] capitalize leading-none flex-1" style={{ color: textColor }}>
+                <span className="capitalize leading-none flex-1" style={{ ...typo('paragraphe', true), color: textColor }}>
                     {label}
                 </span>
                 {voteCount > 0 && (
-                    <span className="font-mono text-[10px] tabular-nums leading-none shrink-0" style={{ color: countColor }}>
+                    <span className="tabular-nums leading-none shrink-0" style={{ ...typo('legende', true), color: countColor }}>
                         {voteCount}/{totalMembers}
                     </span>
                 )}
@@ -373,23 +380,29 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                     !isMine && !isBestMatch && !isConfirmed && isPast && 'border border-transparent',
                 )}
             >
-                <span className={cn(
-                    'text-[13px] leading-none',
-                    isConfirmed ? 'text-green-400' :
-                        isBestMatch ? 'text-amber-300' :
-                            isMine ? 'text-white' :
-                                isToday ? 'text-[var(--v2-primary)]' :
-                                    isPast ? 'text-white/30' : 'text-white/55',
-                )}>
+                <span
+                    className={cn(
+                        'leading-none',
+                        isConfirmed ? 'text-green-400' :
+                            isBestMatch ? 'text-amber-300' :
+                                isMine ? 'text-white' :
+                                    isToday ? 'text-[var(--v2-primary)]' :
+                                        isPast ? 'text-white/30' : 'text-white/55',
+                    )}
+                    style={{ ...typo('paragraphe', false) }}
+                >
                     {day}
                 </span>
                 {voteCount > 0 && (
-                    <span className={cn(
-                        'text-[11px] font-black tabular-nums mt-0.5 leading-none',
-                        isConfirmed ? 'text-green-400/60' :
-                            isBestMatch ? 'text-amber-400/70' :
-                                'text-white/25',
-                    )}>
+                    <span
+                        className={cn(
+                            'tabular-nums mt-0.5 leading-none',
+                            isConfirmed ? 'text-green-400/60' :
+                                isBestMatch ? 'text-amber-400/70' :
+                                    'text-white/25',
+                        )}
+                        style={{ ...typo('legende', false) }}
+                    >
                         {voteCount}/{totalMembers}
                     </span>
                 )}
@@ -458,11 +471,11 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                     }
                 }}
             >
-                <span className="font-mono text-[13px] leading-none" style={{ color: textColor }}>
+                <span className="leading-none" style={{ ...typo('paragraphe', true), color: textColor }}>
                     {isPending ? '·' : day}
                 </span>
                 {voteCount > 0 && (
-                    <span className="font-mono text-[11px] tabular-nums mt-0.5 leading-none" style={{ color: countColor }}>
+                    <span className="tabular-nums mt-0.5 leading-none" style={{ ...typo('legende', true), color: countColor }}>
                         {voteCount}/{totalMembers}
                     </span>
                 )}
@@ -487,7 +500,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                         >
                             <CaretLeft className="w-3 h-3" />
                         </button>
-                        <span className="font-mono text-[11px] uppercase tracking-[0.1em] min-w-[110px] text-center" style={{ color: '#a78bfa' }}>
+                        <span className="min-w-[110px] text-center" style={{ ...typo('t3', true), color: '#a78bfa' }}>
                             {viewMode === 'week' ? weekLabel : `${MONTHS_FR[month].slice(0,3).toUpperCase()} ${year}`}
                         </span>
                         <button
@@ -502,8 +515,8 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                         {!isCurrentPeriod && (
                             <button
                                 onClick={navToday}
-                                className="font-mono text-[9px] uppercase tracking-[0.1em] px-1.5 py-1 transition-colors ml-0.5"
-                                style={{ color: '#8b5cf6', border: '1px solid rgba(168,85,247,0.15)', borderRadius: '2px' }}
+                                className="px-1.5 py-1 transition-colors ml-0.5"
+                                style={{ ...typo('t3', true), color: '#8b5cf6', border: '1px solid rgba(168,85,247,0.15)', borderRadius: '2px' }}
                                 onMouseEnter={e => { e.currentTarget.style.color = '#c4b5fd'; e.currentTarget.style.borderColor = 'rgba(168,85,247,0.4)'; }}
                                 onMouseLeave={e => { e.currentTarget.style.color = '#8b5cf6'; e.currentTarget.style.borderColor = 'rgba(168,85,247,0.15)'; }}
                             >
@@ -516,15 +529,15 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                     <div className="flex items-center gap-0.5" style={{ border: '1px solid rgba(168,85,247,0.15)', borderRadius: '3px', padding: '2px' }}>
                         <button
                             onClick={() => setViewMode('week')}
-                            className="font-mono text-[9px] uppercase tracking-[0.1em] px-2 py-1 transition-colors"
-                            style={{ borderRadius: '2px', background: viewMode === 'week' ? 'rgba(168,85,247,0.15)' : 'transparent', color: viewMode === 'week' ? '#c4b5fd' : '#8b5cf6' }}
+                            className="px-2 py-1 transition-colors"
+                            style={{ ...typo('t3', true), borderRadius: '2px', background: viewMode === 'week' ? 'rgba(168,85,247,0.15)' : 'transparent', color: viewMode === 'week' ? '#c4b5fd' : '#8b5cf6' }}
                         >
                             WEEK
                         </button>
                         <button
                             onClick={() => setViewMode('month')}
-                            className="font-mono text-[9px] uppercase tracking-[0.1em] px-2 py-1 transition-colors"
-                            style={{ borderRadius: '2px', background: viewMode === 'month' ? 'rgba(168,85,247,0.15)' : 'transparent', color: viewMode === 'month' ? '#c4b5fd' : '#8b5cf6' }}
+                            className="px-2 py-1 transition-colors"
+                            style={{ ...typo('t3', true), borderRadius: '2px', background: viewMode === 'month' ? 'rgba(168,85,247,0.15)' : 'transparent', color: viewMode === 'month' ? '#c4b5fd' : '#8b5cf6' }}
                         >
                             MONTH
                         </button>
@@ -535,7 +548,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                 {viewMode === 'month' && (
                     <div className="grid grid-cols-7 gap-0.5">
                         {DAYS_FR.map((d, i) => (
-                            <div key={i} className="text-center font-mono py-1" style={{ fontSize: '9px', letterSpacing: '0.15em', color: '#8b5cf6' }}>
+                            <div key={i} className="text-center py-1" style={{ ...typo('legende', true), color: '#8b5cf6' }}>
                                 {d.toUpperCase()}
                             </div>
                         ))}
@@ -565,17 +578,17 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                 {/* ── Legend ─────────────────────────────────────────── */}
                 <div className="flex items-center gap-3 justify-center">
                     {bestMatchDates.size > 0 && (
-                        <span className="flex items-center gap-1 font-mono" style={{ fontSize: '9px', color: '#8b5cf6', letterSpacing: '0.1em' }}>
+                        <span className="flex items-center gap-1" style={{ ...typo('legende', true), color: '#8b5cf6' }}>
                             <span className="w-2 h-2 inline-block" style={{ border: '1px solid #e879f9', background: 'rgba(232,121,249,0.1)', borderRadius: '1px' }} />
                             BEST_SLOT
                         </span>
                     )}
-                    <span className="flex items-center gap-1 font-mono" style={{ fontSize: '9px', color: '#8b5cf6', letterSpacing: '0.1em' }}>
+                    <span className="flex items-center gap-1" style={{ ...typo('legende', true), color: '#8b5cf6' }}>
                         <span className="w-2 h-2 inline-block" style={{ border: '1px solid rgba(168,85,247,0.5)', background: 'rgba(168,85,247,0.1)', borderRadius: '1px' }} />
                         MY_DISPO
                     </span>
                     {confirmedDate && (
-                        <span className="flex items-center gap-1 font-mono" style={{ fontSize: '9px', color: '#8b5cf6', letterSpacing: '0.1em' }}>
+                        <span className="flex items-center gap-1" style={{ ...typo('legende', true), color: '#8b5cf6' }}>
                             <span className="w-2 h-2 inline-block" style={{ border: '1px solid rgba(74,222,128,0.6)', background: 'rgba(74,222,128,0.08)', borderRadius: '1px' }} />
                             CONFIRMED
                         </span>
@@ -585,8 +598,8 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                 {/* ── Empty state ─────────────────────────────────────── */}
                 {myVotes.size === 0 && allDatesWithVotes.length === 0 && (
                     <div className="flex items-start gap-2.5 px-3 py-2.5" style={{ border: '1px solid rgba(168,85,247,0.1)', borderRadius: '3px', background: 'rgba(168,85,247,0.03)' }}>
-                        <span className="font-mono text-sm leading-none mt-0.5 shrink-0" style={{ color: '#8b5cf6' }}>{'>'}</span>
-                        <p className="font-mono text-[11px] leading-relaxed" style={{ color: '#8b5cf6' }}>
+                        <span className="leading-none mt-0.5 shrink-0" style={{ ...typo('paragraphe', true), color: '#8b5cf6' }}>{'>'}</span>
+                        <p className="leading-relaxed" style={{ ...typo('paragraphe', true), color: '#8b5cf6' }}>
                             {'// clique sur les jours où tu es dispo — le système trouve le meilleur créneau commun'}
                         </p>
                     </div>
@@ -605,14 +618,14 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                 >
                 <div className="pt-3 flex flex-col gap-1.5" style={{ borderTop: '1px solid rgba(168,85,247,0.1)' }}>
                     <div className="flex items-center justify-between mb-1">
-                        <p className="font-mono uppercase tracking-[0.18em]" style={{ fontSize: '9px', color: '#8b5cf6' }}>
+                        <p style={{ ...typo('t3', true), color: '#8b5cf6' }}>
                             AVAILABLE_SLOTS
                         </p>
                         {hasMoreDates && (
                             <button
                                 onClick={() => setIsAllSlotsOpen(true)}
-                                className="font-mono transition-colors"
-                                style={{ fontSize: '9px', color: '#8b5cf6' }}
+                                className="transition-colors"
+                                style={{ ...typo('legende', true), color: '#8b5cf6' }}
                                 onMouseEnter={e => (e.currentTarget.style.color = '#c4b5fd')}
                                 onMouseLeave={e => (e.currentTarget.style.color = '#8b5cf6')}
                             >
@@ -635,10 +648,10 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                 }}
                             >
                                 <div className="flex flex-col shrink-0 w-14">
-                                    <span className="font-mono capitalize leading-tight" style={{ fontSize: '11px', color: isConf ? '#4ade80' : '#c4b5fd' }}>
+                                    <span className="capitalize leading-tight" style={{ ...typo('legende', true), textTransform: 'none', color: isConf ? '#4ade80' : '#c4b5fd' }}>
                                         {new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' })}
                                     </span>
-                                    <span className="font-mono capitalize leading-tight" style={{ fontSize: '9px', color: '#8b5cf6' }}>
+                                    <span className="capitalize leading-tight" style={{ ...typo('legende', true), textTransform: 'none', color: '#8b5cf6' }}>
                                         {new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', { month: 'short' })}
                                     </span>
                                 </div>
@@ -649,7 +662,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                             style={{ width: `${pct}%`, background: isConf ? '#4ade80' : pct === 100 ? '#e879f9' : '#a855f7', borderRadius: '1px' }}
                                         />
                                     </div>
-                                    <span className="font-mono tabular-nums" style={{ fontSize: '11px', color: isConf ? 'rgba(74,222,128,0.7)' : '#8b5cf6' }}>
+                                    <span className="tabular-nums" style={{ ...typo('legende', true), textTransform: 'none', color: isConf ? 'rgba(74,222,128,0.7)' : '#8b5cf6' }}>
                                         {count}/{totalMembers} dispo
                                     </span>
                                 </div>
@@ -675,7 +688,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                         );
                                     })}
                                     {dateMembers.length > 4 && (
-                                        <span className="font-mono ml-0.5" style={{ fontSize: '11px', color: '#8b5cf6' }}>
+                                        <span className="ml-0.5" style={{ ...typo('legende', true), textTransform: 'none', color: '#8b5cf6' }}>
                                             +{dateMembers.length - 4}
                                         </span>
                                     )}
@@ -693,8 +706,8 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                 {isAdmin && allDatesWithVotes.length > 0 && (
                     <button
                         onClick={() => setIsOverrideModalOpen(true)}
-                        className="flex items-center justify-center gap-1.5 py-2 mt-1 font-mono uppercase tracking-[0.15em] transition-colors"
-                        style={{ fontSize: '10px', color: '#8b5cf6', border: '1px solid rgba(168,85,247,0.1)', borderRadius: '3px' }}
+                        className="flex items-center justify-center gap-1.5 py-2 mt-1 transition-colors"
+                        style={{ ...typo('t3', true), color: '#8b5cf6', border: '1px solid rgba(168,85,247,0.1)', borderRadius: '3px' }}
                         onMouseEnter={e => { e.currentTarget.style.color = '#e879f9'; e.currentTarget.style.borderColor = 'rgba(232,121,249,0.3)'; }}
                         onMouseLeave={e => { e.currentTarget.style.color = '#8b5cf6'; e.currentTarget.style.borderColor = 'rgba(168,85,247,0.1)'; }}
                     >
@@ -712,7 +725,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                         <div className="w-full h-[2px] shrink-0" style={{ background: 'linear-gradient(90deg, #a855f7, #d946ef, #6366f1)' }} />
                         <div className="p-5">
                             <DialogHeader className="mb-4">
-                                <DialogTitle className="font-mono text-[0.8rem] uppercase tracking-[0.2em]" style={{ color: '#c4b5fd' }}>
+                                <DialogTitle style={{ ...typo('t2', true), color: '#c4b5fd' }}>
                                     {'> ALL_SLOTS'}
                                 </DialogTitle>
                             </DialogHeader>
@@ -739,7 +752,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                                 <div className="h-1 overflow-hidden" style={{ background: 'rgba(168,85,247,0.08)', borderRadius: '1px' }}>
                                                     <div className="h-full transition-all duration-500" style={{ width: `${pct}%`, background: isConf ? '#4ade80' : pct === 100 ? '#e879f9' : '#a855f7', borderRadius: '1px' }} />
                                                 </div>
-                                                <span className="font-mono tabular-nums" style={{ fontSize: '11px', color: isConf ? 'rgba(74,222,128,0.7)' : '#8b5cf6' }}>
+                                                <span className="tabular-nums" style={{ ...typo('legende', true), textTransform: 'none', color: isConf ? 'rgba(74,222,128,0.7)' : '#8b5cf6' }}>
                                                     {count}/{totalMembers}
                                                 </span>
                                             </div>
@@ -753,7 +766,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                                         </div>
                                                     );
                                                 })}
-                                                {dateMembers.length > 4 && <span className="font-mono ml-0.5" style={{ fontSize: '11px', color: '#8b5cf6' }}>+{dateMembers.length - 4}</span>}
+                                                {dateMembers.length > 4 && <span className="ml-0.5" style={{ ...typo('legende', true), textTransform: 'none', color: '#8b5cf6' }}>+{dateMembers.length - 4}</span>}
                                             </div>
                                             {isConf && <Check className="w-3.5 h-3.5 shrink-0" style={{ color: '#4ade80' }} />}
                                         </div>
@@ -773,7 +786,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                         <div className="w-full h-[2px] shrink-0" style={{ background: 'linear-gradient(90deg, #a855f7, #d946ef, #6366f1)' }} />
                         <div className="p-5">
                             <DialogHeader className="mb-4">
-                                <DialogTitle className="font-mono text-[0.8rem] uppercase tracking-[0.2em] flex items-center gap-2" style={{ color: '#c4b5fd' }}>
+                                <DialogTitle className="flex items-center gap-2" style={{ ...typo('t2', true), color: '#c4b5fd' }}>
                                     <Crown className="w-3.5 h-3.5" style={{ color: '#e879f9' }} />
                                     {'> CONFIRM_DATE'}
                                 </DialogTitle>
@@ -784,8 +797,9 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                         key={dateStr}
                                         onClick={() => handleConfirmDate(dateStr)}
                                         disabled={!!confirmingDate}
-                                        className="flex items-center justify-between px-3 py-2.5 font-mono transition-colors text-left"
+                                        className="flex items-center justify-between px-3 py-2.5 transition-colors text-left"
                                         style={{
+                                            ...typo('paragraphe', true),
                                             border: `1px solid ${confirmedDate === dateStr ? 'rgba(74,222,128,0.3)' : 'rgba(168,85,247,0.12)'}`,
                                             borderRadius: '3px',
                                             background: confirmedDate === dateStr ? 'rgba(74,222,128,0.06)' : 'transparent',
@@ -804,11 +818,11 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                             }
                                         }}
                                     >
-                                        <span className="capitalize text-sm">
+                                        <span className="capitalize" style={{ ...typo('paragraphe', true) }}>
                                             {new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}
                                         </span>
                                         <div className="flex items-center gap-2">
-                                            <span className="font-mono tabular-nums" style={{ fontSize: '10px', color: '#8b5cf6' }}>{count}/{totalMembers}</span>
+                                            <span className="tabular-nums" style={{ ...typo('legende', true), textTransform: 'none', color: '#8b5cf6' }}>{count}/{totalMembers}</span>
                                             {confirmingDate === dateStr ? (
                                                 <CircleNotch className="w-3.5 h-3.5 animate-spin" style={{ color: '#8b5cf6' }} />
                                             ) : confirmedDate === dateStr ? (
@@ -821,8 +835,8 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                     <button
                                         onClick={() => handleConfirmDate(confirmedDate)}
                                         disabled={!!confirmingDate}
-                                        className="mt-2 px-3 py-2.5 font-mono text-[11px] uppercase tracking-[0.12em] transition-colors flex items-center justify-between"
-                                        style={{ border: '1px solid rgba(239,68,68,0.2)', borderRadius: '3px', color: 'rgba(239,68,68,0.65)' }}
+                                        className="mt-2 px-3 py-2.5 transition-colors flex items-center justify-between"
+                                        style={{ ...typo('t3', true), border: '1px solid rgba(239,68,68,0.2)', borderRadius: '3px', color: 'rgba(239,68,68,0.65)' }}
                                         onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.06)'; e.currentTarget.style.color = 'rgb(239,68,68)'; }}
                                         onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(239,68,68,0.65)'; }}
                                     >
@@ -852,7 +866,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                     >
                         <CaretLeft className="w-3.5 h-3.5" />
                     </button>
-                    <span className="text-sm font-black text-white min-w-[110px] text-center">
+                    <span className="text-white min-w-[110px] text-center" style={{ ...typo('t3', false) }}>
                         {viewMode === 'week' ? weekLabel : `${MONTHS_FR[month]} ${year}`}
                     </span>
                     <button
@@ -864,7 +878,8 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                     {!isCurrentPeriod && (
                         <button
                             onClick={navToday}
-                            className="text-[10px] font-black text-[var(--v2-primary)] hover:bg-[var(--v2-primary)]/10 px-2 py-1 rounded-lg transition-colors ml-0.5"
+                            className="text-[var(--v2-primary)] hover:bg-[var(--v2-primary)]/10 px-2 py-1 rounded-lg transition-colors ml-0.5"
+                            style={{ ...typo('t3', false) }}
                         >
                             Auj.
                         </button>
@@ -875,8 +890,9 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                 <div className="flex items-center gap-0.5 bg-white/5 rounded-lg p-0.5">
                     <button
                         onClick={() => setViewMode('week')}
+                        style={{ ...typo('t3', false) }}
                         className={cn(
-                            'text-[10px] font-black px-2 py-1 rounded-md transition-colors',
+                            'px-2 py-1 rounded-md transition-colors',
                             viewMode === 'week' ? 'bg-white/15 text-white' : 'text-white/30 hover:text-white/60'
                         )}
                     >
@@ -884,8 +900,9 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                     </button>
                     <button
                         onClick={() => setViewMode('month')}
+                        style={{ ...typo('t3', false) }}
                         className={cn(
-                            'text-[10px] font-black px-2 py-1 rounded-md transition-colors',
+                            'px-2 py-1 rounded-md transition-colors',
                             viewMode === 'month' ? 'bg-white/15 text-white' : 'text-white/30 hover:text-white/60'
                         )}
                     >
@@ -898,7 +915,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
             {viewMode === 'month' && (
                 <div className="grid grid-cols-7 gap-0.5">
                     {DAYS_FR.map((d, i) => (
-                        <div key={i} className="text-center text-[9px] font-black uppercase tracking-wide text-white/20 py-1">
+                        <div key={i} className="text-center text-white/20 py-1" style={{ ...typo('legende', false) }}>
                             {d}
                         </div>
                     ))}
@@ -926,7 +943,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
             )}
 
             {/* ── Légende ─────────────────────────────────────────────────── */}
-            <div className="flex items-center gap-3 text-[10px] text-white/20 justify-center">
+            <div className="flex items-center gap-3 text-white/20 justify-center" style={{ ...typo('legende', false), textTransform: 'none' }}>
                 {bestMatchDates.size > 0 && (
                     <span className="flex items-center gap-1">
                         <span className="w-2 h-2 rounded border border-amber-400 bg-amber-500/20 inline-block" />
@@ -949,7 +966,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
             {myVotes.size === 0 && allDatesWithVotes.length === 0 && (
                 <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/5">
                     <span className="text-base leading-none mt-0.5">👆</span>
-                    <p className="text-[11px] text-white/35 font-medium leading-relaxed">
+                    <p className="text-white/35 leading-relaxed" style={{ ...typo('paragraphe', false) }}>
                         Appuie sur les jours où tu es disponible — le groupe trouvera le meilleur créneau commun automatiquement.
                     </p>
                 </div>
@@ -968,13 +985,14 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
             >
             <div className="border-t border-white/5 pt-3 flex flex-col gap-1.5">
                 <div className="flex items-center justify-between mb-1">
-                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/20">
+                    <p className="text-white/20" style={{ ...typo('t3', false) }}>
                         Créneaux disponibles
                     </p>
                     {hasMoreDates && (
                         <button
                             onClick={() => setIsAllSlotsOpen(true)}
-                            className="text-[10px] font-black text-[var(--v2-primary)]/60 hover:text-[var(--v2-primary)] transition-colors"
+                            className="text-[var(--v2-primary)]/60 hover:text-[var(--v2-primary)] transition-colors"
+                            style={{ ...typo('legende', false) }}
                         >
                             Voir plus →
                         </button>
@@ -997,13 +1015,13 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                             >
                                 {/* Date */}
                                 <div className="flex flex-col shrink-0 w-14">
-                                    <span className={cn(
-                                        'text-[11px] font-black capitalize leading-tight',
-                                        isConf ? 'text-green-400' : 'text-white/70',
-                                    )}>
+                                    <span
+                                        className={cn('capitalize leading-tight', isConf ? 'text-green-400' : 'text-white/70')}
+                                        style={{ ...typo('legende', false), textTransform: 'none' }}
+                                    >
                                         {new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' })}
                                     </span>
-                                    <span className="text-[9px] text-white/25 capitalize leading-tight">
+                                    <span className="text-white/25 capitalize leading-tight" style={{ ...typo('legende', false), textTransform: 'none' }}>
                                         {new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', { month: 'short' })}
                                     </span>
                                 </div>
@@ -1021,10 +1039,10 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                             style={{ width: `${pct}%` }}
                                         />
                                     </div>
-                                    <span className={cn(
-                                        'text-[11px] font-black tabular-nums',
-                                        isConf ? 'text-green-400/60' : 'text-white/20',
-                                    )}>
+                                    <span
+                                        className={cn('tabular-nums', isConf ? 'text-green-400/60' : 'text-white/20')}
+                                        style={{ ...typo('legende', false), textTransform: 'none' }}
+                                    >
                                         {count}/{totalMembers} dispo
                                     </span>
                                 </div>
@@ -1050,7 +1068,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                         );
                                     })}
                                     {dateMembers.length > 4 && (
-                                        <span className="text-[11px] text-white/20 font-bold ml-0.5">
+                                        <span className="text-white/20 ml-0.5" style={{ ...typo('legende', false), textTransform: 'none' }}>
                                             +{dateMembers.length - 4}
                                         </span>
                                     )}
@@ -1069,7 +1087,8 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
             {isAdmin && allDatesWithVotes.length > 0 && (
                 <button
                     onClick={() => setIsOverrideModalOpen(true)}
-                    className="flex items-center justify-center gap-1.5 text-[10px] font-black uppercase tracking-[0.15em] text-white/20 hover:text-amber-400 transition-colors py-2 mt-1"
+                    className="flex items-center justify-center gap-1.5 text-white/20 hover:text-amber-400 transition-colors py-2 mt-1"
+                    style={{ ...typo('t3', false) }}
                 >
                     <Crown className="w-3 h-3" />
                     Confirmer une date
@@ -1080,7 +1099,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
             <Dialog open={isAllSlotsOpen} onOpenChange={setIsAllSlotsOpen}>
                 <DialogContent className="max-w-md glass-panel border-white/10 text-white rounded-3xl p-6">
                     <DialogHeader className="mb-4">
-                        <DialogTitle className="text-sm font-black uppercase tracking-[0.15em] text-white">
+                        <DialogTitle className="text-white" style={{ ...typo('t2', false) }}>
                             Tous les créneaux
                         </DialogTitle>
                     </DialogHeader>
@@ -1098,7 +1117,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                     )}
                                 >
                                     <div className="flex flex-col shrink-0 w-14">
-                                        <span className={cn('text-[11px] font-black capitalize leading-tight', isConf ? 'text-green-400' : 'text-white/70')}>
+                                        <span className={cn('capitalize leading-tight', isConf ? 'text-green-400' : 'text-white/70')} style={{ ...typo('legende', false), textTransform: 'none' }}>
                                             {new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' })}
                                         </span>
                                         <span className="text-[9px] text-white/25 capitalize leading-tight">
@@ -1112,7 +1131,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                                 style={{ width: `${pct}%` }}
                                             />
                                         </div>
-                                        <span className={cn('text-[11px] font-black tabular-nums', isConf ? 'text-green-400/60' : 'text-white/20')}>
+                                        <span className={cn('tabular-nums', isConf ? 'text-green-400/60' : 'text-white/20')} style={{ ...typo('legende', false), textTransform: 'none' }}>
                                             {count}/{totalMembers} dispo
                                         </span>
                                     </div>
@@ -1126,7 +1145,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                                 </div>
                                             );
                                         })}
-                                        {dateMembers.length > 4 && <span className="text-[11px] text-white/20 font-bold ml-0.5">+{dateMembers.length - 4}</span>}
+                                        {dateMembers.length > 4 && <span className="text-white/20 ml-0.5" style={{ ...typo('legende', false), textTransform: 'none' }}>+{dateMembers.length - 4}</span>}
                                     </div>
                                     {isConf && <Check className="w-3.5 h-3.5 text-green-400 shrink-0" />}
                                 </div>
@@ -1140,7 +1159,7 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
             <Dialog open={isOverrideModalOpen} onOpenChange={setIsOverrideModalOpen}>
                 <DialogContent className="max-w-md glass-panel border-white/10 text-white rounded-3xl p-6">
                     <DialogHeader className="mb-4">
-                        <DialogTitle className="text-sm font-black uppercase tracking-[0.15em] flex items-center gap-2 text-white">
+                        <DialogTitle className="flex items-center gap-2 text-white" style={{ ...typo('t2', false) }}>
                             <Crown className="w-3.5 h-3.5 text-amber-400" />
                             Confirmer une date
                         </DialogTitle>
@@ -1160,11 +1179,11 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                                             : 'border-white/8 hover:border-white/20 hover:bg-white/5 text-white',
                                     )}
                                 >
-                                    <span className="font-bold capitalize text-sm">
+                                    <span className="capitalize" style={{ ...typo('paragraphe', false) }}>
                                         {new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}
                                     </span>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-[10px] text-white/30 tabular-nums">{count}/{totalMembers}</span>
+                                        <span className="text-white/30 tabular-nums" style={{ ...typo('legende', false), textTransform: 'none' }}>{count}/{totalMembers}</span>
                                         {confirmingDate === dateStr ? (
                                             <CircleNotch className="w-3.5 h-3.5 animate-spin text-white/40" />
                                         ) : confirmedDate === dateStr ? (
@@ -1177,7 +1196,8 @@ export function CalendarTab({ group, slug, memberId, members, isAdmin, onGroupCh
                             <button
                                 onClick={() => handleConfirmDate(confirmedDate)}
                                 disabled={!!confirmingDate}
-                                className="mt-2 p-2.5 rounded-xl border border-red-500/20 text-red-400/60 hover:bg-red-500/10 hover:text-red-400 transition-colors text-xs font-black"
+                                className="mt-2 p-2.5 rounded-xl border border-red-500/20 text-red-400/60 hover:bg-red-500/10 hover:text-red-400 transition-colors"
+                                style={{ ...typo('t3', false) }}
                             >
                                 Annuler la date confirmée
                             </button>

@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import { typo } from '@/lib/typography';
 import type { Group, Member, LocationProposal, DateVote } from '@/types/database';
 import { HeroBlock } from '@/components/HeroBlock';
 import { MembersCompact } from '@/components/MembersCompact';
@@ -242,9 +243,9 @@ export function HomeTab({
                     className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full hover:bg-white/10 hover:border-white/15 active:scale-95 transition-all duration-150"
                 >
                     <CalendarDots className="w-3 h-3 text-[var(--v2-primary)] shrink-0" weight="fill" />
-                    <span className="text-xs font-black text-white/75 capitalize truncate">{displayDate}</span>
+                    <span className="text-white/75 capitalize truncate" style={{ ...typo('legende', isRemote), textTransform: 'none' }}>{displayDate}</span>
                     {confirmedDate && (
-                        <span className="text-[11px] font-black text-green-400 ml-0.5 shrink-0">✓</span>
+                        <span className="text-green-400 ml-0.5 shrink-0" style={{ ...typo('legende', isRemote) }}>✓</span>
                     )}
                 </button>
             )}
@@ -255,7 +256,7 @@ export function HomeTab({
                             ? <GameController className="w-3 h-3 text-[var(--v2-primary)] shrink-0" weight="fill" />
                             : <MapTrifold className="w-3 h-3 text-[var(--v2-accent)] shrink-0" weight="fill" />
                         }
-                        <span className="text-xs font-black text-white/75 truncate">{displayLocation}</span>
+                        <span className="text-white/75 truncate" style={{ ...typo('legende', isRemote), textTransform: 'none' }}>{displayLocation}</span>
                     </div>
                 ) : (
                     <a
@@ -265,7 +266,7 @@ export function HomeTab({
                         className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1.5 min-w-0 max-w-full hover:bg-white/10 hover:border-white/15 active:scale-95 transition-all duration-150"
                     >
                         <MapTrifold className="w-3 h-3 text-[var(--v2-accent)] shrink-0" weight="fill" />
-                        <span className="text-xs font-black text-white/75 truncate">{displayLocation}</span>
+                        <span className="text-white/75 truncate" style={{ ...typo('legende', isRemote), textTransform: 'none' }}>{displayLocation}</span>
                     </a>
                 )
             )}
@@ -278,7 +279,7 @@ export function HomeTab({
                         ? <GameController className="w-3 h-3 text-[var(--v2-primary)] shrink-0" />
                         : <MapTrifold className="w-3 h-3 text-[var(--v2-primary)] shrink-0" />
                     }
-                    <span className="text-xs font-black text-[var(--v2-primary)]/90">{isRemote ? '+ Jeu' : '+ Lieu'}</span>
+                    <span className="text-[var(--v2-primary)]/90" style={{ ...typo('legende', isRemote), textTransform: 'none' }}>{isRemote ? '+ Jeu' : '+ Lieu'}</span>
                 </button>
             )}
             {isAdmin && !locationEnabled && group.location?.name && (
@@ -286,7 +287,7 @@ export function HomeTab({
                     onClick={() => setShowLocationModal(true)}
                     className="flex items-center gap-1.5 bg-white/4 border border-white/8 rounded-full px-3 py-1.5 hover:bg-white/8 transition-colors"
                 >
-                    <span className="text-xs font-black text-white/40">Modifier →</span>
+                    <span className="text-white/40" style={{ ...typo('legende', isRemote), textTransform: 'none' }}>Modifier →</span>
                 </button>
             )}
         </div>
@@ -297,8 +298,8 @@ export function HomeTab({
         <div className="flex flex-wrap gap-3">
             {(calendarEnabled || locationEnabled) && (
                 <p
-                    className="w-full text-[12px] font-black uppercase tracking-[0.28em] text-white/25 px-0.5"
-                    style={{ fontFamily: 'var(--font-barlow-condensed)' }}
+                    className="w-full text-white/25 px-0.5"
+                    style={{ ...typo('t3', isRemote) }}
                 >
                     Vote pour la date et le lieu
                 </p>
@@ -347,13 +348,13 @@ export function HomeTab({
                                         weight="fill"
                                     />
                                     {isRemote ? (
-                                        <span className="font-mono text-[0.8rem] uppercase tracking-[0.18em]" style={{ color: needsCalendarVote ? '#a855f7' : '#c4b5fd' }}>
+                                        <span style={{ ...typo('t2', true), color: needsCalendarVote ? '#a855f7' : '#c4b5fd' }}>
                                             DATE_SESSION {'>'}
                                         </span>
                                     ) : (
                                         <span
-                                            className="uppercase leading-none"
-                                            style={{ fontFamily: 'var(--font-barlow-condensed)', fontWeight: 900, fontSize: '1.05rem', letterSpacing: '0.12em', color: needsCalendarVote ? 'var(--v2-primary)' : 'rgba(255,255,255,0.75)' }}
+                                            className="leading-none"
+                                            style={{ ...typo('t2', false), color: needsCalendarVote ? 'var(--v2-primary)' : 'rgba(255,255,255,0.75)' }}
                                         >
                                             Date du rdv
                                         </span>
@@ -367,31 +368,31 @@ export function HomeTab({
                             </div>
                             {displayDate ? (
                                 isRemote ? (
-                                    <p className="font-mono capitalize leading-tight text-white/80" style={{ fontSize: '1.05rem', letterSpacing: '0.02em' }}>{displayDate}</p>
+                                    <p className="leading-tight text-white/80" style={{ ...typo('t1', true) }}>{displayDate}</p>
                                 ) : (
-                                    <p className="capitalize leading-tight text-white" style={{ fontFamily: 'var(--font-barlow-condensed)', fontWeight: 900, fontSize: '1.35rem', letterSpacing: '0.01em' }}>{displayDate}</p>
+                                    <p className="leading-tight text-white" style={{ ...typo('t1', false) }}>{displayDate}</p>
                                 )
                             ) : (
                                 isRemote
-                                    ? <p className="font-mono text-[11px] uppercase tracking-[0.18em]" style={{ color: '#8b5cf6' }}>TIMESTAMP_TBD</p>
-                                    : <p className="text-xs text-white/25 font-black uppercase tracking-wider">Personne n'a encore voté</p>
+                                    ? <p className="text-white/80" style={{ ...typo('legende', true), color: '#8b5cf6' }}>TIMESTAMP_TBD</p>
+                                    : <p className="text-white/25" style={{ ...typo('legende', false) }}>Personne n'a encore voté</p>
                             )}
                             {isRemote ? (
-                                <p className="font-mono text-[10px] uppercase tracking-[0.15em]" style={{ color: '#a78bfa' }}>
+                                <p style={{ ...typo('legende', true), color: '#a78bfa' }}>
                                     {uniqueVotedDates}_DATE{uniqueVotedDates !== 1 ? 'S' : ''} · {myVoteCount}_VOTE{myVoteCount !== 1 ? 'S' : ''}
                                 </p>
                             ) : (
-                                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/30">
+                                <p className="text-white/30" style={{ ...typo('legende', false) }}>
                                     {uniqueVotedDates} date{uniqueVotedDates !== 1 ? 's' : ''} · {myVoteCount} vote{myVoteCount !== 1 ? 's' : ''}
                                 </p>
                             )}
                             {needsCalendarVote && (
                                 isRemote ? (
-                                    <span className="self-start font-mono text-[10px] uppercase tracking-[0.12em] px-2 py-0.5" style={{ border: '1px solid rgba(168,85,247,0.4)', background: 'rgba(168,85,247,0.08)', color: '#a855f7', borderRadius: '2px' }}>
+                                    <span className="self-start px-2 py-0.5" style={{ ...typo('t3', true), border: '1px solid rgba(168,85,247,0.4)', background: 'rgba(168,85,247,0.08)', color: '#a855f7', borderRadius: '2px' }}>
                                         VOTE_REQUIRED {'>'}
                                     </span>
                                 ) : (
-                                    <span className="self-start text-[10px] font-black uppercase tracking-[0.12em] px-2 py-0.5 rounded-md border border-[var(--v2-primary)]/40 bg-[var(--v2-primary)]/10 text-[var(--v2-primary)]" style={{ fontFamily: 'var(--font-barlow-condensed)' }}>
+                                    <span className="self-start px-2 py-0.5 rounded-md border border-[var(--v2-primary)]/40 bg-[var(--v2-primary)]/10 text-[var(--v2-primary)]" style={{ ...typo('t3', false) }}>
                                         Ton vote →
                                     </span>
                                 )
@@ -464,13 +465,13 @@ export function HomeTab({
                                         : <MapTrifold className="w-4 h-4 shrink-0" style={{ color: needsLocationNudge ? '#fbbf24' : 'rgba(255,255,255,0.4)' }} weight="fill" />
                                     }
                                     {isRemote ? (
-                                        <span className="font-mono text-[0.8rem] uppercase tracking-[0.18em]" style={{ color: needsLocationAction ? '#d946ef' : '#c4b5fd' }}>
+                                        <span style={{ ...typo('t2', true), color: needsLocationAction ? '#d946ef' : '#c4b5fd' }}>
                                             SESSION_GAME {'>'}
                                         </span>
                                     ) : (
                                         <span
-                                            className="uppercase leading-none"
-                                            style={{ fontFamily: 'var(--font-barlow-condensed)', fontWeight: 900, fontSize: '1.05rem', letterSpacing: '0.12em', color: needsLocationNudge ? '#fbbf24' : 'rgba(255,255,255,0.75)' }}
+                                            className="leading-none"
+                                            style={{ ...typo('t2', false), color: needsLocationNudge ? '#fbbf24' : 'rgba(255,255,255,0.75)' }}
                                         >
                                             {isRemote ? 'Jeu ?' : 'Lieu du rdv'}
                                         </span>
@@ -484,33 +485,33 @@ export function HomeTab({
                             </div>
                             {displayLocation ? (
                                 isRemote ? (
-                                    <p className="font-mono leading-tight text-white/80 truncate" style={{ fontSize: '1.05rem', letterSpacing: '0.02em' }}>{displayLocation}</p>
+                                    <p className="leading-tight text-white/80 truncate" style={{ ...typo('t1', true) }}>{displayLocation}</p>
                                 ) : (
-                                    <p className="leading-tight text-white truncate" style={{ fontFamily: 'var(--font-barlow-condensed)', fontWeight: 900, fontSize: '1.35rem', letterSpacing: '0.01em' }}>{displayLocation}</p>
+                                    <p className="leading-tight text-white truncate" style={{ ...typo('t1', false) }}>{displayLocation}</p>
                                 )
                             ) : isRemote ? (
-                                <p className="font-mono text-[11px] uppercase tracking-[0.18em]" style={{ color: '#8b5cf6' }}>
+                                <p style={{ ...typo('legende', true), color: '#8b5cf6' }}>
                                     {needsLocationAction ? 'GAME_VOTE_REQUIRED' : 'NO_PROPOSALS'}
                                 </p>
                             ) : null}
                             {isRemote ? (
-                                <p className="font-mono text-[10px] uppercase tracking-[0.15em]" style={{ color: '#a78bfa' }}>
+                                <p style={{ ...typo('legende', true), color: '#a78bfa' }}>
                                     {proposals.length}_PROP{proposals.length !== 1 ? 'S' : ''}
                                 </p>
                             ) : (
                                 <>
-                                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/30">
+                                    <p className="text-white/30" style={{ ...typo('legende', false) }}>
                                         {proposals.length} proposition{proposals.length !== 1 ? 's' : ''}
                                     </p>
                                     {proposals.length > 0 && !displayLocation && (
-                                        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/20" style={{ fontFamily: 'var(--font-barlow-condensed)' }}>
+                                        <p className="text-white/20" style={{ ...typo('legende', false) }}>
                                             Votez pour ce que vous préférez
                                         </p>
                                     )}
                                 </>
                             )}
                             {needsLocationAction && isRemote && (
-                                <span className="self-start font-mono text-[10px] uppercase tracking-[0.12em] px-2 py-0.5" style={{ border: '1px solid rgba(217,70,239,0.4)', background: 'rgba(217,70,239,0.08)', color: '#d946ef', borderRadius: '2px' }}>
+                                <span className="self-start px-2 py-0.5" style={{ ...typo('t3', true), border: '1px solid rgba(217,70,239,0.4)', background: 'rgba(217,70,239,0.08)', color: '#d946ef', borderRadius: '2px' }}>
                                     VOTE_REQUIRED {'>'}
                                 </span>
                             )}
@@ -591,14 +592,12 @@ export function HomeTab({
                             <span className="text-xl leading-none shrink-0 mt-0.5">🗳️</span>
                             <div className="flex flex-col gap-0.5">
                                 <p
-                                    className="font-black uppercase leading-tight"
-                                    style={isRemote
-                                        ? { fontFamily: 'monospace', fontSize: '0.85rem', letterSpacing: '0.1em', color: '#c4b5fd' }
-                                        : { fontFamily: 'var(--font-barlow-condensed)', fontSize: '1.05rem', letterSpacing: '0.06em', color: 'var(--v2-primary)' }}
+                                    className="leading-tight"
+                                    style={{ ...typo('t2', isRemote), color: isRemote ? '#c4b5fd' : 'var(--v2-primary)' }}
                                 >
                                     On attend ton vote
                                 </p>
-                                <p className="text-[12px] font-medium leading-snug" style={{ color: isRemote ? '#a78bfa' : 'rgba(255,255,255,0.6)' }}>
+                                <p className="leading-snug" style={{ ...typo('paragraphe', isRemote), color: isRemote ? '#a78bfa' : 'rgba(255,255,255,0.6)' }}>
                                     Donne ton avis {calendarEnabled && locationEnabled ? 'sur la date ou le lieu' : calendarEnabled ? 'sur la date' : 'sur le lieu'} pour débloquer le 🔒 Rendez-vous.
                                 </p>
                             </div>
@@ -660,7 +659,7 @@ export function HomeTab({
                                             <span className="absolute inline-flex h-full w-full rounded-full bg-[var(--v2-primary)] opacity-75 animate-ping" />
                                             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--v2-primary)]" />
                                         </span>
-                                        <span className="text-[11px] font-black uppercase tracking-[0.16em] text-white/50">
+                                        <span className="text-white/50" style={{ ...typo('t3', false) }}>
                                             Afficher la carte live
                                         </span>
                                     </button>
@@ -774,11 +773,11 @@ export function HomeTab({
                         <ArrowClockwise className="w-4 h-4 text-white/40 group-hover:text-white/70 transition-colors" weight="bold" />
                     </div>
                     <div className="flex-1 text-left">
-                        <p className="text-[12px] font-black uppercase tracking-[0.1em] text-white/50 group-hover:text-white/70 transition-colors"
-                           style={{ fontFamily: 'var(--font-barlow-condensed)' }}>
+                        <p className="text-white/50 group-hover:text-white/70 transition-colors"
+                           style={{ ...typo('t3', false) }}>
                             Planifier la prochaine sortie
                         </p>
-                        <p className="text-[10px] font-black uppercase tracking-[0.1em] text-white/25 mt-0.5">
+                        <p className="text-white/25 mt-0.5" style={{ ...typo('legende', false) }}>
                             Réinitialise les votes · garde les membres
                         </p>
                     </div>
@@ -789,8 +788,7 @@ export function HomeTab({
             {/* ── Historique des sorties passées ── */}
             {group.past_events && group.past_events.length > 0 && (
                 <div className="flex flex-col gap-2 px-0.5">
-                    <p className="text-[10px] font-black uppercase tracking-[0.28em] text-white/20"
-                       style={{ fontFamily: 'var(--font-barlow-condensed)' }}>
+                    <p className="text-white/20" style={{ ...typo('t3', false) }}>
                         Sorties passées
                     </p>
                     <div className="flex flex-col gap-1.5">
@@ -804,11 +802,11 @@ export function HomeTab({
                                     className="flex items-center gap-3 px-3 py-2 rounded-xl border border-white/6 bg-white/[0.02]"
                                 >
                                     <div className="w-1.5 h-1.5 rounded-full bg-white/20 shrink-0" />
-                                    <span className="text-[11px] font-black text-white/40 capitalize">{formatted}</span>
+                                    <span className="text-white/40 capitalize" style={{ ...typo('legende', false), textTransform: 'none' }}>{formatted}</span>
                                     {evt.location_name && (
-                                        <span className="text-[11px] text-white/25 truncate">· {evt.location_name}</span>
+                                        <span className="text-white/25 truncate" style={{ ...typo('legende', false), textTransform: 'none' }}>· {evt.location_name}</span>
                                     )}
-                                    <span className="ml-auto text-[10px] font-black text-white/20 shrink-0">
+                                    <span className="ml-auto text-white/20 shrink-0" style={{ ...typo('legende', false) }}>
                                         {evt.ready_count}/{evt.total_count}
                                     </span>
                                 </div>

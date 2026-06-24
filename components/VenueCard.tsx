@@ -1,6 +1,7 @@
 'use client';
 
 import { MapTrifold, CalendarPlus, ArrowSquareOut } from '@phosphor-icons/react';
+import { typo } from '@/lib/typography';
 
 interface VenueCardProps {
     name: string;
@@ -48,15 +49,15 @@ export function VenueCard({ name, image, date, mapsUrl, onAddToCalendar, showCal
                 <div className="absolute inset-x-0 bottom-0 px-4 pb-4 flex flex-col gap-0.5">
                     {date && (
                         <span
-                            className="text-[12px] font-black uppercase tracking-[0.22em] text-white/55"
-                            style={{ fontFamily: 'var(--font-barlow-condensed)' }}
+                            className="text-white/55"
+                            style={{ ...typo('legende', false) }}
                         >
                             {date}
                         </span>
                     )}
                     <h2
-                        className="text-2xl font-black uppercase leading-none text-white"
-                        style={{ fontFamily: 'var(--font-barlow-condensed)', letterSpacing: '0.02em' }}
+                        className="leading-none text-white"
+                        style={{ ...typo('t1', false) }}
                     >
                         {name}
                     </h2>
@@ -78,8 +79,8 @@ export function VenueCard({ name, image, date, mapsUrl, onAddToCalendar, showCal
                     >
                         <MapTrifold className="w-3.5 h-3.5 text-orange-400 shrink-0" weight="fill" />
                         <span
-                            className="text-[12px] font-black uppercase tracking-[0.06em] text-white/70 group-hover:text-white transition-colors"
-                            style={{ fontFamily: 'var(--font-barlow-condensed)' }}
+                            className="text-white/70 group-hover:text-white transition-colors"
+                            style={{ ...typo('t3', false) }}
                         >
                             Afficher dans Google Maps
                         </span>
@@ -99,8 +100,8 @@ export function VenueCard({ name, image, date, mapsUrl, onAddToCalendar, showCal
                     >
                         <CalendarPlus className="w-3.5 h-3.5 text-sky-400 shrink-0" weight="fill" />
                         <span
-                            className="text-[12px] font-black uppercase tracking-[0.06em] text-white/70 group-hover:text-white transition-colors"
-                            style={{ fontFamily: 'var(--font-barlow-condensed)' }}
+                            className="text-white/70 group-hover:text-white transition-colors"
+                            style={{ ...typo('t3', false) }}
                         >
                             Rajouter à mon calendrier
                         </span>

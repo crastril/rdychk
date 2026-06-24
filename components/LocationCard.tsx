@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import type { Group } from "@/types/database";
 import { EditLocationModal } from "./EditLocationModal";
+import { typo } from "@/lib/typography";
 
 interface LocationCardProps {
     group: Group;
@@ -219,23 +220,23 @@ export function LocationCard({ group, slug, memberId, isAdmin, currentMemberName
                         {hasLocation ? (
                             <>
                                 <div className="flex items-center gap-2 mb-1">
-                                    <h3 className="font-bold text-white truncate text-lg">
+                                    <h3 className="text-white truncate" style={{ ...typo('t2', false) }}>
                                         {group.location?.preview_title || group.location?.name || "Lieu inconnu"}
                                     </h3>
                                 </div>
                                 {(group.location?.description || group.location?.address) && (
-                                    <p className="text-sm text-slate-400 truncate flex items-center gap-1">
+                                    <p className="text-slate-400 truncate flex items-center gap-1" style={{ ...typo('paragraphe', false) }}>
                                         {group.location?.address}
                                     </p>
                                 )}
                                 {group.location?.proposed_by && (
-                                    <div className="text-[10px] text-slate-500 italic mt-0.5">
+                                    <div className="text-slate-500 italic mt-0.5" style={{ ...typo('legende', false), textTransform: 'none' }}>
                                         Proposé par {group.location.proposed_by}
                                     </div>
                                 )}
                             </>
                         ) : (
-                            <div className="text-slate-400 italic text-sm">
+                            <div className="text-slate-400 italic" style={{ ...typo('paragraphe', false) }}>
                                 {isAdmin ? "Aucun lieu défini. Proposez-en un !" : "Le lieu n'a pas encore été défini."}
                             </div>
                         )}
@@ -254,10 +255,13 @@ export function LocationCard({ group, slug, memberId, isAdmin, currentMemberName
                             >
                                 <CaretUp className="w-5 h-5 stroke-[3]" />
                             </button>
-                            <span className={cn(
-                                "font-bold text-sm",
-                                score > 0 ? "text-green-400" : score < 0 ? "text-red-400" : "text-white"
-                            )}>
+                            <span
+                                className={cn(
+                                    "tabular-nums",
+                                    score > 0 ? "text-green-400" : score < 0 ? "text-red-400" : "text-white"
+                                )}
+                                style={{ ...typo('legende', false) }}
+                            >
                                 {score > 0 ? `+${score}` : score}
                             </span>
                             <button
@@ -310,7 +314,8 @@ export function LocationCard({ group, slug, memberId, isAdmin, currentMemberName
 
                         {hasLocation && score < 0 && (
                             <button
-                                className="w-full py-3 rounded-xl btn-challenger uppercase tracking-[0.2em] font-black flex items-center justify-center gap-2"
+                                className="w-full py-3 rounded-xl btn-challenger flex items-center justify-center gap-2"
+                                style={{ ...typo('t3', false) }}
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setEditMode('counter');

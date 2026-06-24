@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { CalendarBlank, House, MapPin } from '@phosphor-icons/react';
+import { typo } from '@/lib/typography';
 
 export type GroupTab = 'calendar' | 'home' | 'location';
 
@@ -47,8 +48,9 @@ export function GroupTabNav({ activeTab, onTabChange, calendarEnabled = true, lo
                             <button
                                 key={tab.id}
                                 onClick={() => onTabChange(tab.id)}
+                                style={{ ...typo('t3', false) }}
                                 className={cn(
-                                    'relative flex items-center gap-2 px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-[0.18em] transition-all duration-100 select-none',
+                                    'relative flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-100 select-none',
                                     active
                                         ? [
                                             'bg-[var(--v2-primary)] text-white',
@@ -112,7 +114,7 @@ export function GroupTabNav({ activeTab, onTabChange, calendarEnabled = true, lo
                                     className={cn('w-5 h-5 transition-transform duration-100', active && 'scale-110')}
                                     weight={active ? 'fill' : 'regular'}
                                 />
-                                <span className="text-[8.5px] font-black uppercase tracking-[0.16em] leading-none">
+                                <span className="leading-none" style={{ ...typo('t3', false) }}>
                                     {tab.label}
                                 </span>
                             </button>
